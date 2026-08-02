@@ -5,7 +5,6 @@ import { EnquiryForm, type CarriedContext } from "@/components/forms/enquiry-for
 import { modelById, modelBySlug } from "@/content/models";
 import { getUnits } from "@/server/stock-store";
 import { fromMonthly } from "@/engine/quote";
-import { CONDITION_LABEL } from "@/content/taxonomy";
 import { company } from "@/lib/company";
 import { pageMetadata } from "@/lib/seo";
 import { routes } from "@/lib/routes";
@@ -38,7 +37,7 @@ export default async function EnquiryPage(props: PageProps<"/zapitvane">) {
   const unitRef = first(params.unit);
 
   // Resolve the stock reference to something the visitor recognises. They
-  // arrived from "Necta Snakky · 2020 г. · Клас Б"; "001-1" is a warehouse code
+  // arrived from "Necta Snakky · 2020 г."; "001-1" is a warehouse code
   // and means nothing to them. This panel is their only proof the context
   // travelled, on the page that produces the site's one measurable output.
   const units = await getUnits();
@@ -53,14 +52,7 @@ export default async function EnquiryPage(props: PageProps<"/zapitvane">) {
   // than being silently reduced to its first line.
   const summary = first(params.summary)?.slice(0, 1000);
 
-  const unitLabel = unit
-    ? [
-        unit.year ? `${unit.year} г.` : null,
-        unit.conditionGrade ? CONDITION_LABEL[unit.conditionGrade] : null,
-      ]
-        .filter(Boolean)
-        .join(" · ")
-    : undefined;
+  const unitLabel = unit?.year ? `${unit.year} г.` : undefined;
 
   const context: CarriedContext = {
     modelSlug: model?.slug,

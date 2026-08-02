@@ -1,6 +1,6 @@
 import { MODELS } from "./models";
 import { unitSchema, type Unit } from "./schema";
-import type { ConditionGrade, UnitStatus } from "./taxonomy";
+import type { UnitStatus } from "./taxonomy";
 
 /**
  * PLACEHOLDER STOCK.
@@ -45,8 +45,6 @@ const STATUS_POOL: UnitStatus[] = [
   "incoming",
 ];
 
-const GRADE_POOL: ConditionGrade[] = ["A", "B", "B", "B", "C"];
-
 const SUPPLIERS = ["Внос Италия", "Внос Германия", "Внос Холандия", "Обратно от наем"];
 
 function unitsForModel(modelId: string, index: number): Unit[] {
@@ -55,7 +53,6 @@ function unitsForModel(modelId: string, index: number): Unit[] {
 
   return Array.from({ length: count }, (_, i) => {
     const status = STATUS_POOL[Math.floor(rand() * STATUS_POOL.length)];
-    const grade = GRADE_POOL[Math.floor(rand() * GRADE_POOL.length)];
     const year = 2008 + Math.floor(rand() * 15);
 
     // Stagger the update stamps a little so staleness logic has something real
@@ -68,7 +65,6 @@ function unitsForModel(modelId: string, index: number): Unit[] {
       stockRef: `${String(index + 1).padStart(3, "0")}-${i + 1}`,
       modelId,
       year,
-      conditionGrade: grade,
       status,
       monthlyRates: null, // placeholder rates come from the engine, not here
       serialNumber: null,

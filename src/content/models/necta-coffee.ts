@@ -103,6 +103,14 @@ export const nectaCoffee: Draft[] = [
   {
     id: "colibri",
     slug: "necta-colibri",
+    photos: [
+      {
+        src: "/machines/necta-colibri/front.png",
+        alt: "Кафе автомат Necta Colibrì, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Necta Colibrì",
     manufacturer: "necta",
     category: "coffee",

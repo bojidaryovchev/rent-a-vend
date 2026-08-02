@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
+import { Eyebrow } from "@/components/ui/bits";
 import { ButtonLink } from "@/components/ui/button";
-import { routes } from "@/lib/routes";
+import { CASE_STUDIES, type CaseStudy } from "@/content/case-studies";
+import { modelBySlug } from "@/content/models";
+import { routes, type CategoryKey } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -13,15 +17,78 @@ export const metadata: Metadata = pageMetadata({
 });
 
 /**
- * Deliberately empty, and it says why.
+ * Grows one real project at a time.
  *
  * An invented case study is misleading advertising, and PRODUCT.md prohibits it
- * outright. A page that explains its own emptiness is more persuasive than five
- * fabricated projects, because it demonstrates the standard the rest of the site
- * claims to hold itself to.
+ * outright - so this page shipped empty and said why. It now carries the
+ * projects that exist and nothing else, in the same three columns the empty
+ * state sketched: the problem, the machine, what changed.
  *
- * Excluded from the sitemap while it has no content.
+ * The page enters the sitemap only while `CASE_STUDIES` is non-empty; see
+ * `sitemapEntries`.
  */
+
+const COLUMNS: [string, (c: CaseStudy) => string][] = [
+  ["Проблемът", (c) => c.problem],
+  ["Решението", (c) => c.solution],
+  ["Резултатът", (c) => c.result],
+];
+
+function CaseStudyPanel({ study, index }: { study: CaseStudy; index: number }) {
+  const model = study.modelSlug ? modelBySlug(study.modelSlug) : undefined;
+
+  return (
+    <article id={study.slug} className="bay-panel riveted p-8 pt-10 md:p-12">
+      <div className="flex items-baseline gap-3">
+        <span aria-hidden className="serial text-line-strong">
+          {String(index).padStart(2, "0")}
+        </span>
+        <h2 className="engraved text-[22px] leading-tight md:text-[26px]">
+          {study.title}
+        </h2>
+      </div>
+
+      {study.venue && (
+        <p className="mt-2 text-[13px] leading-6 text-ink-muted">
+          {study.venue}
+        </p>
+      )}
+
+      {/* The three columns the empty state promised. They stack on mobile, so
+          each one carries its own label rather than relying on a table head. */}
+      <div className="mt-7 grid gap-px border border-line-strong bg-line-strong sm:grid-cols-3">
+        {COLUMNS.map(([label, field]) => (
+          <div key={label} className="bg-paper-sunken p-5">
+            <h3 className="plate text-[11px] text-graphite">{label}</h3>
+            <p className="mt-3 text-[14px] leading-6 text-graphite">
+              {field(study)}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      {/* Not every project is about a machine: the ten-machine site was about
+          who operates them, and the line simply does not render there. */}
+      {study.machine && (
+        <p className="mt-6 text-[13px] leading-6 text-ink-muted">
+          <span className="plate text-[11px] text-graphite">Машината</span>{" "}
+          {model ? (
+            <Link
+              href={routes.model(model.category as CategoryKey, model.slug)}
+              className="text-graphite underline-offset-4 hover-fine:underline"
+            >
+              {study.machine}
+            </Link>
+          ) : (
+            <span className="text-graphite">{study.machine}</span>
+          )}
+          {study.machineNote && <> - {study.machineNote}</>}
+        </p>
+      )}
+    </article>
+  );
+}
+
 export default function CaseStudiesPage() {
   return (
     <>
@@ -33,42 +100,33 @@ export default function CaseStudiesPage() {
 
       <section className="paper-grain">
         <Container className="py-14 md:py-20">
-          <div className="bay-panel riveted mx-auto max-w-3xl p-8 pt-10 md:p-12">
-            <span className="stencil text-[10px] text-status-reserved">
-              Тази секция още се подготвя
-            </span>
+          <div className="mx-auto flex max-w-3xl flex-col gap-8">
+            {CASE_STUDIES.map((study, i) => (
+              <CaseStudyPanel key={study.slug} study={study} index={i + 1} />
+            ))}
 
-            <p className="mt-5 text-[15px] leading-8 text-graphite">
-              Тук ще опишем конкретни обекти: какъв е бил проблемът, коя машина е
-              избрана, защо точно тя и какъв е резултатът.
-            </p>
+            {/* Closing panel. It used to be the empty state and argued at
+                length why the page carried nothing; the projects landed, and an
+                argument for an absence that is no longer there reads as a page
+                apologising for itself. What survives is the part a reader can
+                act on: a first-hand opinion is available for the asking. */}
+            <div className="bay-panel riveted p-8 pt-10 md:p-12">
+              <Eyebrow>Референции</Eyebrow>
 
-            <p className="mt-4 text-[14px] leading-7 text-ink-muted">
-              Оставяме страницата празна, вместо да я запълним с примери.
-              Измислен казус се усеща, а описание на несъществуващ клиент е
-              подвеждаща реклама. По-добре два истински проекта, отколкото пет
-              съчинени.
-            </p>
+              <p className="mt-5 text-[14px] leading-7 text-graphite">
+                Ако искате мнение от първо лице, ще ви свържем с клиент, който е
+                приел да говори за опита си. Списъкът тук расте с всеки проект,
+                за който получим съгласие да бъде описан.
+              </p>
 
-            {/* The shape the real thing will take, shown empty. */}
-            <div className="mt-8 grid gap-px border border-line-strong bg-line-strong sm:grid-cols-3">
-              {["Проблемът", "Решението", "Резултатът"].map((t) => (
-                <div key={t} className="bg-paper-sunken p-5">
-                  <span className="plate text-[11px] text-line-strong">{t}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="mt-8 text-[14px] leading-7 text-graphite">
-              Междувременно можем да ви свържем с клиент, който е съгласен да
-              говори за опита си. Попитайте.
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-3">
-              <ButtonLink href={routes.enquiry}>Поискай препоръка</ButtonLink>
-              <ButtonLink href={routes.category("coffee")} variant="outline">
-                Виж машините
-              </ButtonLink>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <ButtonLink href={routes.enquiry}>
+                  Поискай мнение от клиент
+                </ButtonLink>
+                <ButtonLink href={routes.category("coffee")} variant="outline">
+                  Виж машините
+                </ButtonLink>
+              </div>
             </div>
           </div>
         </Container>

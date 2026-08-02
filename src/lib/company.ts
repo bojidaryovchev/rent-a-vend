@@ -5,8 +5,11 @@
  * scans for that pattern, so nothing half-filled can ship.
  *
  * Received from the client on 2 August 2026: legal name, ЕИК, registered
- * office, phone, email, contact person. Still awaiting: the brand name, which
- * PRODUCT.md records as deliberately undecided, and the map pin (see `mapPin`).
+ * office, phone, contact person, and - later the same day - the brand name and
+ * logo. Still awaiting: the map pin (see `mapPin`).
+ *
+ * The email is ours rather than the client's: the Gmail he sent is where the
+ * mail lands, not what the site prints. See `email` below.
  *
  * Note on ЕИК and VAT: the client supplied "BG204578516", which is the VAT
  * form. Bulgarian VAT numbers are the ЕИК prefixed with BG, so the ЕИК is the
@@ -27,8 +30,13 @@ const LOCALITY = "с. Марково";
 const REGION = "Пловдив";
 
 export const company = {
-  /** Trading name shown to visitors. Placeholder until the brand is chosen. */
-  brandName: "[[BRAND]]",
+  /**
+   * Trading name shown to visitors. Chosen by the client on 2 August 2026.
+   *
+   * Written in mixed case here because that is the name; the lockup and the
+   * headings uppercase it themselves through `.plate`.
+   */
+  brandName: "Rent-a-Vend",
 
   legalName: "Лидер офис МЛ ЕООД",
   eik: "204578516",
@@ -46,8 +54,19 @@ export const company = {
 
   phone: "+359 897 943 424",
   phoneHref: `tel:+${PHONE_E164}`,
-  email: "vendingskladbg@gmail.com",
-  emailHref: "mailto:vendingskladbg@gmail.com",
+
+  /**
+   * The published address. Not the client's Gmail on purpose: a company that
+   * prints a gmail.com address on its own site reads as a man with a van, and
+   * this one sells to schools and offices that compare three quotes.
+   *
+   * It is a real inbox, not a decoration. rent-a-vend.com holds the MX record
+   * in Resend, and `src/server/inbound.ts` forwards everything that arrives
+   * here to the Gmail in MAIL_TO. Changing this address means changing the DNS
+   * too - see the receiving section of .env.example.
+   */
+  email: "info@rent-a-vend.com",
+  emailHref: "mailto:info@rent-a-vend.com",
 
   /** Same handset as the phone number: one line, three ways to reach it. */
   whatsappHref: `https://wa.me/${PHONE_E164}`,

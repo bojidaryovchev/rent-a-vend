@@ -92,7 +92,7 @@ export function SiteHeader() {
       <div className="border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
         <div className="mx-auto flex max-w-310 items-center justify-between gap-4 px-4 py-3 md:px-6">
           <Link href={routes.home} aria-label="Начало">
-            <Wordmark />
+            <Wordmark priority />
           </Link>
 
           <nav

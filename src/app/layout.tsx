@@ -3,6 +3,7 @@ import { Commissioner, JetBrains_Mono, Oswald } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@/components/site/analytics";
 import { SITE_URL, isIndexable } from "@/lib/seo";
+import { company } from "@/lib/company";
 
 /**
  * Root shell: document, fonts, base colours. Nothing else.
@@ -47,6 +48,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: "Вендинг машини под наем в цяла България",
+    /* Deliberately the category phrase and not "Rent-a-Vend", now that the
+       brand has a name. Nineteen characters of a brand nobody searches for,
+       in the slot Google truncates first, would cost the one term people do
+       type. The brand identifies the site in `openGraph.siteName` below,
+       where it is not competing with a keyword. See docs/seo-blueprint.md. */
     template: "%s · Вендинг под наем",
   },
   description:
@@ -59,11 +65,22 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "bg_BG",
-    siteName: "Вендинг под наем",
+    siteName: company.brandName,
+  },
+  /**
+   * X reads `og:image` when there is no `twitter:image`, so the card image
+   * needs no second copy - but without this it renders as a thumbnail beside
+   * the text rather than the full-width image `opengraph-image.tsx` is drawn
+   * for.
+   */
+  twitter: {
+    card: "summary_large_image",
   },
 };
 
 export const viewport: Viewport = {
+  /* --color-graphite-deep, matching the manifest's `theme_color`. Both are the
+     colour Android paints the status bar; if one moves, move the other. */
   themeColor: "#1a1917",
 };
 

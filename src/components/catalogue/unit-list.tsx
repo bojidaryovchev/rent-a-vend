@@ -1,7 +1,7 @@
 import { StatusBadge } from "./status-badge";
 import { ButtonLink } from "@/components/ui/button";
 import { routes } from "@/lib/routes";
-import { CONDITION_DESCRIPTION, CONDITION_LABEL } from "@/content/taxonomy";
+import { CONDITION_STATEMENT } from "@/content/taxonomy";
 import type { Unit } from "@/content/schema";
 import type { AvailabilitySummary } from "@/engine/availability";
 
@@ -79,20 +79,15 @@ export function UnitList({
             <dl className="tabular mt-4 grid grid-cols-2 gap-y-2 border-y border-line py-3 text-[13px]">
               <dt className="text-ink-muted">Година</dt>
               <dd className="text-right text-graphite">{unit.year ?? "-"}</dd>
-              <dt className="text-ink-muted">Състояние</dt>
-              <dd className="text-right font-medium text-graphite">
-                {unit.conditionGrade ? CONDITION_LABEL[unit.conditionGrade] : "-"}
-              </dd>
             </dl>
 
-            {/* The grade's meaning sits on the row, not in a title attribute:
-                a tooltip is invisible on a phone and unreachable by keyboard,
-                and the published rubric is the whole differentiator. */}
-            {unit.conditionGrade && (
-              <p className="mt-3 text-[12px] leading-5 text-ink-muted">
-                {CONDITION_DESCRIPTION[unit.conditionGrade]}
-              </p>
-            )}
+            {/* Same line on every unit rather than a per-machine grade: the
+                statement is about how the stock is prepared, not about how this
+                one differs from the next. It stays on the row instead of in a
+                tooltip - a tooltip is invisible on a phone. */}
+            <p className="mt-3 text-[12px] leading-5 text-ink-muted">
+              {CONDITION_STATEMENT}
+            </p>
 
             <div className="mt-5">
               <ButtonLink

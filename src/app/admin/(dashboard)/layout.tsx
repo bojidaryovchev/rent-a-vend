@@ -46,7 +46,7 @@ export default async function AdminLayout({
   const authed = await isSignedIn();
   if (!authed) redirect("/admin/vhod");
 
-  const storage = storageHealth();
+  const storage = await storageHealth();
 
   return (
     <div className="min-h-full bg-paper-sunken">
@@ -62,6 +62,12 @@ export default async function AdminLayout({
               className="text-ink-muted hover-fine:text-ink"
             >
               Запитвания
+            </Link>
+            <Link
+              href="/admin/poshta"
+              className="text-ink-muted hover-fine:text-ink"
+            >
+              Поща
             </Link>
           </nav>
           <form action={signOut} className="ml-auto">

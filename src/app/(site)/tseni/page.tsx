@@ -26,7 +26,7 @@ export const metadata: Metadata = pageMetadata({
   path: routes.pricing,
   title: "Вендинг машина под наем — цена на месец",
   description:
-    "Колко струва вендинг машина под наем: месечна цена по категории, какво влиза в нея, какво остава ваша грижа и защо „безплатна машина“ обикновено излиза по-скъпо.",
+    "Колко струва вендинг машина под наем: месечна цена по категории, какво влиза в нея и защо „безплатна машина“ често излиза по-скъпо.",
 });
 
 /** Cheapest headline rent in a category, computed rather than written down. */
@@ -59,8 +59,8 @@ export default function PricingPage() {
 
       <section className="paper-grain">
         <Container className="py-14 md:py-20">
-          <h2 className="text-[26px] md:text-[32px]">Цена по категории</h2>
-          <p className="mt-2 max-w-2xl text-[14px] leading-6 text-ink-muted">
+          <h2 className="text-heading-sm md:text-heading">Цена по категории</h2>
+          <p className="mt-2 max-w-2xl text-ui leading-relaxed text-ink-muted">
             Всяка машина в каталога носи собствена месечна цена. По-долу е
             най-ниската в съответната категория.
           </p>
@@ -72,19 +72,19 @@ export default function PricingPage() {
                   href={routes.category(category as CategoryKey)}
                   className="group block"
                 >
-                  <h3 className="plate text-[13px] text-graphite">
+                  <h3 className="plate text-ui-sm text-graphite">
                     {CATEGORY_LABEL[category]}
                   </h3>
                   <p className="mt-3 flex items-end gap-2">
                     <span className="serial pb-1.5 text-ink-muted">от</span>
-                    <span className="tabular font-display text-[38px] leading-none">
+                    <span className="tabular font-display text-figure">
                       {fromPrice(category)} €
                     </span>
-                    <span className="pb-1.5 text-[13px] text-ink-muted">
+                    <span className="pb-1.5 text-ui-sm text-ink-muted">
                       /месец
                     </span>
                   </p>
-                  <p className="mt-3 text-[13px] leading-6 text-ink-muted">
+                  <p className="mt-3 text-ui-sm leading-relaxed text-ink-muted">
                     {modelsByCategory(category).length} модела · вижте цената на
                     всяка машина
                   </p>
@@ -95,7 +95,7 @@ export default function PricingPage() {
 
           {/* Per-day framing. A monthly figure is a commitment; a daily one is
               a comparison against a cup of coffee, which is the honest scale. */}
-          <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-[14px] leading-7 text-graphite">
+          <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-ui leading-relaxed text-graphite">
             На страницата на всяка машина месечната цена е разбита и на цена на
             ден - обикновено по-малко от едно кафе от същата машина.
           </p>
@@ -106,10 +106,10 @@ export default function PricingPage() {
         <Container className="py-14 md:py-20">
           <div className="grid gap-6 md:grid-cols-2">
             <div className="bay-panel riveted p-6 pt-8">
-              <h2 className="plate text-[12px] text-graphite">
+              <h2 className="plate text-micro text-graphite">
                 Какво влиза в месечната цена
               </h2>
-              <ul className="mt-4 space-y-2 text-[14px] leading-6 text-graphite">
+              <ul className="mt-4 space-y-2 text-ui leading-relaxed text-graphite">
                 {INCLUDED_IN_RENT.map((x) => (
                   <li
                     key={x}
@@ -123,10 +123,10 @@ export default function PricingPage() {
             </div>
 
             <div className="bay-panel-dark riveted p-6 pt-8">
-              <h2 className="plate text-[12px] text-accent">
+              <h2 className="plate text-micro text-accent">
                 Какво се определя след оценка
               </h2>
-              <ul className="mt-4 space-y-2 text-[14px] leading-6 text-paper/85">
+              <ul className="mt-4 space-y-2 text-ui leading-relaxed text-paper/85">
                 {AFTER_ASSESSMENT.map((x) => (
                   <li
                     key={x}
@@ -144,17 +144,17 @@ export default function PricingPage() {
 
       <section className="paper-grain">
         <Container className="py-14 md:py-20">
-          <h2 className="text-[26px] md:text-[32px]">Срокът мени вноската</h2>
+          <h2 className="text-heading-sm md:text-heading">Срокът мени вноската</h2>
           {/* D27: a longer term is a lower instalment and a higher total. It is
               never a "saving", and saying so would be false under Directive
               2006/114/EC on misleading B2B advertising. Both numbers, always. */}
-          <p className="mt-3 max-w-2xl text-[15px] leading-7 text-ink-muted">
+          <p className="mt-3 max-w-2xl text-ui leading-relaxed text-ink-muted">
             Договорът е от 12 до 60 месеца. По-дългият срок означава по-ниска
             месечна вноска, но по-висока обща сума за целия период. Показваме и
             двете числа на всяка машина, за да ги сравните сами - защото едното
             без другото не е сравнение.
           </p>
-          <p className="mt-4 max-w-2xl text-[15px] leading-7 text-ink-muted">
+          <p className="mt-4 max-w-2xl text-ui leading-relaxed text-ink-muted">
             В края на срока машината може да бъде изкупена по предварително
             определена остатъчна стойност, записана в договора.
           </p>
@@ -173,10 +173,10 @@ export default function PricingPage() {
       */}
       <section className="border-t border-line bg-paper-sunken">
         <Container className="py-14 md:py-20">
-          <h2 className="text-[26px] md:text-[32px]">
+          <h2 className="text-heading-sm md:text-heading">
             А защо не „безплатна машина“?
           </h2>
-          <div className="mt-4 max-w-3xl space-y-4 text-[15px] leading-7 text-ink-muted">
+          <div className="mt-4 max-w-3xl space-y-4 text-ui leading-relaxed text-ink-muted">
             <p>
               Предложението съществува и е напълно легитимно: машината е без
               месечен наем, но се обвързвате да купувате кафето и консумативите

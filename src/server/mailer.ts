@@ -17,8 +17,15 @@ import type { EnquiryRecord } from "./enquiry-store";
  * source of truth; if email fails the lead still exists.
  */
 
-const FROM = process.env.MAIL_FROM ?? "onboarding@resend.dev";
-const TO = process.env.MAIL_TO ?? company.email;
+/* rent-a-vend.com is verified for sending in Resend, so the published address
+   is also the default sender. MAIL_FROM still overrides it - a staging deploy
+   has no business sending as the live brand. */
+const FROM = process.env.MAIL_FROM || `${company.brandName} <${company.email}>`;
+
+/* Falls back to the published address rather than nowhere. That inbox is real
+   - it forwards to the owner's Gmail through src/server/inbound.ts - so a
+   missing MAIL_TO costs a hop, not a lead. */
+const TO = process.env.MAIL_TO || company.email;
 
 export interface MailResult {
   delivered: boolean;

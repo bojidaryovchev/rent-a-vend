@@ -1,7 +1,15 @@
 import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
+import { getDb } from "./db";
+import {
+  ENQUIRY_SOURCES,
+  ENQUIRY_STATUSES,
+  enquiries,
+  type EnquiryStatus,
+} from "./db/schema";
 
 /**
  * Enquiry storage.
@@ -10,21 +18,18 @@ import { z } from "zod";
  * the other way round. Losing a lead to a bounced SMTP is the worst failure
  * this site can have, and it is the one most likely to go unnoticed.
  *
- * Two implementations behind one interface: Postgres when DATABASE_URL is set,
- * and a local JSON file otherwise so the whole flow runs end to end without
- * credentials. The file store is for development only - serverless filesystems
- * are ephemeral and it will silently lose data in production, which is why
- * `storageHealth()` says so out loud.
+ * Two implementations behind one interface: Neon Postgres through Drizzle when
+ * DATABASE_URL is set, and a local JSON file otherwise so the whole flow runs
+ * end to end without credentials. The file store is for development only -
+ * serverless filesystems are ephemeral and it will silently lose data in
+ * production, which is why `storageHealth()` says so out loud.
+ *
+ * The table shape lives in `db/schema.ts`, which is also what the migrations
+ * are generated from. Re-exported here so nothing downstream has to know.
  */
 
-export const ENQUIRY_STATUSES = [
-  "new",
-  "in-progress",
-  "quoted",
-  "won",
-  "lost",
-] as const;
-export type EnquiryStatus = (typeof ENQUIRY_STATUSES)[number];
+export { ENQUIRY_STATUSES, ENQUIRY_SOURCES };
+export type { EnquiryStatus, EnquirySource } from "./db/schema";
 
 export const STATUS_LABEL_BG: Record<EnquiryStatus, string> = {
   new: "Ново",
@@ -49,7 +54,7 @@ export const enquiryRecordSchema = z.object({
   modelSlug: z.string().nullable(),
   unitRef: z.string().nullable(),
   term: z.number().nullable(),
-  source: z.enum(["model", "calculator", "recommender", "contact", "direct"]),
+  source: z.enum(ENQUIRY_SOURCES),
   recommenderSummary: z.string().nullable(),
 
   status: z.enum(ENQUIRY_STATUSES),
@@ -121,87 +126,45 @@ class FileEnquiryStore implements EnquiryStore {
 class PostgresEnquiryStore implements EnquiryStore {
   readonly kind = "postgres" as const;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private sqlPromise: Promise<any> | null = null;
-
-  private async sql() {
-    if (!this.sqlPromise) {
-      this.sqlPromise = import("postgres").then(({ default: postgres }) => {
-        const client = postgres(process.env.DATABASE_URL!, { max: 3 });
-        return client`
-          create table if not exists enquiries (
-            id text primary key,
-            created_at timestamptz not null,
-            name text not null,
-            email text not null,
-            phone text not null,
-            company text not null,
-            vat_number text,
-            message text,
-            model_slug text,
-            unit_ref text,
-            term integer,
-            source text not null,
-            recommender_summary text,
-            status text not null default 'new',
-            notes text
-          )
-        `.then(() => client);
-      });
-    }
-    return this.sqlPromise;
-  }
-
   async save(enquiry: NewEnquiry, id: string, createdAt: string) {
-    const sql = await this.sql();
-    await sql`
-      insert into enquiries (
-        id, created_at, name, email, phone, company, vat_number, message,
-        model_slug, unit_ref, term, source, recommender_summary, status
-      ) values (
-        ${id}, ${createdAt}, ${enquiry.name}, ${enquiry.email}, ${enquiry.phone},
-        ${enquiry.company}, ${enquiry.vatNumber}, ${enquiry.message},
-        ${enquiry.modelSlug}, ${enquiry.unitRef}, ${enquiry.term},
-        ${enquiry.source}, ${enquiry.recommenderSummary}, 'new'
-      )
-    `;
-    return { ...enquiry, id, createdAt, status: "new" as const, notes: null };
+    const [row] = await getDb()
+      .insert(enquiries)
+      .values({ ...enquiry, id, createdAt: new Date(createdAt), status: "new" })
+      .returning();
+    return toRecord(row);
   }
 
   async list(): Promise<EnquiryRecord[]> {
-    const sql = await this.sql();
-    const rows = await sql`select * from enquiries order by created_at desc`;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return rows.map((r: any) =>
-      enquiryRecordSchema.parse({
-        id: r.id,
-        createdAt: new Date(r.created_at).toISOString(),
-        name: r.name,
-        email: r.email,
-        phone: r.phone,
-        company: r.company,
-        vatNumber: r.vat_number,
-        message: r.message,
-        modelSlug: r.model_slug,
-        unitRef: r.unit_ref,
-        term: r.term,
-        source: r.source,
-        recommenderSummary: r.recommender_summary,
-        status: r.status,
-        notes: r.notes,
-      }),
-    );
+    const rows = await getDb()
+      .select()
+      .from(enquiries)
+      .orderBy(desc(enquiries.createdAt));
+    return rows.map(toRecord);
   }
 
   async setStatus(id: string, status: EnquiryStatus) {
-    const sql = await this.sql();
-    await sql`update enquiries set status = ${status} where id = ${id}`;
+    await getDb().update(enquiries).set({ status }).where(eq(enquiries.id, id));
   }
 
   async setNotes(id: string, notes: string) {
-    const sql = await this.sql();
-    await sql`update enquiries set notes = ${notes} where id = ${id}`;
+    await getDb().update(enquiries).set({ notes }).where(eq(enquiries.id, id));
   }
+}
+
+/**
+ * Row to record.
+ *
+ * The column names already match the record field for field, so the only real
+ * work is the timestamp: Postgres hands back a `Date` and the rest of the app
+ * passes ISO strings around. Still parsed rather than cast, because `status`
+ * and `source` are plain text columns - the closed set is enforced in
+ * TypeScript, and this is where a hand-edited row would otherwise slip through.
+ */
+function toRecord(row: typeof enquiries.$inferSelect): EnquiryRecord {
+  return enquiryRecordSchema.parse({
+    ...row,
+    createdAt: row.createdAt.toISOString(),
+  });
 }
 
 let store: EnquiryStore | null = null;
@@ -215,15 +178,39 @@ export function getEnquiryStore(): EnquiryStore {
   return store;
 }
 
-/** Surfaced in the readiness report and the admin panel. */
-export function storageHealth(): { ok: boolean; message: string } {
-  if (process.env.DATABASE_URL) {
-    return { ok: true, message: "Запитванията се записват в Postgres." };
+/**
+ * Surfaced in the readiness report and the admin panel.
+ *
+ * The Postgres path actually touches the table rather than trusting that a
+ * connection string implies a database. Nothing issues DDL at runtime any more,
+ * so a Neon branch on which `db:migrate` never ran looks perfectly configured
+ * and fails on the first enquiry - which is the one failure this site cannot
+ * afford to discover from a customer. One cheap query on an admin page that is
+ * already dynamic is a fair price for turning that into a banner.
+ */
+export async function storageHealth(): Promise<{
+  ok: boolean;
+  message: string;
+}> {
+  if (!process.env.DATABASE_URL) {
+    return {
+      ok: false,
+      message:
+        "Няма DATABASE_URL. Запитванията се пишат в локален файл - подходящо само за разработка. " +
+        "На хостинг без постоянен диск данните ще се губят.",
+    };
   }
-  return {
-    ok: false,
-    message:
-      "Няма DATABASE_URL. Запитванията се пишат в локален файл - подходящо само за разработка. " +
-      "На хостинг без постоянен диск данните ще се губят.",
-  };
+
+  try {
+    await getDb().select({ id: enquiries.id }).from(enquiries).limit(1);
+    return { ok: true, message: "Запитванията се записват в Postgres (Neon)." };
+  } catch (err) {
+    console.error("Проверката на хранилището се провали:", err);
+    return {
+      ok: false,
+      message:
+        "Базата не отговаря или таблицата enquiries липсва - изпълнете `npm run db:migrate`. " +
+        "Докато това не е поправено, новите запитвания НЕ се записват.",
+    };
+  }
 }

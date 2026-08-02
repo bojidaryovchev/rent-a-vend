@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { MODELS } from "@/content/models";
 import { FAQ } from "@/content/faq";
+import { CASE_STUDIES } from "@/content/case-studies";
+import { GUIDES, type Guide } from "@/content/guides";
 import { company, hasUnresolvedBrand, mapPin, mapsLink } from "@/lib/company";
 import { fromMonthly } from "@/engine/quote";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
@@ -43,16 +45,57 @@ export const absolute = (path: string): string =>
  * route through here means the canonical and the link that points at it are
  * always the same string.
  */
+/**
+ * The share card.
+ *
+ * Was `/logo.png`, centre-cropped by the networks from square to 1.91:1 -
+ * acceptable for a mark, never a card. That was written down as owed against
+ * O10, "once there is a brand to put on it". The brand arrived, so
+ * `src/app/opengraph-image.tsx` now draws a real 1200x630 card from the values
+ * in `company`, and this is the URL it is served at.
+ *
+ * WHY IT IS NAMED HERE AT ALL, since Next is supposed to apply a root
+ * `opengraph-image` to every page underneath it by itself: `openGraph` is
+ * shallow-merged, not deep-merged. A page that sets `openGraph` to add its own
+ * `url` replaces the parent's whole object, and the inherited image goes with
+ * it. Every page on this site sets `url` through `pageMetadata`, so every page
+ * would have lost the card. The automatic behaviour is real - `/admin/vhod`,
+ * which sets no `openGraph`, picks the card up on its own - it just does not
+ * survive contact with a page that wants a canonical URL.
+ *
+ * The unhashed path is deliberate and stable. Next also serves the card at
+ * `/opengraph-image?<hash>` for cache-busting, but that hash is not reachable
+ * from here and the bare path serves the same bytes.
+ *
+ * The stakes: a page with no `og:image` is not neutral. Facebook and Viber
+ * pick an arbitrary image off the page or render a grey box, and a Facebook
+ * post currently outranks most vending companies on the head term.
+ */
+export const SHARE_CARD = "/opengraph-image";
+
+/** Longest variant that still fits the ~60 characters Google will display. */
+export function fittingTitle(variants: string[], limit = 60): string {
+  return (
+    variants.find((v) => [...v].length <= limit) ?? variants[variants.length - 1]
+  );
+}
+
 export function pageMetadata({
   path,
   title,
   description,
+  image = SHARE_CARD,
   index = true,
   brandSuffix = true,
 }: {
   path: string;
   title: string;
   description: string;
+  /**
+   * Only when the page has something better than the generated card - a model
+   * page with a real photograph of that machine.
+   */
+  image?: string;
   /**
    * `false` for pages that must exist but must not rank - the enquiry form is
    * the only one. Note this is `noindex, follow`: the page still passes link
@@ -76,7 +119,12 @@ export function pageMetadata({
     title: brandSuffix ? title : { absolute: title },
     description,
     alternates: { canonical: absolute(path) },
-    openGraph: { title, description, url: absolute(path) },
+    openGraph: {
+      title,
+      description,
+      url: absolute(path),
+      images: [{ url: absolute(image) }],
+    },
     ...(index ? {} : { robots: { index: false, follow: true } }),
   };
 }
@@ -117,6 +165,54 @@ export function categoryJsonLd(
       position: i + 1,
       name: m.name,
       url: absolute(routes.model(category, m.slug)),
+    })),
+  };
+}
+
+/**
+ * A guide, as an Article.
+ *
+ * `author` and `publisher` are the organisation rather than a person: the
+ * guides are drafted from named legal sources and reviewed, not bylined, and
+ * inventing a personal author to satisfy an E-E-A-T checkbox would be the same
+ * class of fabrication as an invented testimonial.
+ */
+export function articleJsonLd(guide: Guide) {
+  const org = hasUnresolvedBrand() ? company.legalName : company.brandName;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: guide.title,
+    description: guide.description,
+    url: absolute(routes.guide(guide.slug)),
+    inLanguage: "bg-BG",
+    author: { "@type": "Organization", name: org },
+    publisher: { "@type": "Organization", name: org },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": absolute(routes.guide(guide.slug)),
+    },
+  };
+}
+
+/**
+ * FAQ markup for a guide.
+ *
+ * Only ever built from questions that are genuinely on the page. bulvending
+ * ships FAQPage on its homepage, which has no FAQ on it - that is the mistake
+ * worth not copying, and it is a manual-action risk rather than a clever one.
+ */
+export function guideFaqJsonLd(guide: Guide) {
+  if (!guide.faq.length) return null;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: guide.faq.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
     })),
   };
 }
@@ -269,10 +365,17 @@ export function sitemapEntries(): { url: string; priority: number }[] {
     [routes.buyVsRent, 0.9],
     [routes.pricing, 0.9],
     [routes.recommender, 0.8],
+    [routes.guides, 0.7],
+    ...GUIDES.map((g) => [routes.guide(g.slug), 0.7] as [string, number]),
     [routes.howItWorks, 0.7],
     [routes.contact, 0.7],
     [routes.about, 0.6],
     [routes.faq, 0.6],
+    /* Case studies enter the sitemap only once a real project is published: an
+     * empty page in the sitemap is an invitation to index thin content. */
+    ...(CASE_STUDIES.length > 0
+      ? ([[routes.caseStudies, 0.6]] as [string, number][])
+      : []),
     [routes.legal.rental, 0.4],
     [routes.legal.terms, 0.2],
     [routes.legal.privacy, 0.2],
@@ -288,8 +391,6 @@ export function sitemapEntries(): { url: string; priority: number }[] {
       [routes.model(m.category as CategoryKey, m.slug), 0.8] as [string, number],
   );
 
-  // Case studies are excluded while the page has no real content: an empty page
-  // in the sitemap is an invitation to index thin content.
   return [...staticPages, ...categories, ...models].map(([path, priority]) => ({
     url: absolute(path),
     priority,

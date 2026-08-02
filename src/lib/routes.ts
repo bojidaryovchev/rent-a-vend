@@ -34,6 +34,15 @@ export const routes = {
    * §3.
    */
   pricing: "/tseni",
+
+  /**
+   * The authority layer. Permit, placement and БАБХ questions carry ~710
+   * searches/month at difficulty 0 - more than twice the entire rental market
+   * - and no vending company in the field answers them properly.
+   */
+  guides: "/rakovodstva",
+  guide: (slug: string) => `/rakovodstva/${slug}`,
+
   caseStudies: "/kazusi",
   about: "/za-nas",
   contact: "/kontakti",

@@ -1,7 +1,6 @@
 import { z } from "zod";
 import {
   CATEGORIES,
-  CONDITION_GRADES,
   PHOTO_VIEWS,
   PRODUCT_KINDS,
   UNIT_STATUSES,
@@ -160,7 +159,6 @@ export const unitSchema = z.object({
   modelId: z.string().min(1),
 
   year: z.number().int().min(1990).max(2030).nullable().default(null),
-  conditionGrade: z.enum(CONDITION_GRADES).nullable().default(null),
   status: z.enum(UNIT_STATUSES),
 
   /** Monthly rate in EUR by contract term. */

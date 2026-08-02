@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { ExcludedMark, IncludedMark } from "@/components/ui/bits";
@@ -112,7 +113,14 @@ export default function HowItWorksPage() {
           <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-[14px] leading-7 text-graphite">
             Ако предпочитате да не се занимавате със зареждане, можем да поемем и
             него - изготвя се отделна оферта. А за БАБХ даваме информацията и
-            съдействието, което ви трябва.
+            съдействието, което ви трябва:{" "}
+            <Link
+              href={routes.guide("registratsiya-babh")}
+              className="underline-offset-4 hover-fine:underline"
+            >
+              какво изисква регистрацията
+            </Link>
+            .
           </p>
 
           <div className="mt-10 flex flex-wrap gap-3">

@@ -133,27 +133,22 @@ export const PHOTO_VIEW_LABEL: Record<PhotoView, string> = {
 
 /* -- condition and availability ----------------------------------------- */
 
-export const CONDITION_GRADES = ["A", "B", "C", "as-is"] as const;
-export type ConditionGrade = (typeof CONDITION_GRADES)[number];
-
-export const CONDITION_LABEL: Record<ConditionGrade, string> = {
-  A: "Клас А",
-  B: "Клас Б",
-  C: "Клас В",
-  "as-is": "Както е",
-};
-
 /**
- * Published because there is no industry standard: one seller's grade B is
- * another's C, and buyers discount every unexplained claim. Stating the rule
- * on the page is the differentiator, not the letter.
+ * One statement for every machine, in place of a per-unit grade.
+ *
+ * The A/B/C/as-is rubric that used to live here was dropped at the client's
+ * request: every machine he lets out is refurbished and tested first, so
+ * sorting the stock into letters described a difference he does not make.
  */
-export const CONDITION_DESCRIPTION: Record<ConditionGrade, string> = {
-  A: "Като нова. Без видими следи от употреба. Изцяло реновирана, с подменени износващи се части.",
-  B: "Лека употреба, дребни драскотини. Тествана и обслужена, напълно функционална.",
-  C: "Видими козметични дефекти, всички заснети. Работеща и обслужена.",
-  "as-is": "Продава се както е, без тестване и реновиране. Цената отразява това.",
-};
+export const CONDITION_STATEMENT =
+  "Изцяло рециклирана, проверена от нашия екип, готова за употреба.";
+
+/** The same claim split up, for the places where a list reads better. */
+export const CONDITION_POINTS = [
+  "Изцяло рециклирана",
+  "Проверена от нашия екип",
+  "Готова за употреба",
+] as const;
 
 export const UNIT_STATUSES = [
   "available",

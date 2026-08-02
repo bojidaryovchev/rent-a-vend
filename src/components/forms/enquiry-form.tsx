@@ -48,7 +48,7 @@ export interface CarriedContext {
   modelSlug?: string;
   modelName?: string;
   unitRef?: string;
-  /** Human-readable stand-in for the warehouse code, e.g. "2020 г. · Клас Б". */
+  /** Human-readable stand-in for the warehouse code, e.g. "2020 г.". */
   unitLabel?: string;
   monthlyEur?: number;
   term?: number;

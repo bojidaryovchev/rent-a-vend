@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
 import { Prose } from "@/components/ui/prose";
-import { CONDITION_DESCRIPTION, CONDITION_GRADES, CONDITION_LABEL } from "@/content/taxonomy";
+import { CONDITION_POINTS } from "@/content/taxonomy";
 import { catalogueStats } from "@/content/models";
 import { LocationMap } from "@/components/site/location-map";
 import { company } from "@/lib/company";
@@ -24,15 +25,36 @@ export const metadata: Metadata = pageMetadata({
  * has not got. What it can do is be specific - and specificity is what buyers of
  * used equipment say they cannot find anywhere.
  *
- * The photography placeholders are honest about being placeholders. Stock images
- * of people in suits would be worse than empty space.
+ * The photography is ours - our base, our van, our machines on a real site. No
+ * stock images of people in suits; they read as stock immediately and achieve
+ * the opposite of trust.
  */
 
-const PHOTO_SLOTS = [
-  { title: "Складът", note: "Машините, които отдаваме, на място." },
-  { title: "Сервизът", note: "Където се реновират и подготвят." },
-  { title: "Товаренето", note: "Как машината тръгва към вас." },
-  { title: "Монтаж на обект", note: "Готова за работа." },
+const PHOTOS = [
+  {
+    src: "/skladut.png",
+    title: "Складът",
+    note: "Базата в с. Марково, откъдето тръгват машините.",
+    alt: "Сградата на базата на Rent-a-Vend в с. Марково в деня на откриването",
+  },
+  {
+    src: "/servizut.png",
+    title: "Сервизът",
+    note: "Където се реновират и подготвят.",
+    alt: "Техник зарежда снакс автомат в склада, до него втора машина с отворена врата",
+  },
+  {
+    src: "/tovareneto.png",
+    title: "Товаренето",
+    note: "Как машината тръгва към вас.",
+    alt: "Кафе автомат и снакс автомат на платформата на камион пред склада",
+  },
+  {
+    src: "/montazh-na-obekt.png",
+    title: "Монтаж на обект",
+    note: "Готова за работа.",
+    alt: "Снакс автомат и кафе автомат, монтирани и заредени пред търговски обект",
+  },
 ];
 
 export default function AboutPage() {
@@ -49,30 +71,38 @@ export default function AboutPage() {
       <section className="py-14">
         <Container>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {PHOTO_SLOTS.map((slot) => (
+            {PHOTOS.map((photo) => (
               // One surface, not two. A tinted caption on a tinted figure reads
               // as a card inside a card; the divider carries the separation.
               <figure
-                key={slot.title}
+                key={photo.src}
                 className="overflow-hidden rounded-md border border-line bg-paper-raised"
               >
-                <div className="grid aspect-4/3 place-items-center bg-paper-sunken px-5 text-center">
-                  <p className="text-micro font-semibold uppercase text-ink-subtle">
-                    Тук ще стои реална снимка
-                  </p>
+                {/* Square, because the set is three portraits and one landscape
+                    and a 4:3 band would cut the truck shot in half. Cropped
+                    rather than contained: unlike a machine on the catalogue,
+                    these are scenes, and a scene survives losing its edges. */}
+                <div className="relative aspect-square bg-paper-sunken">
+                  <Image
+                    src={photo.src}
+                    alt={photo.alt}
+                    fill
+                    sizes="(min-width: 1280px) 292px, (min-width: 1024px) 23vw, (min-width: 640px) 46vw, 92vw"
+                    className="object-cover"
+                  />
                 </div>
                 <figcaption className="border-t border-line px-4 py-3">
-                  <p className="font-semibold">{slot.title}</p>
-                  <p className="mt-0.5 text-sm text-ink-muted">{slot.note}</p>
+                  <p className="font-semibold">{photo.title}</p>
+                  <p className="mt-0.5 text-sm text-ink-muted">{photo.note}</p>
                 </figcaption>
               </figure>
             ))}
           </div>
 
           <p className="mt-4 max-w-[60ch] text-ui leading-relaxed text-ink-subtle">
-            Тези места ще заемат снимки от нашия склад и сервиз. Няма да сложим
-            стокови снимки на усмихнати хора с чаша кафе - разпознават се веднага
-            и постигат обратното на доверие.
+            Снимките са наши - базата, сервизът и машини, монтирани на реален
+            обект. Няма стокови снимки на усмихнати хора с чаша кафе -
+            разпознават се веднага и постигат обратното на доверие.
           </p>
         </Container>
       </section>
@@ -85,17 +115,17 @@ export default function AboutPage() {
         <Container>
           <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
             <Prose>
-              <h2>Как оценяваме състоянието</h2>
+              <h2>В какво състояние са машините</h2>
               <p>
-                За употребявана техника няма единен стандарт. Клас А при един
-                продавач изглежда като клас В при друг, купувачите го знаят и
-                затова не вярват на буквата.
+                Не разделяме машините на класове. Всяка машина, която излиза от
+                базата, минава през едно и също - рециклиране, подмяна на
+                износените части и тест преди да тръгне към обекта.
               </p>
               <p>
-                Затова публикуваме какво точно означава всеки клас при нас, и
-                снимаме дефектите, вместо да ги крием. Показан дефект вдъхва
-                повече доверие от перфектна снимка - купувачът на употребявана
-                машина и без това знае, че тя не е нова.
+                Снимките на машините са наши и показват конкретната техника,
+                вместо да я разкрасяват. Купувачът на употребявана машина и без
+                това знае, че тя не е нова - показаното вдъхва повече доверие от
+                перфектния рендер.
               </p>
 
               <h2>Какво няма да намерите тук</h2>
@@ -114,17 +144,16 @@ export default function AboutPage() {
             </Prose>
 
             <div>
-              <h2 className="text-heading tracking-tight">Класове състояние</h2>
-              <dl className="mt-5 divide-y divide-line border-y border-line">
-                {CONDITION_GRADES.map((grade) => (
-                  <div key={grade} className="py-4">
-                    <dt className="font-bold">{CONDITION_LABEL[grade]}</dt>
-                    <dd className="mt-1 leading-relaxed text-ink-muted">
-                      {CONDITION_DESCRIPTION[grade]}
-                    </dd>
-                  </div>
+              <h2 className="text-heading tracking-tight">
+                Преди всяка доставка
+              </h2>
+              <ul className="mt-5 divide-y divide-line border-y border-line">
+                {CONDITION_POINTS.map((point) => (
+                  <li key={point} className="py-4 font-bold">
+                    {point}
+                  </li>
                 ))}
-              </dl>
+              </ul>
 
               <div className="mt-8 rounded-md bg-paper-sunken p-5">
                 <p className="font-semibold">Работим в цяла България</p>

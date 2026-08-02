@@ -14,7 +14,7 @@ import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
 import { CATEGORIES, CATEGORY_LABEL } from "@/content/taxonomy";
 import { company } from "@/lib/company";
 import { routes, CATEGORY_LABELS, type CategoryKey } from "@/lib/routes";
-import { absolute } from "@/lib/seo";
+import { absolute, SHARE_CARD } from "@/lib/seo";
 
 /**
  * Canonical only. Title and description deliberately come from the root
@@ -25,6 +25,12 @@ import { absolute } from "@/lib/seo";
  */
 export const metadata: Metadata = {
   alternates: { canonical: absolute(routes.home) },
+  /* Named rather than inherited: setting `url` here replaces the root layout's
+     whole `openGraph` object, card included. See `SHARE_CARD` in lib/seo. */
+  openGraph: {
+    url: absolute(routes.home),
+    images: [{ url: absolute(SHARE_CARD) }],
+  },
 };
 
 /**

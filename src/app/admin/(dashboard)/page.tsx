@@ -3,7 +3,6 @@ import { UnitStatusControl } from "@/components/admin/unit-status-control";
 import { getUnits, lastStockUpdate } from "@/server/stock-store";
 import { availabilityOverall, STALE_AFTER_HOURS } from "@/engine/availability";
 import { MODELS, modelById } from "@/content/models";
-import { CONDITION_LABEL } from "@/content/taxonomy";
 
 export const metadata: Metadata = {
   title: "Наличности",
@@ -99,11 +98,6 @@ export default async function AdminStockPage() {
                     <span className="tabular font-bold">{unit.stockRef}</span>
                     {unit.year && (
                       <span className="tabular text-ink-muted">{unit.year} г.</span>
-                    )}
-                    {unit.conditionGrade && (
-                      <span className="text-ink-muted">
-                        {CONDITION_LABEL[unit.conditionGrade]}
-                      </span>
                     )}
                     {unit.supplier && (
                       <span className="text-ink-subtle">{unit.supplier}</span>

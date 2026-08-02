@@ -28,7 +28,12 @@ import {
 } from "@/content/taxonomy";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
 import { JsonLd } from "@/components/seo/json-ld";
-import { breadcrumbJsonLd, modelJsonLd, pageMetadata } from "@/lib/seo";
+import {
+  breadcrumbJsonLd,
+  fittingTitle,
+  modelJsonLd,
+  pageMetadata,
+} from "@/lib/seo";
 
 export const dynamicParams = false;
 
@@ -55,16 +60,46 @@ export async function generateMetadata(
    * (D24a), while `кафе автомат под наем` and its siblings do have demand. The
    * name stays in the title for the visitor who is looking at this exact
    * machine - it is just no longer carrying the search weight it cannot bear.
+   *
+   * Two variants, longest-that-fits. The full form carries the category term,
+   * but names run from "Necta Astro" to "Necta Concerto Touch + Melodia", and
+   * on the long ones the full form reached 75 characters - so the keyword would
+   * have been truncated away on exactly the pages that needed it most.
    */
   const unit = CATEGORY_UNIT_LABEL[model.category].one;
+  const title = fittingTitle([
+    `${model.name} — ${unit} под наем от ${from} €/месец`,
+    `${model.name} под наем — от ${from} €/месец`,
+  ]);
+
+  /**
+   * A description has to be unique per page and long enough to be worth
+   * showing. Neither was true: the 15 combination machines all shared one
+   * generated intro verbatim, and several model intros are a single short
+   * clause - one was 20 characters.
+   */
+  const constituents = constituentsOf(model);
+  const base =
+    constituents.length === 2
+      ? `Комплект от ${constituents[0].name} и ${constituents[1].name} - топли напитки и снаксове на едно място.`
+      : (model.intro ?? "");
+
+  /* Kept terse so that even a 69-character intro plus this stays inside the
+     ~160 characters Google will render. */
+  const description =
+    [...base].length >= 70
+      ? base
+      : `${base} ${model.name} под наем. Доставка, монтаж и сервиз включени. От ${from} €/месец.`.trim();
 
   return pageMetadata({
     path: routes.model(model.category as CategoryKey, model.slug),
-    title: `${model.name} — ${unit} под наем от ${from} €/месец`,
-    description:
-      model.intro ??
-      `${model.name} под наем с доставка, монтаж, сервиз и застраховка. От ${from} € на месец.`,
-    /* Already ~51 characters; the brand suffix would only be truncated. */
+    title,
+    description,
+    /* The machine itself, which is the whole point of sharing the page. With
+       no photograph yet, falling through to the generated brand card beats
+       sharing a placeholder drawing of a machine. */
+    image: model.photos[0]?.src,
+    /* Already long; the brand suffix would only be truncated. */
     brandSuffix: false,
   });
 }

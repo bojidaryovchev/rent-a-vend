@@ -16,8 +16,16 @@ import { cookies } from "next/headers";
 const COOKIE = "vr_admin";
 const MAX_AGE_SECONDS = 60 * 60 * 12;
 
+/**
+ * `||`, not `??`, and it matters.
+ *
+ * A key declared but left blank in .env arrives as an empty string, not as
+ * undefined, so `??` keeps it and every signature is made with an empty key.
+ * Sessions then sign fine and never verify: login succeeds, the cookie is set,
+ * and the layout bounces straight back to the login form.
+ */
 const secret = (): string =>
-  process.env.ADMIN_SESSION_SECRET ?? process.env.ADMIN_PASSWORD ?? "";
+  process.env.ADMIN_SESSION_SECRET || process.env.ADMIN_PASSWORD || "";
 
 export const isAdminConfigured = (): boolean =>
   Boolean(process.env.ADMIN_PASSWORD);

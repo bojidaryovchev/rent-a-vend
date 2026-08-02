@@ -91,6 +91,7 @@ export function SiteFooter() {
               Коя машина ми трябва
             </FooterLink>
             <FooterLink href={routes.pricing}>Цени</FooterLink>
+            <FooterLink href={routes.guides}>Ръководства</FooterLink>
             <FooterLink href={routes.buyVsRent}>Наем или покупка</FooterLink>
             <FooterLink href={routes.caseStudies}>Казуси</FooterLink>
             <FooterLink href={routes.faq}>Често задавани въпроси</FooterLink>

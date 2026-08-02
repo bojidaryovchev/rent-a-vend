@@ -15,6 +15,7 @@
 
 export type PlaceholderId =
   | "brand-name"
+  | "domain"
   | "rental-prices"
   | "model-photos"
   | "model-copy"
@@ -76,7 +77,26 @@ export const PLACEHOLDERS: PlaceholderRecord[] = [
     id: "brand-name",
     label: "Име и лого",
     detail:
-      "Работи се с временен словен знак. Заменя се, след като бъде избрано име и регистриран домейн.",
+      "Получени на 2 август 2026 г.: името Rent-a-Vend и логото. Знакът стои в public/logo-icon-only.png, а светлият вариант за тъмен фон - в logo-icon-only-light.png. Домейнът се води отделно, виж „Домейн“.",
+    owner: "client",
+    blocksLaunch: true,
+    resolved: true,
+  },
+  /**
+   * Was a sentence inside `brand-name` - "заменя се, след като бъде избрано име
+   * и регистриран домейн". The name and the logo arrived; the domain did not,
+   * and resolving that one record would have taken the domain down with it
+   * silently. It is its own deliverable, so it is its own row.
+   *
+   * The comment sits outside the object on purpose: `scripts/readiness.mjs`
+   * matches records with /\{\s*id:/, so anything between the brace and the id
+   * hides the record from the launch gate entirely.
+   */
+  {
+    id: "domain",
+    label: "Домейн",
+    detail:
+      "Домейнът е получен на 2 август 2026 г.: rent-a-vend.com, с проверени DKIM, SPF и MX записи в Resend, тоест домейнът и изпраща, и получава поща. NEXT_PUBLIC_SITE_URL е зададен локално. Остава същата стойност да влезе в средата на продукцията при първото качване - от нея зависят каноничните адреси, sitemap.xml, robots.txt и всички абсолютни адреси в структурираните данни, а по подразбиране те сочат към example.invalid.",
     owner: "client",
     blocksLaunch: true,
     resolved: false,
@@ -85,7 +105,7 @@ export const PLACEHOLDERS: PlaceholderRecord[] = [
     id: "case-studies",
     label: "Казуси",
     detail:
-      "Две примерни структури без реално съдържание. Нужни са 2-3 реални обекта със съгласие на клиента. Измислени казуси не са опция.",
+      "Три реални казуса са публикувани: завод със собствено управление на 10 машини, Necta Canto ES + Lavazza Blue и Necta Brio 3 + Mini Snakky. Броят е достатъчен. Остава писмено потвърждение от клиентите, че проектите могат да се публикуват, и описание на обекта за два от трите - засега са без такова, защото не е съгласувано.",
     owner: "client",
     blocksLaunch: true,
     resolved: false,
