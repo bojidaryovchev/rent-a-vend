@@ -1,0 +1,38 @@
+This project vendors and derives from three third-party design skills.
+
+--------------------------------------------------------------------------------
+impeccable - https://github.com/pbakaus/impeccable
+Copyright (c) Paul Bakaus and contributors
+Licensed under the Apache License, Version 2.0
+
+Vendored unmodified at .claude/skills/impeccable/ via `npx impeccable install`.
+Updated with `npx impeccable update`. No files in that directory are modified by
+this project; behavioural overrides live in CLAUDE.md and in
+.claude/skills/design-arbiter/.
+
+You may obtain a copy of the Apache License at:
+    http://www.apache.org/licenses/LICENSE-2.0
+
+--------------------------------------------------------------------------------
+Skills for Design Engineers - https://github.com/emilkowalski/skills
+Copyright (c) Emil Kowalski
+Licensed under the MIT License
+
+Vendored unmodified at .claude/skills/{emil-design-eng, review-animations,
+improve-animations, animation-vocabulary}/ via `npx skills add emilkowalski/skills`.
+Tracked in skills-lock.json. Updated with `npx skills update`.
+
+--------------------------------------------------------------------------------
+taste-skill - https://github.com/Leonxlnx/taste-skill
+Copyright (c) Leonxlnx and contributors
+Licensed under the MIT License
+
+Not vendored. A subset of its composition rules is paraphrased and reorganised in
+.claude/skills/design-arbiter/reference/marketing-rules.md, which carries its own
+attribution header. Quoted fragments also appear in
+.claude/skills/design-arbiter/reference/conflicts.md for the purpose of documenting
+where its guidance conflicts with the other two sources.
+
+--------------------------------------------------------------------------------
+Original work in this project - .claude/skills/design-arbiter/SKILL.md, the routing
+and conflict rulings, CLAUDE.md, and this NOTICE - is the project author's.

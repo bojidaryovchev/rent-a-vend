@@ -1,0 +1,268 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { ChevronRight } from "lucide-react";
+import { StockLabel } from "@/components/catalogue/status-badge";
+import { notFound } from "next/navigation";
+import { Container } from "@/components/ui/container";
+import { ButtonLink } from "@/components/ui/button";
+import { ModelGallery } from "@/components/catalogue/model-gallery";
+import { SpecTable } from "@/components/catalogue/spec-table";
+import { RentCalculator } from "@/components/tools/rent-calculator";
+import { UnitList } from "@/components/catalogue/unit-list";
+import { ModelCard } from "@/components/catalogue/model-card";
+import { toCardData } from "@/lib/card-data";
+import {
+  MODELS,
+  constituentsOf,
+  modelBySlug,
+  ownsItsPhotos,
+} from "@/content/models";
+import { getUnits } from "@/server/stock-store";
+import { availabilityForModel, availabilityLabel, availableModelIds } from "@/engine/availability";
+import { alternativesWithOverrides } from "@/engine/alternatives";
+import { fromMonthly, quoteAllTerms, reductionLabel, INCLUDED_IN_RENT } from "@/engine/quote";
+import {
+  CATEGORY_LABEL,
+  CATEGORY_UNIT_LABEL,
+  VENUE_LABEL,
+} from "@/content/taxonomy";
+import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, modelJsonLd, pageMetadata } from "@/lib/seo";
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return MODELS.map((m) => ({
+    category: CATEGORY_SLUGS[m.category as CategoryKey],
+    model: m.slug,
+  }));
+}
+
+export async function generateMetadata(
+  props: PageProps<"/[category]/[model]">,
+): Promise<Metadata> {
+  const { model: slug } = await props.params;
+  const model = modelBySlug(slug);
+  if (!model) return {};
+
+  const from = fromMonthly(model.id);
+
+  /**
+   * The category term leads, not the model name.
+   *
+   * All 21 catalogue model names return zero measurable Bulgarian search volume
+   * (D24a), while `кафе автомат под наем` and its siblings do have demand. The
+   * name stays in the title for the visitor who is looking at this exact
+   * machine - it is just no longer carrying the search weight it cannot bear.
+   */
+  const unit = CATEGORY_UNIT_LABEL[model.category].one;
+
+  return pageMetadata({
+    path: routes.model(model.category as CategoryKey, model.slug),
+    title: `${model.name} — ${unit} под наем от ${from} €/месец`,
+    description:
+      model.intro ??
+      `${model.name} под наем с доставка, монтаж, сервиз и застраховка. От ${from} € на месец.`,
+    /* Already ~51 characters; the brand suffix would only be truncated. */
+    brandSuffix: false,
+  });
+}
+
+export default async function ModelPage(props: PageProps<"/[category]/[model]">) {
+  const { category: categorySlug, model: slug } = await props.params;
+  const model = modelBySlug(slug);
+
+  if (!model || CATEGORY_SLUGS[model.category as CategoryKey] !== categorySlug) {
+    notFound();
+  }
+
+  const allUnits = await getUnits();
+  const units = allUnits.filter((u) => u.modelId === model.id);
+  const availability = availabilityForModel(model.id, new Date(), allUnits);
+  const from = fromMonthly(model.id);
+  const constituents = constituentsOf(model);
+  const alternatives = alternativesWithOverrides(model, {
+    availableModelIds: availableModelIds(allUnits),
+    limit: 3,
+  });
+
+  return (
+    <>
+      <JsonLd data={modelJsonLd(model.id)} />
+      {/* Mirrors the visible trail below, built from the same `routes` helpers
+          so the two can never describe different hierarchies. */}
+      <JsonLd
+        data={breadcrumbJsonLd([
+          ["Начало", routes.home],
+          [
+            CATEGORY_LABEL[model.category],
+            routes.category(model.category as CategoryKey),
+          ],
+          [model.name, routes.model(model.category as CategoryKey, model.slug)],
+        ])}
+      />
+      <Container className="py-4">
+        <nav
+          aria-label="Пътека"
+          className="serial flex flex-wrap items-center gap-1.5 text-ink-muted"
+        >
+          <Link href={routes.home} className="hover-fine:text-graphite">
+            Начало
+          </Link>
+          <ChevronRight className="h-3 w-3" aria-hidden />
+          <Link
+            href={routes.category(model.category as CategoryKey)}
+            className="hover-fine:text-graphite"
+          >
+            {CATEGORY_LABEL[model.category]}
+          </Link>
+          <ChevronRight className="h-3 w-3" aria-hidden />
+          <span className="text-graphite">{model.name}</span>
+        </nav>
+      </Container>
+
+      <Container className="grid gap-8 pb-14 lg:grid-cols-[1fr_1fr] lg:items-start">
+        <ModelGallery
+          photos={model.photos}
+          category={model.category}
+          name={model.name}
+          shape={model.spec}
+          isPair={constituents.length === 2 && !ownsItsPhotos(model)}
+          className="h-[440px]"
+        />
+
+        <div>
+          <span className="serial text-ink-muted">{model.manufacturer}</span>
+          <h1 className="mt-2 text-[32px] leading-[1.08] md:text-[42px]">
+            {model.name}
+          </h1>
+
+          {model.currentName && (
+            <p className="mt-3 max-w-[58ch] text-[13px] leading-6 text-ink-muted">
+              Производителят преименува гамата - днес този модел се предлага като{" "}
+              {model.currentName}. Машините в склада са с оригиналното име.
+            </p>
+          )}
+
+          {model.intro && (
+            <p className="mt-4 max-w-[58ch] text-[15px] leading-7 text-ink-muted">
+              {model.intro}
+            </p>
+          )}
+
+          <div className="mt-5 flex items-end gap-3 border-y border-line py-4">
+            <span className="serial pb-1.5 text-ink-muted">от</span>
+            <span className="tabular font-display text-[44px] leading-none">
+              {from} €
+            </span>
+            <span className="pb-1.5 text-[13px] text-ink-muted">/месец</span>
+            <span className="ml-auto pb-1.5">
+              <StockLabel
+                tone={
+                  !availability.canPublish
+                    ? "reserved"
+                    : availability.available > 0
+                      ? "available"
+                      : "unavailable"
+                }
+                className="text-[13px]"
+              >
+                {availabilityLabel(availability)}
+              </StockLabel>
+            </span>
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <ButtonLink href={routes.enquiry}>Изпрати запитване</ButtonLink>
+            <ButtonLink href={routes.recommender} variant="outline">
+              Подходяща ли е за мен?
+            </ButtonLink>
+          </div>
+
+          {model.recommendation.venueTypes.length > 0 && (
+            <div className="mt-8">
+              <h2 className="plate text-[11px] text-ink-muted">Подходяща за</h2>
+              <ul className="mt-2.5 flex flex-wrap gap-2">
+                {model.recommendation.venueTypes.map((venue) => (
+                  <li
+                    key={venue}
+                    className="border border-line bg-paper-raised px-2.5 py-1.5 text-[12px] text-graphite"
+                  >
+                    {VENUE_LABEL[venue]}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      </Container>
+
+      <RentCalculator
+        quotes={quoteAllTerms(model.id).map((q) => ({
+          term: q.term,
+          monthlyEur: q.monthlyEur,
+          dailyEur: q.dailyEur,
+          totalEur: q.totalEur,
+          reductionLabel: reductionLabel(q),
+        }))}
+        included={INCLUDED_IN_RENT}
+      />
+
+      <section className="paper-grain border-y border-line">
+        <Container className="py-14">
+          <h2 className="text-[26px] md:text-[32px]">Налични машини</h2>
+          <p className="mt-2 max-w-xl text-[14px] leading-6 text-ink-muted">
+            Конкретните апарати от този модел, които стоят в склада сега.
+          </p>
+          <div className="mt-8">
+            <UnitList units={units} availability={availability} />
+          </div>
+        </Container>
+      </section>
+
+      <section className="bg-paper">
+        <Container className="py-14">
+          <h2 className="text-[26px] md:text-[32px]">
+            Технически характеристики
+          </h2>
+
+          {constituents.length === 2 && (
+            <p className="mt-4 max-w-2xl border-l-2 border-line-strong pl-3 text-[13px] leading-6 text-ink-muted">
+              Комплект от {constituents[0].name} и {constituents[1].name}.
+              Ширината и капацитетът по-долу са сборът на двете машини, а
+              височината е на по-високата.
+            </p>
+          )}
+
+          <div className="mt-6">
+            <SpecTable spec={model.spec} />
+          </div>
+
+          <p className="mt-4 max-w-3xl text-[12px] leading-5 text-ink-muted">
+            Тази машина е спряна от производство и производителят е свалил
+            страницата ѝ. Данните идват от архивни сервизни ръководства
+            {model.specSource ? ` (${model.specSource})` : ""}. Липсващото можем
+            да измерим по конкретния апарат преди доставка.
+          </p>
+        </Container>
+      </section>
+
+      {alternatives.length > 0 && (
+        <section className="border-t border-line bg-paper-sunken">
+          <Container className="py-14">
+            <h2 className="text-[24px] md:text-[30px]">Подходяща алтернатива</h2>
+            <p className="mt-2 text-[14px] text-ink-muted">
+              Машини с близък капацитет и размери. Наличните са първи.
+            </p>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {alternatives.map((alt) => (
+                <ModelCard key={alt.id} data={toCardData(alt, allUnits)} />
+              ))}
+            </div>
+          </Container>
+        </section>
+      )}
+    </>
+  );
+}

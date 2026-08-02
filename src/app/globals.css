@@ -1,0 +1,418 @@
+@import "tailwindcss";
+
+/* Hover styles only where hovering is real: a touch device reports
+   `hover: hover` in some browsers, so pointer precision is checked too.
+   Declared as a variant rather than inline arbitrary syntax, which Lightning
+   CSS cannot parse reliably. */
+@custom-variant hover-fine {
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      @slot;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Design tokens — "The Service Bay"
+
+   A well-run workshop with the lights on. Graphite steel, warm paper, and
+   safety yellow for the single action. Availability speaks in its own three
+   tones and never in the accent.
+
+   Colour is in oklch: the warm greys share a hue so the neutrals read as one
+   material rather than as tinted greys that drifted apart.
+
+   Token NAMES are stable across the codebase; only their values moved when the
+   visual direction was re-authored. That is what let a whole new look land
+   without touching most components.
+--------------------------------------------------------------------------- */
+
+@theme {
+  /* --- surface ------------------------------------------------------- */
+  --color-paper: oklch(0.9823 0.0029 84.56);
+  --color-paper-raised: oklch(1 0 0);
+  --color-paper-sunken: oklch(0.9618 0.0086 84.57);
+  --color-ink-inverse: oklch(0.9823 0.0029 84.56);
+
+  /* --- ink -----------------------------------------------------------
+     Measured on --color-paper:
+       ink        16.1:1   body and headlines
+       ink-muted   7.4:1   secondary text
+       ink-subtle  4.6:1   captions and labels — at the AA floor, do not lighten
+  ------------------------------------------------------------------- */
+  --color-ink: oklch(0.2523 0.004 84.58);
+  --color-ink-muted: oklch(0.4622 0.0109 78.22);
+  --color-ink-subtle: oklch(0.5541 0.0177 67.45);
+
+  /* --- structure ------------------------------------------------------ */
+  --color-line: oklch(0.8644 0.013 86.84);
+  --color-line-strong: oklch(0.6184 0.0146 82.39);
+  --color-graphite: oklch(0.2523 0.004 84.58);
+  --color-graphite-deep: oklch(0.2138 0.0042 84.59);
+  --color-graphite-soft: oklch(0.2982 0.0061 78.24);
+  --color-graphite-edge: oklch(0.3501 0.008 75.3);
+
+  /* --- brand accent (never a status) ---------------------------------- */
+  --color-accent: oklch(0.8809 0.1806 94.02);
+  --color-accent-hover: oklch(0.8409 0.1732 94.02);
+  --color-accent-ink: oklch(0.2138 0.0042 84.59);
+
+  /* --- availability status --------------------------------------------
+     Deliberately excludes yellow AND orange. Teal reads clearly against the
+     warm neutrals, and "reserved" stays blue rather than amber: amber sits
+     ~45° from the accent in hue and would read as a dimmer version of the
+     action colour, which is exactly the ambiguity the rule exists to prevent.
+  ------------------------------------------------------------------- */
+  --color-status-available: oklch(0.4609 0.0861 186.39);
+  --color-status-available-bg: oklch(0.9585 0.0182 186.39);
+  --color-status-reserved: oklch(0.4699 0.1121 254.2);
+  --color-status-reserved-bg: oklch(0.9556 0.0198 254.2);
+  --color-status-unavailable: oklch(0.5541 0.0177 67.45);
+  --color-status-unavailable-bg: oklch(0.9481 0.0053 67.45);
+
+  /* --- feedback ------------------------------------------------------- */
+  --color-danger: oklch(0.5534 0.1739 38.4);
+  --color-danger-bg: oklch(0.9553 0.0224 38.4);
+
+  /* --- type ------------------------------------------------------------
+     Oswald condensed carries the display voice — it is the lettering of
+     machine plates and warehouse signage, and it holds tight in Cyrillic.
+     Commissioner reads long-form Bulgarian without fighting it. Both carry
+     real cyrillic subsets, which is not optional here.
+  ------------------------------------------------------------------- */
+  --font-display: var(--font-oswald), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-commissioner), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  --text-display: 4.25rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: 0.005em;
+  --text-display--font-weight: 600;
+
+  /* Display's mobile step. A 4.25rem headline does not fit 390px. */
+  --text-display-sm: 2.5rem;
+  --text-display-sm--line-height: 1.02;
+  --text-display-sm--letter-spacing: 0.005em;
+  --text-display-sm--font-weight: 600;
+
+  /* Interface text: buttons, nav, form labels, table cells. */
+  --text-ui: 0.9375rem;
+  --text-ui--line-height: 1.4;
+
+  /* Utility strip, captions, chip counts. */
+  --text-ui-sm: 0.8125rem;
+  --text-ui-sm--line-height: 1.4;
+
+  /* Standalone figures: counters, stat tiles, the recommender's verdict. */
+  --text-figure: 2rem;
+  --text-figure--line-height: 1;
+  --text-figure--font-weight: 600;
+
+  /* Sub-heads that sit below `heading` but above body. */
+  --text-heading-sm: 1.375rem;
+  --text-heading-sm--line-height: 1.25;
+  --text-heading-sm--font-weight: 600;
+
+  /* Standout figures in prose: the contact phone number. */
+  --text-body-2xl: 1.5rem;
+  --text-body-2xl--line-height: 1.2;
+  --text-body-2xl--font-weight: 600;
+
+  /* Section sub-heads and result verdicts. */
+  --text-body-xl: 1.25rem;
+  --text-body-xl--line-height: 1.35;
+  --text-body-xl--font-weight: 600;
+
+  /* One step above body, for card titles and definition terms. */
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.5;
+
+  --text-title: 2.75rem;
+  --text-title--line-height: 1.05;
+  --text-title--letter-spacing: 0.005em;
+  --text-title--font-weight: 600;
+
+  --text-heading: 1.75rem;
+  --text-heading--line-height: 1.15;
+  --text-heading--letter-spacing: 0.005em;
+  --text-heading--font-weight: 600;
+
+  --text-lead: 1.1875rem;
+  --text-lead--line-height: 1.6;
+
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.35;
+  --text-micro--letter-spacing: 0.06em;
+
+  /* --- shape -----------------------------------------------------------
+     Tighter than before. Industrial equipment has corners; 2px reads as a
+     machined edge where 6px read as a web card.
+  ------------------------------------------------------------------- */
+  --radius-xs: 1px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
+
+  /* --- motion ---------------------------------------------------------
+     One easing token project-wide. `ease-in` is banned on UI. This is a
+     Persuade surface, so a single focal sequence may run 500-800ms;
+     everything else stays under 300ms.
+  ------------------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+  --duration-focal: 640ms;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+html {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  /* Bulgarian Cyrillic uses different letterforms from Russian for в г д и
+     к л п ц ш щ. `locl` activates them when the element carries lang="bg". */
+  font-feature-settings: "locl" 1, "kern" 1;
+  font-variant-numeric: proportional-nums;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-feature-settings: "locl" 1, "kern" 1;
+}
+
+/* Prices, dimensions, capacities and years must align in columns. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "locl" 1;
+}
+
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ---------------------------------------------------------------------------
+   Material
+
+   The review's central criticism was that the world was asserted almost
+   entirely through colour: no texture, no frame, no material. These utilities
+   are the answer, and they are the reason the site now reads as steel and
+   paper rather than as tinted rectangles.
+--------------------------------------------------------------------------- */
+
+/* Paper that is actually paper: a fine two-frequency grain, invisible until
+   you look, doing the work a flat hex value cannot. */
+@utility paper-grain {
+  background-color: var(--color-paper);
+  background-image:
+    radial-gradient(oklch(0.25 0.01 80 / 0.035) 0.5px, transparent 0.5px),
+    radial-gradient(oklch(0.25 0.01 80 / 0.025) 0.5px, transparent 0.5px);
+  background-size: 14px 14px, 9px 9px;
+  background-position: 0 0, 4px 6px;
+}
+
+/* Brushed steel: a vertical sheen plus a fine machining stripe. */
+@utility steel {
+  background-color: var(--color-graphite);
+  background-image:
+    linear-gradient(
+      180deg,
+      oklch(1 0 0 / 0.05) 0%,
+      transparent 18%,
+      transparent 82%,
+      oklch(0 0 0 / 0.25) 100%
+    ),
+    repeating-linear-gradient(
+      90deg,
+      oklch(1 0 0 / 0.014) 0px,
+      oklch(1 0 0 / 0.014) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  color: var(--color-ink-inverse);
+}
+
+/* A panel with a machined top edge and a shadow that sits under it rather
+   than floating it. Depth as material, not as a floating card. */
+@utility bay-panel {
+  position: relative;
+  background: var(--color-paper-raised);
+  border: 1px solid var(--color-line);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.9),
+    0 1px 0 oklch(0.25 0.01 80 / 0.08),
+    0 10px 22px -18px oklch(0.25 0.01 80 / 0.55);
+}
+
+@utility bay-panel-dark {
+  position: relative;
+  background: var(--color-graphite);
+  border: 1px solid var(--color-graphite-edge);
+  color: var(--color-ink-inverse);
+  box-shadow:
+    inset 0 1px 0 oklch(1 0 0 / 0.08),
+    0 14px 30px -22px oklch(0 0 0 / 0.9);
+}
+
+/* Corner screws. The detail that makes a rectangle read as a panel. */
+@utility riveted {
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 7px;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle at 35% 30%,
+      oklch(1 0 0 / 0.55),
+      var(--color-line-strong) 60%,
+      oklch(0.45 0.01 80 / 0.7) 100%
+    );
+    opacity: 0.55;
+  }
+  &::before {
+    left: 7px;
+  }
+  &::after {
+    right: 7px;
+  }
+}
+
+@utility hatch {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-graphite) 0px,
+    var(--color-graphite) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+
+/* Reserved for the demo banner. Hazard striping is honest signage: it says
+   "not finished" in a language everyone already reads. */
+@utility caution-tape {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-accent) 0px,
+    var(--color-accent) 10px,
+    var(--color-graphite) 10px,
+    var(--color-graphite) 20px
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Lettering
+
+   The domain owns plate, stencil and serial-number vocabulary natively, and
+   none of it was being used.
+--------------------------------------------------------------------------- */
+
+@utility plate {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+
+@utility stencil {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 400;
+}
+
+/* Asset tags, stock references, breadcrumbs. Never body text. */
+@utility serial {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+}
+
+@utility engraved {
+  color: var(--color-ink);
+  text-shadow: 0 1px 0 oklch(1 0 0 / 0.85);
+}
+
+/* ---------------------------------------------------------------------------
+   Motion
+--------------------------------------------------------------------------- */
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      box-shadow var(--duration-base) var(--ease-out),
+      border-color var(--duration-base) var(--ease-out);
+  }
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.9),
+      0 2px 0 oklch(0.25 0.01 80 / 0.1),
+      0 22px 34px -24px oklch(0.25 0.01 80 / 0.7);
+    border-color: var(--color-line-strong);
+  }
+}
+
+@keyframes bay-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A roller shutter going up. Used once, on the hero. */
+@keyframes bay-shutter {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@utility animate-rise {
+  animation: bay-rise var(--duration-focal) var(--ease-out) both;
+}
+
+@utility animate-shutter {
+  animation: bay-shutter 720ms var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
