@@ -5,16 +5,15 @@ import type { Model } from "@/content/schema";
  * "Подходяща алтернатива" on every machine page.
  *
  * Computed from the catalogue rather than curated by hand: 62 models times
- * three alternatives is 186 relationships that would need maintaining every
- * time stock changes, and they would rot.
+ * three alternatives is 186 relationships that would need maintaining by hand,
+ * and they would rot.
  *
- * Machines that are actually available rank first - suggesting a model the
- * customer cannot have wastes the click.
+ * Ranking used to give availability a decisive +30, so a machine the customer
+ * could actually have came first. With one availability state for the whole
+ * catalogue (D50) that term is gone and similarity is the only signal left.
  */
 
 interface Options {
-  /** Model ids with at least one rentable unit right now. */
-  availableModelIds?: Set<string>;
   limit?: number;
 }
 
@@ -27,7 +26,7 @@ const footprint = (model: Model): number =>
 
 export function alternativesFor(
   model: Model,
-  { availableModelIds, limit = 3 }: Options = {},
+  { limit = 3 }: Options = {},
 ): Model[] {
   const scored = MODELS.filter(
     (m) => m.id !== model.id && m.category === model.category,
@@ -70,9 +69,6 @@ export function alternativesFor(
     // of the same machine.
     if (candidate.manufacturer !== model.manufacturer) score += 8;
     if (candidate.name.split(" ")[1] === model.name.split(" ")[1]) score -= 12;
-
-    // Availability wins ties decisively.
-    if (availableModelIds?.has(candidate.id)) score += 30;
 
     return { candidate, score };
   });

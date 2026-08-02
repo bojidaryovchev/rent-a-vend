@@ -8,7 +8,6 @@ import { ButtonLink } from "@/components/ui/button";
 import { ModelGallery } from "@/components/catalogue/model-gallery";
 import { SpecTable } from "@/components/catalogue/spec-table";
 import { RentCalculator } from "@/components/tools/rent-calculator";
-import { UnitList } from "@/components/catalogue/unit-list";
 import { ModelCard } from "@/components/catalogue/model-card";
 import { toCardData } from "@/lib/card-data";
 import {
@@ -17,13 +16,13 @@ import {
   modelBySlug,
   ownsItsPhotos,
 } from "@/content/models";
-import { getUnits } from "@/server/stock-store";
-import { availabilityForModel, availabilityLabel, availableModelIds } from "@/engine/availability";
 import { alternativesWithOverrides } from "@/engine/alternatives";
 import { fromMonthly, quoteAllTerms, reductionLabel, INCLUDED_IN_RENT } from "@/engine/quote";
 import {
+  AVAILABILITY_LABEL,
   CATEGORY_LABEL,
   CATEGORY_UNIT_LABEL,
+  CONDITION_STATEMENT,
   VENUE_LABEL,
 } from "@/content/taxonomy";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
@@ -112,15 +111,9 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
     notFound();
   }
 
-  const allUnits = await getUnits();
-  const units = allUnits.filter((u) => u.modelId === model.id);
-  const availability = availabilityForModel(model.id, new Date(), allUnits);
   const from = fromMonthly(model.id);
   const constituents = constituentsOf(model);
-  const alternatives = alternativesWithOverrides(model, {
-    availableModelIds: availableModelIds(allUnits),
-    limit: 3,
-  });
+  const alternatives = alternativesWithOverrides(model, { limit: 3 });
 
   return (
     <>
@@ -193,17 +186,8 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
             </span>
             <span className="pb-1.5 text-[13px] text-ink-muted">/месец</span>
             <span className="ml-auto pb-1.5">
-              <StockLabel
-                tone={
-                  !availability.canPublish
-                    ? "reserved"
-                    : availability.available > 0
-                      ? "available"
-                      : "unavailable"
-                }
-                className="text-[13px]"
-              >
-                {availabilityLabel(availability)}
+              <StockLabel tone="available" className="text-[13px]">
+                {AVAILABILITY_LABEL}
               </StockLabel>
             </span>
           </div>
@@ -244,14 +228,29 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
         included={INCLUDED_IN_RENT}
       />
 
+      {/* Where the per-unit stock list used to be (D50). One statement about
+          how the machine arrives, and the enquiry that confirms it - rather
+          than a grid of warehouse codes nobody was going to keep current. */}
       <section className="paper-grain border-y border-line">
         <Container className="py-14">
-          <h2 className="text-[26px] md:text-[32px]">Налични машини</h2>
-          <p className="mt-2 max-w-xl text-[14px] leading-6 text-ink-muted">
-            Конкретните апарати от този модел, които стоят в склада сега.
-          </p>
-          <div className="mt-8">
-            <UnitList units={units} availability={availability} />
+          <h2 className="text-[26px] md:text-[32px]">Наличност</h2>
+          <div className="mt-6 max-w-xl">
+            <StockLabel tone="available" className="text-[14px]">
+              {AVAILABILITY_LABEL}
+            </StockLabel>
+            <p className="mt-3 text-[15px] leading-7 text-ink-muted">
+              {CONDITION_STATEMENT}
+            </p>
+            <div className="mt-6">
+              <ButtonLink href={`${routes.enquiry}?model=${model.slug}`}>
+                Запитване за тази машина
+              </ButtonLink>
+            </div>
+            <p className="mt-4 text-[13px] leading-6 text-ink-subtle">
+              Запитването не е автоматична резервация. Потвърждаваме до един
+              работен час. Годината на производство и историята на конкретния
+              апарат се предоставят при запитване.
+            </p>
           </div>
         </Container>
       </section>
@@ -288,11 +287,11 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
           <Container className="py-14">
             <h2 className="text-[24px] md:text-[30px]">Подходяща алтернатива</h2>
             <p className="mt-2 text-[14px] text-ink-muted">
-              Машини с близък капацитет и размери. Наличните са първи.
+              Машини с близък капацитет и размери.
             </p>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {alternatives.map((alt) => (
-                <ModelCard key={alt.id} data={toCardData(alt, allUnits)} />
+                <ModelCard key={alt.id} data={toCardData(alt)} />
               ))}
             </div>
           </Container>

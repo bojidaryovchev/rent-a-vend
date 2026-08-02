@@ -242,6 +242,22 @@ export function organizationJsonLd() {
     name: hasUnresolvedBrand() ? company.legalName : company.brandName,
     legalName: company.legalName,
     url: SITE_URL,
+    /**
+     * The one machine-readable place that says "this mark belongs to this
+     * company", and what Google draws in a knowledge panel.
+     *
+     * The plated 512px icon rather than `/logo.png`: the source lockup is
+     * transparent, and a transparent PNG lands on whatever background the
+     * consumer happens to use - which for the dark ink in this mark means it
+     * can arrive invisible. The icon brings its own paper ground. It is also
+     * square and well over the 112px floor Google asks for, and nothing in
+     * robots.ts blocks it.
+     *
+     * No `image` alongside it on purpose. Google reads that as a photograph of
+     * the business, and there is no photograph of the yard yet - a brand mark
+     * standing in for one is the sort of thing that gets an entity distrusted.
+     */
+    logo: absolute("/icon-512.png"),
     telephone: company.phone,
     email: company.email,
     vatID: company.vatNumber,

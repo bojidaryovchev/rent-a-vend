@@ -5,7 +5,6 @@ import { Recommender } from "@/components/tools/recommender";
 import { toCandidates } from "@/lib/candidates";
 import { toCardData } from "@/lib/card-data";
 import { MODELS } from "@/content/models";
-import { getUnits } from "@/server/stock-store";
 import { pageMetadata } from "@/lib/seo";
 import { routes } from "@/lib/routes";
 
@@ -17,11 +16,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function RecommenderPage() {
-  const units = await getUnits();
-  const candidates = toCandidates(units);
+  const candidates = toCandidates();
   /* The recommendation is computed in the browser, so the cards it may show
      have to travel with it - the same data the catalogue grid already ships. */
-  const cards = MODELS.map((m) => toCardData(m, units));
+  const cards = MODELS.map((m) => toCardData(m));
 
   return (
     <>

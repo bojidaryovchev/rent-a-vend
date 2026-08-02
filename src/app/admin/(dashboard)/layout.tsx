@@ -54,9 +54,6 @@ export default async function AdminLayout({
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3">
           <span className="font-bold tracking-tight">Администрация</span>
           <nav className="flex items-center gap-4 text-ui">
-            <Link href="/admin" className="text-ink-muted hover-fine:text-ink">
-              Наличности
-            </Link>
             <Link
               href="/admin/zapitvaniya"
               className="text-ink-muted hover-fine:text-ink"

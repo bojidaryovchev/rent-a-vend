@@ -23,17 +23,14 @@ import { cn } from "@/lib/cn";
  * twelve still appear on each machine page, where detail helps.
  *
  * Groups that would return nothing are disabled rather than hidden, so the
- * filter's shape stays stable as stock changes.
+ * filter's shape stays stable as the catalogue changes.
+ *
+ * There was a second control here - "само налични в момента". It went with the
+ * stock model (D50): a filter that can never exclude anything is a control that
+ * teaches the visitor their input does nothing.
  */
-export function CatalogueGrid({
-  models,
-  availableOnlyDefault = false,
-}: {
-  models: CardData[];
-  availableOnlyDefault?: boolean;
-}) {
+export function CatalogueGrid({ models }: { models: CardData[] }) {
   const [venue, setVenue] = useState<VenueGroup | null>(null);
-  const [availableOnly, setAvailableOnly] = useState(availableOnlyDefault);
 
   const counts = useMemo(() => {
     const map = new Map<VenueGroup, number>();
@@ -45,12 +42,8 @@ export function CatalogueGrid({
 
   const filtered = useMemo(
     () =>
-      models.filter((m) => {
-        if (venue && !m.venueGroups.includes(venue)) return false;
-        if (availableOnly && !m.canRent) return false;
-        return true;
-      }),
-    [models, venue, availableOnly],
+      venue ? models.filter((m) => m.venueGroups.includes(venue)) : models,
+    [models, venue],
   );
 
   const chip =
@@ -101,16 +94,7 @@ export function CatalogueGrid({
           })}
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-          <label className="flex min-h-11 cursor-pointer items-center gap-2.5 text-[13px] text-graphite">
-            <input
-              type="checkbox"
-              checked={availableOnly}
-              onChange={(e) => setAvailableOnly(e.target.checked)}
-              className="h-4 w-4 accent-status-available"
-            />
-            Само налични в момента
-          </label>
+        <div className="mt-4 flex flex-wrap items-center justify-end border-t border-line pt-4">
           <span className="serial tabular text-ink-muted">
             {filtered.length} от {models.length} машини
           </span>

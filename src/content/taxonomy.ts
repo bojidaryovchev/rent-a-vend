@@ -131,14 +131,19 @@ export const PHOTO_VIEW_LABEL: Record<PhotoView, string> = {
   payment: "Зона за плащане",
 };
 
-/* -- condition and availability ----------------------------------------- */
+/* -- condition ----------------------------------------------------------- */
 
 /**
  * One statement for every machine, in place of a per-unit grade.
  *
  * The A/B/C/as-is rubric that used to live here was dropped at the client's
- * request: every machine he lets out is refurbished and tested first, so
+ * request (D49): every machine he lets out is refurbished and tested first, so
  * sorting the stock into letters described a difference he does not make.
+ *
+ * Per-unit *statuses* went the same way (D50). There is no stock list, no
+ * counts and no availability engine any more - the client's position is that
+ * every catalogued model can be supplied, so the site states that once and the
+ * enquiry confirms it.
  */
 export const CONDITION_STATEMENT =
   "Изцяло рециклирана, проверена от нашия екип, готова за употреба.";
@@ -150,37 +155,8 @@ export const CONDITION_POINTS = [
   "Готова за употреба",
 ] as const;
 
-export const UNIT_STATUSES = [
-  "available",
-  "reserved",
-  "rented",
-  "incoming",
-  "sold",
-  "servicing",
-] as const;
-export type UnitStatus = (typeof UNIT_STATUSES)[number];
-
-export const STATUS_LABEL: Record<UnitStatus, string> = {
-  available: "Налична",
-  reserved: "Резервирана",
-  rented: "Отдадена под наем",
-  incoming: "Очаквана доставка",
-  sold: "Продадена",
-  servicing: "В сервиз",
-};
-
-/** Which statuses count as "you can rent this today". */
-export const RENTABLE_STATUSES: UnitStatus[] = ["available"];
-
-/** Tone mapping for the three visual treatments the design system carries. */
-export const STATUS_TONE: Record<UnitStatus, "available" | "reserved" | "unavailable"> = {
-  available: "available",
-  reserved: "reserved",
-  incoming: "reserved",
-  rented: "unavailable",
-  sold: "unavailable",
-  servicing: "unavailable",
-};
+/** What the catalogue says about supply, everywhere it says anything. */
+export const AVAILABILITY_LABEL = "Налична";
 
 /* -- contract terms ------------------------------------------------------ */
 

@@ -47,7 +47,6 @@ function notificationBody(e: EnquiryRecord): string {
   lines.push(``);
 
   if (e.modelSlug) lines.push(`Машина:   ${e.modelSlug}`);
-  if (e.unitRef) lines.push(`Апарат:   ${e.unitRef}`);
   if (e.term) lines.push(`Срок:     ${e.term} месеца`);
   lines.push(`Източник: ${e.source}`);
 

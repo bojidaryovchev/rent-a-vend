@@ -13,7 +13,6 @@ import {
   isSignedIn,
   passwordMatches,
 } from "./auth";
-import { setUnitStatus } from "./stock-store";
 import {
   getMailboxStore,
   MAIL_THREAD_STATUSES,
@@ -24,7 +23,6 @@ import {
   sendReply,
   type OutgoingAttachment,
 } from "./mailbox-reply";
-import { UNIT_STATUSES, type UnitStatus } from "@/content/taxonomy";
 
 /**
  * Every action below re-checks the session.
@@ -60,24 +58,6 @@ export async function signIn(
 export async function signOut(): Promise<void> {
   await destroySession();
   redirect("/admin/vhod");
-}
-
-/**
- * Two taps from a phone in the warehouse.
- *
- * The site's biggest advantage over every competitor is live availability, and
- * it survives only if updating it is faster than not bothering.
- */
-export async function updateUnitStatus(formData: FormData): Promise<void> {
-  if (!(await requireAdmin())) return;
-
-  const unitId = String(formData.get("unitId") ?? "");
-  const status = String(formData.get("status") ?? "");
-
-  if (!UNIT_STATUSES.includes(status as UnitStatus)) return;
-
-  await setUnitStatus(unitId, status as UnitStatus);
-  revalidatePath("/admin");
 }
 
 export async function updateEnquiryStatus(formData: FormData): Promise<void> {

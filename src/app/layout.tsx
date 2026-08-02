@@ -9,9 +9,8 @@ import { company } from "@/lib/company";
  * Root shell: document, fonts, base colours. Nothing else.
  *
  * The marketing header and footer live in the `(site)` group so the admin does
- * not inherit them. On a phone in a warehouse, the banner plus utility strip
- * plus nav consumed most of the screen before the first status button - and
- * that screen is the mechanism the whole availability promise rests on.
+ * not inherit them: on a phone, the banner plus utility strip plus nav consumed
+ * most of the screen before the first control.
  */
 
 /**

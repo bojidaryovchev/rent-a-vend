@@ -203,11 +203,6 @@ describe("recommend", () => {
     expect(r.primary!.candidate.id).toBe("rival");
   });
 
-  it("prefers a machine that is actually in stock", () => {
-    const r = recommend(profile(), CANDIDATES);
-    expect(r.primary!.candidate.canRent).toBe(true);
-  });
-
   it("pushes machines over budget down the list", () => {
     const cheap = CANDIDATES.reduce((a, b) => (a.fromEur < b.fromEur ? a : b));
     const r = recommend(
@@ -250,19 +245,14 @@ describe("alternatives", () => {
     }
   });
 
-  it("ranks available machines ahead of unavailable ones", () => {
+  it("is deterministic - similarity alone decides the order", () => {
+    // Availability used to add a decisive +30 here (D50 removed it), so this
+    // guards the thing that replaced it: the same model must always produce
+    // the same three alternatives, in the same order.
     const model = modelBySlug("necta-snakky")!;
-    const plain = alternativesFor(model, { limit: 5 });
-    const target = plain[plain.length - 1];
-
-    const promoted = alternativesFor(model, {
-      availableModelIds: new Set([target.id]),
-      limit: 5,
-    });
-
-    expect(promoted.findIndex((m) => m.id === target.id)).toBeLessThan(
-      plain.findIndex((m) => m.id === target.id),
-    );
+    const a = alternativesFor(model, { limit: 5 });
+    const b = alternativesFor(model, { limit: 5 });
+    expect(a.map((m) => m.id)).toEqual(b.map((m) => m.id));
   });
 
   it("respects the requested limit", () => {

@@ -1,22 +1,15 @@
-import type { Model, Unit } from "@/content/schema";
+import type { Model } from "@/content/schema";
 import { leadPhoto } from "@/content/models";
 import { VENUE_TO_GROUP, type VenueGroup } from "@/content/taxonomy";
-import { availabilityForModel, availabilityLabel } from "@/engine/availability";
 import { fromMonthly } from "@/engine/quote";
 import type { CardData } from "@/components/catalogue/model-card";
 
 /**
  * Flattens a model into the serialisable shape the client grid needs, so
- * filtering can happen in the browser without shipping the catalogue, the
- * pricing engine and the stock list along with it.
+ * filtering can happen in the browser without shipping the catalogue and the
+ * pricing engine along with it.
  */
-export function toCardData(
-  model: Model,
-  units: Unit[],
-  now?: Date,
-): CardData {
-  const availability = availabilityForModel(model.id, now ?? new Date(), units);
-
+export function toCardData(model: Model): CardData {
   const venueGroups = [
     ...new Set(model.recommendation.venueTypes.map((v) => VENUE_TO_GROUP[v])),
   ] as VenueGroup[];
@@ -37,8 +30,6 @@ export function toCardData(
     currentName: model.currentName,
     capacity: model.spec.productCapacity,
     fromEur: fromMonthly(model.id),
-    availabilityLabel: availabilityLabel(availability),
-    canRent: availability.canPublish && availability.available > 0,
     venueGroups,
     shape: {
       widthMm: model.spec.widthMm,

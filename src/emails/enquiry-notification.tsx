@@ -46,7 +46,7 @@ function Field({ label, value }: { label: string; value: string }) {
 
 export function EnquiryNotification({ enquiry }: { enquiry: EnquiryRecord }) {
   const hasContext =
-    enquiry.modelSlug ?? enquiry.unitRef ?? enquiry.term ?? enquiry.recommenderSummary;
+    enquiry.modelSlug ?? enquiry.term ?? enquiry.recommenderSummary;
 
   return (
     <Html lang="bg">
@@ -116,9 +116,6 @@ export function EnquiryNotification({ enquiry }: { enquiry: EnquiryRecord }) {
                 </Text>
                 {enquiry.modelSlug ? (
                   <Field label="Машина" value={enquiry.modelSlug} />
-                ) : null}
-                {enquiry.unitRef ? (
-                  <Field label="Апарат" value={enquiry.unitRef} />
                 ) : null}
                 {enquiry.term ? (
                   <Field label="Срок" value={`${enquiry.term} месеца`} />

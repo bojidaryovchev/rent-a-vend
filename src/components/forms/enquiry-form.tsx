@@ -47,9 +47,6 @@ type FormValues = z.input<typeof formSchema>;
 export interface CarriedContext {
   modelSlug?: string;
   modelName?: string;
-  unitRef?: string;
-  /** Human-readable stand-in for the warehouse code, e.g. "2020 г.". */
-  unitLabel?: string;
   monthlyEur?: number;
   term?: number;
   source?: "model" | "calculator" | "recommender" | "contact" | "direct";
@@ -127,7 +124,6 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
 
       // Carried context, appended server-side of the visitor's attention.
       data.set("modelSlug", context.modelSlug ?? "");
-      data.set("unitRef", context.unitRef ?? "");
       data.set("term", context.term ? String(context.term) : "");
       data.set("source", context.source ?? "direct");
       data.set("recommenderSummary", context.recommenderSummary ?? "");
@@ -178,11 +174,8 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
       </div>
 
       {/* Their evidence that the context travelled. Shown in the words they
-          were just reading, never as a warehouse code. */}
-      {(context.modelName ||
-        context.term ||
-        context.unitLabel ||
-        context.recommenderSummary) && (
+          were just reading. */}
+      {(context.modelName || context.term || context.recommenderSummary) && (
         <div className="border-l-2 border-accent bg-paper-sunken p-4 text-ui">
           <p className="plate text-[0.6875rem] text-ink-subtle">Вашият избор</p>
           <ul className="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-ink-muted">
@@ -196,7 +189,6 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
             {!context.recommenderSummary && context.modelName && (
               <li>{context.modelName}</li>
             )}
-            {context.unitLabel && <li>{context.unitLabel}</li>}
             {context.term && <li>Срок: {context.term} месеца</li>}
             {/* The summary already carries the plan's total; one machine's rate
                 next to it would read as a contradiction. */}

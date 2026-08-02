@@ -1,0 +1,1 @@
+ALTER TABLE "enquiries" DROP COLUMN "unit_ref";

@@ -88,8 +88,8 @@ function Choice({
  *
  * The catalogue card is reused rather than reimplemented: the visitor has
  * already learned what a machine card looks like on the listing pages, and the
- * photograph, the price and the live availability are exactly what they need in
- * order to believe the recommendation.
+ * photograph and the price are exactly what they need in order to believe the
+ * recommendation.
  */
 function MachineCard({
   pick,

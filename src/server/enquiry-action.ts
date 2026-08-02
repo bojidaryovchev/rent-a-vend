@@ -68,7 +68,6 @@ export async function submitEnquiry(
     vatNumber: blank(input.vatNumber),
     message: blank(input.message),
     modelSlug: blank(input.modelSlug),
-    unitRef: blank(input.unitRef),
     term: input.term ?? null,
     source: input.source,
     recommenderSummary: blank(input.recommenderSummary),

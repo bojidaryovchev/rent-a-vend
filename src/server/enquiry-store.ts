@@ -52,7 +52,6 @@ export const enquiryRecordSchema = z.object({
 
   /** What the visitor was looking at. Carried, never re-asked. */
   modelSlug: z.string().nullable(),
-  unitRef: z.string().nullable(),
   term: z.number().nullable(),
   source: z.enum(ENQUIRY_SOURCES),
   recommenderSummary: z.string().nullable(),

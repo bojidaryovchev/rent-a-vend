@@ -83,11 +83,10 @@ export default async function AdminEnquiriesPage() {
                   </p>
                 </div>
 
-                {(model || e.term || e.unitRef || e.recommenderSummary) && (
+                {(model || e.term || e.recommenderSummary) && (
                   <div className="mt-3 rounded-sm bg-paper-sunken p-3 text-ui">
                     <ul className="flex flex-wrap gap-x-5 gap-y-1 text-ink-muted">
                       {model && <li>Машина: {model.name}</li>}
-                      {e.unitRef && <li>Апарат: {e.unitRef}</li>}
                       {e.term && <li>Срок: {e.term} месеца</li>}
                       <li>Източник: {e.source}</li>
                     </ul>

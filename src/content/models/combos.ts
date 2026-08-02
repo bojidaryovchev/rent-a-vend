@@ -29,6 +29,13 @@ interface Pairing {
   minHeadcount: number;
   maxHeadcount: number;
   shifts: Model["recommendation"]["shifts"];
+  /**
+   * A frame of the pair standing together. Set only where the two cabinets have
+   * been shot as one machine - which is what a combo is bought as. Without it
+   * the pairing borrows its constituents' single frames, and two photographs
+   * placed next to each other are not a photograph of the pair.
+   */
+  photos?: PhotoInput[];
 }
 
 const PAIRINGS: Pairing[] = [
@@ -97,6 +104,14 @@ const PAIRINGS: Pairing[] = [
     slug: "necta-canto-samba", name: "Necta Canto + Samba",
     venueTypes: ["manufacturing", "warehouse", "logistics", "hospital"],
     minHeadcount: 120, maxHeadcount: 350, shifts: [2, 3],
+    photos: [
+      {
+        src: "/machines/necta-canto-samba/front.jpg",
+        alt: "Комплектът Necta Canto и Necta Samba, изправени един до друг, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
   },
   {
     left: "canto", right: "tango",
@@ -133,6 +148,7 @@ export const combos: ComboDraft[] = PAIRINGS.map((p) => ({
   currentName: null,
   comboOf: [p.left, p.right] as [string, string],
   specSource: "Изчислено от двете машини в комплекта",
+  photos: p.photos,
   intro:
     "Комплект от две машини - топли напитки и снаксове - на едно място. Размерите и капацитетът по-долу са сборът на двете.",
   recommendation: {

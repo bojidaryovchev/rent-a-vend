@@ -8,7 +8,6 @@ import { toCardData } from "@/lib/card-data";
 import { modelsByCategory } from "@/content/models";
 import { CATEGORY_LABEL, type Category } from "@/content/taxonomy";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
-import { getUnits } from "@/server/stock-store";
 import { fromMonthly } from "@/engine/quote";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, categoryJsonLd, pageMetadata } from "@/lib/seo";
@@ -29,9 +28,9 @@ const SLUG_TO_CATEGORY = Object.fromEntries(
 
 const INTRO: Record<Category, string> = {
   coffee:
-    "Машини за кафе и топли напитки под наем. Реални апарати от нашия склад, с година, състояние и месечна цена на всеки.",
+    "Машини за кафе и топли напитки под наем. Реални апарати от нашия склад, изцяло рециклирани, с месечна цена на всеки модел.",
   snack:
-    "Автомати за снаксове, пакетирани стоки и храна. Всяка машина е конкретна, с реална наличност.",
+    "Автомати за снаксове, пакетирани стоки и храна. Изцяло рециклирани и проверени преди доставка.",
   combo:
     "Комплекти от две машини - топли напитки и снаксове на едно място. Размерите и капацитетът са сборът на двете.",
   cold:
@@ -66,7 +65,7 @@ export async function generateMetadata(
   return pageMetadata({
     path: routes.category(category),
     title: `${CATEGORY_LABEL[category]} под наем — от ${fromPrice(category)} €/месец`,
-    description: `${INTRO[category]} ${models.length} модела с реална наличност.`,
+    description: `${INTRO[category]} ${models.length} модела с публикувана цена.`,
     /* "Автомати за студени напитки под наем — от 60 €/месец" is already 51
        characters. The suffix would take it to 71 and be truncated away. */
     brandSuffix: false,
@@ -79,9 +78,8 @@ export default async function CategoryPage(props: PageProps<"/[category]">) {
   if (!category) notFound();
 
   const models = modelsByCategory(category);
-  const units = await getUnits();
-  const cards = models.map((m) => toCardData(m, units));
-  const availableCount = cards.filter((c) => c.canRent).length;
+  const cards = models.map((m) => toCardData(m));
+  const fromEur = Math.min(...cards.map((c) => c.fromEur));
 
   return (
     <>
@@ -108,7 +106,7 @@ export default async function CategoryPage(props: PageProps<"/[category]">) {
               {models.length} модела
             </span>
             <span className="border border-paper/25 px-2 py-1">
-              {availableCount} с налични машини
+              от {fromEur} €/месец
             </span>
           </p>
         </Container>

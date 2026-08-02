@@ -1,11 +1,5 @@
 import { z } from "zod";
-import {
-  CATEGORIES,
-  PHOTO_VIEWS,
-  PRODUCT_KINDS,
-  UNIT_STATUSES,
-  VENUE_TYPES,
-} from "./taxonomy";
+import { CATEGORIES, PHOTO_VIEWS, PRODUCT_KINDS, VENUE_TYPES } from "./taxonomy";
 
 /**
  * Content schemas.
@@ -153,31 +147,13 @@ export const modelSchema = z.object({
 
 export type Model = z.infer<typeof modelSchema>;
 
-export const unitSchema = z.object({
-  id: z.string().min(1),
-  stockRef: z.string().min(1),
-  modelId: z.string().min(1),
-
-  year: z.number().int().min(1990).max(2030).nullable().default(null),
-  status: z.enum(UNIT_STATUSES),
-
-  /** Monthly rate in EUR by contract term. */
-  monthlyRates: z
-    .record(z.string(), z.number().positive())
-    .nullable()
-    .default(null),
-
-  /** Admin-only. Never rendered to visitors (decision D39). */
-  serialNumber: z.string().nullable().default(null),
-  purchaseDate: z.string().nullable().default(null),
-  supplier: z.string().nullable().default(null),
-  internalNotes: z.string().nullable().default(null),
-
-  /** Drives the staleness rule: availability degrades rather than lying. */
-  statusUpdatedAt: z.string(),
-});
-
-export type Unit = z.infer<typeof unitSchema>;
-
+/**
+ * There is no UNIT record any more (D50).
+ *
+ * The separation of MODEL from UNIT was the point of this file: a manufacturer
+ * describes a model, the business rents an individual machine. The client does
+ * not track individual machines for the site and states that every catalogued
+ * model can be supplied, so a unit record would have had one honest field left
+ * on it - the model it is a copy of. The catalogue is models only.
+ */
 export const modelsSchema = z.array(modelSchema);
-export const unitsSchema = z.array(unitSchema);

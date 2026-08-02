@@ -21,7 +21,6 @@ export const enquiryInputSchema = z.object({
 
   // Carried context - never re-asked.
   modelSlug: z.string().trim().max(120).optional().or(z.literal("")),
-  unitRef: z.string().trim().max(60).optional().or(z.literal("")),
   term: z.coerce.number().int().optional(),
   source: z
     .enum(["model", "calculator", "recommender", "contact", "direct"])

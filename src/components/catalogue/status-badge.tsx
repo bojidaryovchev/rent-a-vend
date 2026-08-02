@@ -1,5 +1,4 @@
 import { cn } from "@/lib/cn";
-import { STATUS_LABEL, STATUS_TONE, type UnitStatus } from "@/content/taxonomy";
 
 type Tone = "available" | "reserved" | "unavailable";
 
@@ -9,6 +8,11 @@ type Tone = "available" | "reserved" | "unavailable";
  * Available is a square, reserved is the same square rotated to a diamond,
  * unavailable is a muted square. Anyone who cannot separate the two hues still
  * reads the state, which is the whole reason not to lean on colour alone.
+ *
+ * Since D50 the catalogue publishes a single state, so `available` is the only
+ * tone actually rendered. The other two stay because they are the design
+ * system's stock treatment and the shape/colour pairing is the part worth
+ * keeping if a second state ever comes back.
  */
 export function StockDot({ tone }: { tone: Tone }) {
   return (
@@ -30,7 +34,7 @@ const toneText: Record<Tone, string> = {
   unavailable: "text-status-unavailable",
 };
 
-/** Free-text stock line, e.g. "2 налични от общо 5". */
+/** Free-text stock line. */
 export function StockLabel({
   tone,
   children,
@@ -51,20 +55,5 @@ export function StockLabel({
       <StockDot tone={tone} />
       {children}
     </span>
-  );
-}
-
-/** A single unit's status. */
-export function StatusBadge({
-  status,
-  className,
-}: {
-  status: UnitStatus;
-  className?: string;
-}) {
-  return (
-    <StockLabel tone={STATUS_TONE[status]} className={className}>
-      {STATUS_LABEL[status]}
-    </StockLabel>
   );
 }

@@ -57,7 +57,6 @@ export const enquiries = pgTable(
 
     /** What the visitor was looking at. Carried, never re-asked. */
     modelSlug: text("model_slug"),
-    unitRef: text("unit_ref"),
     term: integer("term"),
     source: text("source", { enum: ENQUIRY_SOURCES }).notNull(),
     recommenderSummary: text("recommender_summary"),

@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { EnquiryForm, type CarriedContext } from "@/components/forms/enquiry-form";
-import { modelById, modelBySlug } from "@/content/models";
-import { getUnits } from "@/server/stock-store";
+import { modelBySlug } from "@/content/models";
 import { fromMonthly } from "@/engine/quote";
 import { company } from "@/lib/company";
 import { pageMetadata } from "@/lib/seo";
@@ -34,31 +33,22 @@ export default async function EnquiryPage(props: PageProps<"/zapitvane">) {
 
   const termRaw = first(params.term);
   const term = termRaw ? Number(termRaw) : undefined;
-  const unitRef = first(params.unit);
 
-  // Resolve the stock reference to something the visitor recognises. They
-  // arrived from "Necta Snakky · 2020 г."; "001-1" is a warehouse code
-  // and means nothing to them. This panel is their only proof the context
-  // travelled, on the page that produces the site's one measurable output.
-  const units = await getUnits();
-  const unit = unitRef ? units.find((u) => u.stockRef === unitRef) : undefined;
-  const unitModel = unit ? modelById(unit.modelId) : undefined;
-
+  // The model is the whole carried context now. A `?unit=` parameter used to
+  // name one physical machine by its warehouse code; with the stock list gone
+  // (D50) there is nothing to resolve it against, and an unrecognised code
+  // would silently drop the visitor's context rather than carry it.
   const modelSlug = first(params.model);
-  const model = unitModel ?? (modelSlug ? modelBySlug(modelSlug) : undefined);
+  const model = modelSlug ? modelBySlug(modelSlug) : undefined;
 
   // The recommender proposes a plan of several machines. Only one of them can
   // be the carried model, so the plan itself rides along as a summary rather
   // than being silently reduced to its first line.
   const summary = first(params.summary)?.slice(0, 1000);
 
-  const unitLabel = unit?.year ? `${unit.year} г.` : undefined;
-
   const context: CarriedContext = {
     modelSlug: model?.slug,
     modelName: model?.name,
-    unitRef,
-    unitLabel,
     monthlyEur: model ? fromMonthly(model.id) : undefined,
     term: Number.isFinite(term) ? term : undefined,
     recommenderSummary: summary,

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { StockLabel } from "@/components/catalogue/status-badge";
 import type { MachineShape } from "@/components/ui/machine-image";
 import { routes, type CategoryKey } from "@/lib/routes";
 import type { Category, VenueGroup } from "@/content/taxonomy";
@@ -8,8 +7,10 @@ import type { Category, VenueGroup } from "@/content/taxonomy";
 /**
  * A catalogue card.
  *
- * Carries the two things no Bulgarian competitor publishes: a price and live
- * availability. Everything else is secondary.
+ * Carries the thing no Bulgarian competitor publishes: a price. The card used
+ * to carry a live stock line beside it; since D50 there is one availability
+ * state for the whole catalogue, and repeating it on 62 identical cards would
+ * be noise rather than information. It is stated once, on the model page.
  *
  * Built as a panel: a lit top edge, a seated shadow, corner rivets on the body,
  * and the manufacturer stamped on the image like an asset tag. The price is set
@@ -28,8 +29,6 @@ export interface CardData {
   currentName: string | null;
   capacity: number | null;
   fromEur: number;
-  availabilityLabel: string;
-  canRent: boolean;
   venueGroups: VenueGroup[];
   shape: MachineShape;
   /**
@@ -229,10 +228,7 @@ export function ModelCard({
           )}
         </dl>
 
-        <div className="mt-4 flex items-center justify-between gap-2 border-t border-line pt-3">
-          <StockLabel tone={data.canRent ? "available" : "unavailable"}>
-            {data.availabilityLabel}
-          </StockLabel>
+        <div className="mt-4 flex items-center justify-end border-t border-line pt-3">
           <span className="serial text-line-strong transition-colors duration-200 group-hover:text-graphite">
             детайли →
           </span>

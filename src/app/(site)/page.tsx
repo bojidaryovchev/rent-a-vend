@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Eyebrow, IncludedMark, SectionHead } from "@/components/ui/bits";
@@ -7,9 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { MachineImage } from "@/components/ui/machine-image";
 import { ModelCard } from "@/components/catalogue/model-card";
 import { toCardData } from "@/lib/card-data";
-import { MODELS, catalogueStats } from "@/content/models";
-import { getUnits } from "@/server/stock-store";
-import { availabilityOverall, availabilityForModel } from "@/engine/availability";
+import { MODELS, catalogueStats, leadPhoto, modelBySlug } from "@/content/models";
 import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
 import { CATEGORIES, CATEGORY_LABEL } from "@/content/taxonomy";
 import { company } from "@/lib/company";
@@ -54,14 +53,14 @@ const DIFFS = [
   {
     n: "02",
     tag: "наличност",
-    title: "Виждате наличността",
-    body: "Кои апарати ги има сега, с година и състояние. Когато данните остареят, спираме да ги показваме, вместо да ви подведем.",
+    title: "Всеки модел е наличен",
+    body: "Каталогът не е витрина с разпродадени машини. Каквото е публикувано, можем да го доставим.",
   },
   {
     n: "03",
     tag: "състояние",
-    title: "Виждате и дефектите",
-    body: "Машините са употребявани. Снимаме забележките, вместо да ги крием - купувачът и без това знае, че машината не е нова.",
+    title: "Готови за работа",
+    body: "Изцяло рециклирани и проверени от нашия екип, преди да тръгнат към обекта. Снимките са на реални машини.",
   },
 ];
 
@@ -73,7 +72,7 @@ const PROCESS = [
 ];
 
 const CATEGORY_INTRO: Record<CategoryKey, string> = {
-  coffee: "Машини за кафе и топли напитки. Реални апарати, с година и състояние.",
+  coffee: "Машини за кафе и топли напитки. Реални апарати от нашия склад.",
   snack: "Автомати за снаксове, пакетирани стоки и храна.",
   combo: "Комплекти от две машини - топли напитки и снаксове на едно място.",
   cold: "Автомати за студени напитки в кутии и бутилки.",
@@ -98,20 +97,103 @@ function Stat({
   );
 }
 
+/** The pairing the hero leads on. Named rather than computed: this is an
+ *  editorial recommendation, and the one machine in the catalogue photographed
+ *  as the pair it is actually bought as. */
+const HERO_MODEL_SLUG = "necta-canto-samba";
+
+/**
+ * The hero's machine.
+ *
+ * A recommendation, stated as ours. The site has no sales history, so "най-
+ * избирано" would be a claim nobody can check, sitting three sections above
+ * "Виждате и дефектите" - the page would be spending its own argument. What it
+ * says instead is who the pair is for, which is a judgement we can defend from
+ * the model's own record (120-350 души, 2-3 смени) and which lets a twenty-
+ * person office rule itself out in one line.
+ *
+ * Falls back to the drawing if the frame ever goes missing, so the hero degrades
+ * rather than breaking.
+ */
+function HeroFeature() {
+  const pair = modelBySlug(HERO_MODEL_SLUG);
+  const photo = pair ? leadPhoto(pair) : null;
+
+  if (!pair || !photo) {
+    return (
+      <MachineImage
+        category="combo"
+        name="Вендинг машина"
+        showNote
+        className="animate-shutter h-105"
+      />
+    );
+  }
+
+  return (
+    <Link
+      href={routes.model(pair.category as CategoryKey, pair.slug)}
+      className="animate-shutter group flex flex-col overflow-hidden border border-line bg-paper-sunken"
+    >
+      {/* The render is white-backed, so it sits on paper rather than being
+          knocked out - the drop shadow under the cabinets is part of the image
+          and a cut-out would take it with it. */}
+      <div className="paper-grain relative h-70 sm:h-80">
+        <Image
+          src={photo.src}
+          alt={photo.alt}
+          fill
+          priority
+          sizes="(min-width: 1024px) 40vw, 100vw"
+          className="object-contain p-3"
+        />
+        <span className="serial absolute top-0 left-0 bg-graphite px-2 py-1 text-paper/80">
+          препоръчваме
+        </span>
+      </div>
+
+      {photo.credit && (
+        <p className="border-t border-line bg-paper-raised px-3 py-2">
+          <span className="serial text-ink-subtle">{photo.credit}</span>
+        </p>
+      )}
+
+      <div className="border-t border-line bg-paper-raised p-4">
+        <h2 className="plate text-[14px] text-graphite">{pair.name}</h2>
+        <p className="mt-2 text-[13px] leading-6 text-ink-muted">
+          Кафе и снаксове на едно място. За производство, склад и логистика на
+          две или три смени.
+        </p>
+
+        <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3">
+          <span className="tabular font-display text-[26px] leading-none text-graphite">
+            от {fromMonthly(pair.id)}&nbsp;€
+            <span className="ml-1 font-sans text-[12px] font-normal text-ink-muted">
+              /месец
+            </span>
+          </span>
+          <span className="serial text-line-strong transition-colors duration-200 group-hover:text-graphite">
+            детайли →
+          </span>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 export default async function HomePage() {
-  const units = await getUnits();
   const stats = catalogueStats();
-  const now = new Date();
-  const availability = availabilityOverall(now, units);
 
   // Cheapest entry point across the whole catalogue - the honest "from" figure.
   const from = Math.min(...MODELS.map((m) => fromMonthly(m.id)));
 
-  // Machines that can actually be rented today lead the strip; featuring one
-  // nobody can have wastes the click.
-  const featured = MODELS.map((m) => toCardData(m, units))
-    .sort((a, b) => Number(b.canRent) - Number(a.canRent))
-    .slice(0, 4);
+  // The strip used to lead on whatever was rentable today. With one
+  // availability state (D50) there is nothing to sort on, so it leads on the
+  // cheapest four - the figure the page is already selling on.
+  const featured = [...MODELS]
+    .sort((a, b) => fromMonthly(a.id) - fromMonthly(b.id))
+    .slice(0, 4)
+    .map((m) => toCardData(m));
 
   return (
     <>
@@ -147,7 +229,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="mt-6 max-w-xl text-[15px] leading-7 text-paper/75">
-              Реални машини от нашия склад, с година, състояние и цена на всяка.
+              Реални машини от нашия склад, с публикувана цена на всяка.
               Доставка, монтаж, сервиз и застраховка са включени. Без
               първоначална инвестиция.
             </p>
@@ -167,13 +249,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <MachineImage
-            category="coffee"
-            name="Вендинг машина"
-            showNote
-            caption="Тук ще стои реална снимка на машина от склада, а не стокова фотография."
-            className="animate-shutter h-[420px]"
-          />
+          <HeroFeature />
         </Container>
 
         {/* Stat strip */}
@@ -181,14 +257,7 @@ export default async function HomePage() {
           <Container>
             <dl className="grid grid-cols-2 divide-x divide-paper/10 md:grid-cols-3">
               <Stat label="Модели" value={String(stats.total)} />
-              <Stat
-                label="Налични сега"
-                value={
-                  availability.canPublish
-                    ? String(availability.available)
-                    : "по заявка"
-                }
-              />
+              <Stat label="Категории" value={String(CATEGORIES.length)} />
               <Stat
                 label="Срок"
                 value="12-60 мес."
@@ -206,7 +275,7 @@ export default async function HomePage() {
             <SectionHead
               index="00"
               title="Всичко, което другите крият"
-              lead="Всяка машина е конкретен апарат, с година и състояние."
+              lead="Цена на всеки модел, публикувана на страницата му."
             />
             <span aria-hidden className="hatch h-6 w-40 opacity-10" />
           </div>
@@ -244,15 +313,12 @@ export default async function HomePage() {
           <SectionHead
             index="01"
             title="Машини под наем"
-            lead="Всяка машина е конкретен апарат, с година и състояние."
+            lead="Изцяло рециклирани и проверени, с цена на всеки модел."
           />
 
           <div className="mt-10 grid gap-px border border-line-strong bg-line-strong sm:grid-cols-2 lg:grid-cols-4">
             {CATEGORIES.map((c) => {
               const list = MODELS.filter((m) => m.category === c);
-              const rentable = list.filter(
-                (m) => availabilityForModel(m.id, now, units).available > 0,
-              ).length;
 
               return (
                 <Link
@@ -273,7 +339,7 @@ export default async function HomePage() {
                   </div>
                   <div className="flex items-end justify-between border-t border-line pt-3">
                     <span className="tabular text-[13px] text-ink-muted">
-                      {list.length} модела · {rentable} налични
+                      {list.length} модела
                     </span>
                     <ArrowRight
                       aria-hidden

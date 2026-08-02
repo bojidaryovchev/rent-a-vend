@@ -63,7 +63,6 @@ export interface Candidate {
   /** How many spec fields we actually know, as a tie-breaker. */
   knownFields: number;
   fromEur: number;
-  canRent: boolean;
 }
 
 export interface SiteProfile {
@@ -236,12 +235,6 @@ function score(
   if (fleetBonus) {
     total += fleetBonus;
     reasons.push("Necta - основната марка в наличност, с части и сервиз при нас");
-  }
-
-  // Availability is a real advantage, not a tiebreak.
-  if (candidate.canRent) {
-    total += 12;
-    reasons.push("Налична в момента");
   }
 
   // Budget filters rather than scores: over budget is a no, not a maybe.
