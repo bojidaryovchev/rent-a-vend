@@ -2,7 +2,7 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { desc, eq } from "drizzle-orm";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { getDb } from "./db";
 import {
   ENQUIRY_SOURCES,

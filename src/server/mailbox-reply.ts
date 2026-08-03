@@ -135,7 +135,16 @@ export async function sendReply(
   });
 
   if (sent.error || !sent.data) {
-    return { ok: false, error: sent.error?.message ?? "Resend не върна отговор." };
+    // Resend's own message is English and written for developers. It belongs in
+    // the log, not under a Bulgarian form.
+    console.error(
+      "Отговорът не беше изпратен:",
+      sent.error?.message ?? "(Resend не върна отговор)",
+    );
+    return {
+      ok: false,
+      error: "Отговорът не беше изпратен. Опитайте отново след минута.",
+    };
   }
 
   const attachments: MailAttachment[] = files.map((f) => ({

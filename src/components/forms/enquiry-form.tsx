@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import Link from "next/link";
 import { submitEnquiry } from "@/server/enquiry-action";
 import { company } from "@/lib/company";

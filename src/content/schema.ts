@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "@/lib/zod";
 import { CATEGORIES, PHOTO_VIEWS, PRODUCT_KINDS, VENUE_TYPES } from "./taxonomy";
 
 /**
