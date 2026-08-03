@@ -54,6 +54,25 @@ const nextConfig: NextConfig = {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
 
+  /**
+   * Version skew protection.
+   *
+   * Every build gives its chunks and its server-function ids new names. A tab
+   * opened before a deploy still holds the old ones, so the next click inside
+   * it asks for files that no longer exist - and the browser shows "This page
+   * couldn't load" while the server logs stay perfectly clean, because nothing
+   * ever reached a route.
+   *
+   * With a deployment id set, Next stamps it on navigation responses, notices
+   * the mismatch, and does a full page load instead of failing. The admin panel
+   * is where this bites: it is the one surface someone leaves open in a tab for
+   * hours across several deploys.
+   *
+   * Undefined outside Vercel, which is what disables the mechanism locally.
+   */
+  deploymentId:
+    process.env.VERCEL_DEPLOYMENT_ID ?? process.env.VERCEL_GIT_COMMIT_SHA,
+
   experimental: {
     /**
      * Raised from the 1 MB default for one form: the reply box in the admin
