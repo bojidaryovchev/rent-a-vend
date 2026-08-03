@@ -41,8 +41,32 @@ function flatten(html: string): string {
     .trim();
 }
 
+/**
+ * Drop our own signature block from a message we sent.
+ *
+ * `--` on a line of its own is the standard signature delimiter, and the block
+ * beneath it is generated from `company` at send time: the same four lines
+ * under every outgoing message. Repeated down a transcript it buries the
+ * sentence someone actually wrote.
+ *
+ * Trimmed for display only - `bodyText` keeps exactly what left the building,
+ * which is the version worth having if anyone ever asks what was sent. Applied
+ * to our messages alone; a signature on an incoming one is the sender's
+ * content and not ours to tidy.
+ */
+function withoutSignature(text: string): string {
+  const lines = text.split("\n");
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if (lines[i].trimEnd() === "--") return lines.slice(0, i).join("\n").trimEnd();
+  }
+  return text;
+}
+
 function readableBody(message: MailMessage): string {
-  if (message.bodyText?.trim()) return message.bodyText.trim();
+  const text = message.bodyText?.trim();
+  if (text) {
+    return message.direction === "out" ? withoutSignature(text) : text;
+  }
   if (message.bodyHtml) return flatten(message.bodyHtml);
   return "(празно съобщение)";
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@react-email/components";
+import { renderEmail } from "./render";
 import { company } from "@/lib/company";
 import { palette } from "./theme";
 import { Reply } from "./reply";
@@ -37,10 +37,15 @@ const enquiry: EnquiryRecord = {
   notes: null,
 };
 
+/* Rendered through `renderEmail`, which is what the send path calls. Passing
+   the element straight to Resend instead looked equivalent and threw "Failed to
+   render React component" on the first real send, because the SDK reaches for a
+   package that is not installed here. A test that renders a different way would
+   have stayed green through all of it. */
 const templates: [name: string, html: Promise<string>][] = [
-  ["reply", render(Reply({ body: "Здравейте, машината е налична." }))],
-  ["acknowledgement", render(EnquiryAcknowledgement({ enquiry }))],
-  ["notification", render(EnquiryNotification({ enquiry }))],
+  ["reply", renderEmail(Reply({ body: "Здравейте, машината е налична." }))],
+  ["acknowledgement", renderEmail(EnquiryAcknowledgement({ enquiry }))],
+  ["notification", renderEmail(EnquiryNotification({ enquiry }))],
 ];
 
 describe.each(templates)("%s", (_name, htmlPromise) => {

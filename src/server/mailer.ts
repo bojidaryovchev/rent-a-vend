@@ -3,6 +3,7 @@ import type { ReactElement } from "react";
 import { company } from "@/lib/company";
 import { EnquiryNotification } from "@/emails/enquiry-notification";
 import { EnquiryAcknowledgement } from "@/emails/enquiry-acknowledgement";
+import { renderEmail } from "@/emails/render";
 import type { EnquiryRecord } from "./enquiry-store";
 
 /**
@@ -107,7 +108,10 @@ async function send(
       from: FROM,
       to,
       subject,
-      react,
+      /* `html`, not `react`. See the note in src/emails/render.ts: handing the
+         SDK the element makes it reach for a package this project does not
+         have installed, and the send fails at runtime rather than at build. */
+      html: await renderEmail(react),
       text,
       ...(replyTo ? { replyTo } : {}),
     });

@@ -1,6 +1,7 @@
 import "server-only";
 import { company } from "@/lib/company";
 import { Reply } from "@/emails/reply";
+import { renderEmail } from "@/emails/render";
 import {
   getMailboxStore,
   normalizeSubject,
@@ -94,7 +95,12 @@ export async function sendReply(
   /* The plain-text twin. Not a fallback nicety: some clients render text only,
      and a message with no text part scores worse with spam filters. It carries
      the contact details as a signature block because a text part has no
-     letterhead to put them in. */
+     letterhead to put them in.
+
+     The lone `--` is the standard signature delimiter, and the thread view
+     relies on it to hide this block when it lists what we sent - see
+     `withoutSignature` in the admin thread page. Changing it here means
+     changing it there. */
   const text = [
     body.trim(),
     "",
@@ -112,8 +118,9 @@ export async function sendReply(
     to,
     subject,
     /* Both parts, same as the enquiry mail: the branded letterhead for clients
-       that render HTML, the signed plain text for those that do not. */
-    react: Reply({ body: body.trim() }),
+       that render HTML, the signed plain text for those that do not. Rendered
+       here rather than passed as `react` - see src/emails/render.ts. */
+    html: await renderEmail(Reply({ body: body.trim() })),
     text,
     ...(Object.keys(headers).length > 0 ? { headers } : {}),
     ...(files.length > 0
