@@ -1,5 +1,6 @@
 import "server-only";
 import { company } from "@/lib/company";
+import { Reply } from "@/emails/reply";
 import {
   getMailboxStore,
   normalizeSubject,
@@ -89,7 +90,19 @@ export async function sendReply(
   if (references.length > 0) headers.References = references.join(" ");
 
   const subject = replySubject(thread.subject);
-  const text = `${body.trim()}\n\n--\n${company.brandName}\n${company.phone} · ${company.email}`;
+
+  /* The plain-text twin. Not a fallback nicety: some clients render text only,
+     and a message with no text part scores worse with spam filters. It carries
+     the contact details as a signature block because a text part has no
+     letterhead to put them in. */
+  const text = [
+    body.trim(),
+    "",
+    "--",
+    company.brandName,
+    `${company.phone} · ${company.email}`,
+    company.workingHours,
+  ].join("\n");
 
   const { Resend } = await import("resend");
   const resend = new Resend(key);
@@ -98,6 +111,9 @@ export async function sendReply(
     from: `${company.brandName} <${company.email}>`,
     to,
     subject,
+    /* Both parts, same as the enquiry mail: the branded letterhead for clients
+       that render HTML, the signed plain text for those that do not. */
+    react: Reply({ body: body.trim() }),
     text,
     ...(Object.keys(headers).length > 0 ? { headers } : {}),
     ...(files.length > 0

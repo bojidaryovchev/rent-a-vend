@@ -1,6 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { company } from "@/lib/company";
+import { bodyFont, palette } from "@/emails/theme";
 import {
   getMailboxStore,
   headerValue,
@@ -54,6 +55,9 @@ const ATTACHMENT_BUDGET = 15_000_000;
 
 export type InboundResult =
   | { status: "forwarded"; id: string }
+  /** Stored, but not forwarded, because forwarding is not configured. The
+   *  message is safe in the panel, which is the half that matters. */
+  | { status: "recorded"; reason: string }
   /** Understood and deliberately not forwarded. Still a 200: a retry would do
    *  the same thing again. */
   | { status: "ignored"; reason: string }
@@ -97,14 +101,10 @@ export async function handleInboundEmail(
   if (!key || !secret) {
     return { status: "failed", error: "липсва RESEND_API_KEY или RESEND_WEBHOOK_SECRET" };
   }
-  if (!INBOX) {
-    return { status: "failed", error: "липсва MAIL_TO - няма къде да се препрати" };
-  }
-  if (INBOX.endsWith(`@${OUR_DOMAIN}`)) {
-    // Forwarding our own domain to itself is an infinite loop with a rate limit
-    // at the end of it.
-    return { status: "failed", error: `MAIL_TO сочи към @${OUR_DOMAIN}` };
-  }
+
+  /* MAIL_TO is deliberately NOT checked here. It configures the forward, and
+     the forward is the lesser half: a misconfigured notification must not stop
+     the message being recorded. Checked further down, once the row is safe. */
 
   const { Resend } = await import("resend");
   const resend = new Resend(key);
@@ -149,6 +149,18 @@ export async function handleInboundEmail(
     };
   }
 
+  /* From here on it is only the notification. The message is already in the
+     panel and answerable, so a forward that cannot be configured is reported
+     and shrugged off rather than turned into a 500 and an endless retry. */
+  if (!INBOX) {
+    return { status: "recorded", reason: "липсва MAIL_TO - копие не беше изпратено" };
+  }
+  if (INBOX.endsWith(`@${OUR_DOMAIN}`)) {
+    // Forwarding our own domain to itself is an infinite loop with a rate limit
+    // at the end of it.
+    return { status: "recorded", reason: `MAIL_TO сочи към @${OUR_DOMAIN}` };
+  }
+
   /* Attachments come back as signed download URLs, not bytes. Fetch each and
      re-encode, stopping at the budget rather than failing the whole message. */
   const attachments: { filename: string; content: string; contentType: string }[] = [];
@@ -188,16 +200,19 @@ export async function handleInboundEmail(
   }
 
   const text = [...envelope, "", "---", "", email.text ?? "(празно съобщение)"].join("\n");
-  /* Same two greys as src/emails/*.tsx. Inline and literal because an email
-     body has no stylesheet and no custom properties to read from. */
+  /* The palette comes from src/emails/theme.tsx so the forwarded envelope
+     matches the mail the site sends, rather than being a second set of greys
+     invented here. Built as a string and not as a template because the body it
+     wraps is the sender's own markup, which React would escape. */
   const html = email.html
-    ? `<div style="font:13px/1.5 ui-sans-serif,system-ui,sans-serif;color:#56534c">${envelope
+    ? `<div style="font:13px/1.5 ${bodyFont};color:${palette.muted}">${envelope
         .map((line) => `${escapeHtml(line)}<br>`)
-        .join("")}</div><hr style="border:0;border-top:1px solid #e0ddd6;margin:16px 0">${email.html}`
+        .join("")}</div><hr style="border:0;border-top:1px solid ${palette.line};margin:16px 0">${email.html}`
     : undefined;
 
-  /* Reply-To is the whole reason this file exists. The copy is sent by us, so
-     without it Reply answers us; with it, Reply answers the customer. */
+  /* Reply-To points at the customer so that pressing Reply in Gmail answers
+     them and not us. Note it is the SECOND-best way to answer now - a reply
+     sent from the admin panel leaves as info@, which this one cannot. */
   const replyTo = email.reply_to?.length ? email.reply_to : [email.from];
 
   const sent = await resend.emails.send({

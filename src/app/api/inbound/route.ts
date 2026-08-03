@@ -29,6 +29,11 @@ export async function POST(request: Request) {
   switch (result.status) {
     case "forwarded":
       return Response.json({ forwarded: result.id });
+    case "recorded":
+      /* In the panel but not in Gmail. Worth a log line, not a retry: retrying
+         would not fix a missing MAIL_TO and the message is already safe. */
+      console.warn("Входящата поща е записана, но не препратена:", result.reason);
+      return Response.json({ recorded: result.reason });
     case "ignored":
       return Response.json({ ignored: result.reason });
     case "unauthorized":

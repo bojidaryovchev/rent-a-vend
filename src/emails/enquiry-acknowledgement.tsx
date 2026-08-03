@@ -1,16 +1,7 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Preview,
-  Section,
-  Text,
-} from "@react-email/components";
+import { Hr, Section, Text } from "@react-email/components";
 import { company } from "@/lib/company";
 import type { EnquiryRecord } from "@/server/enquiry-store";
+import { Eyebrow, MailShell, palette } from "./theme";
 
 /**
  * What the visitor receives, immediately.
@@ -19,99 +10,74 @@ import type { EnquiryRecord } from "@/server/enquiry-store";
  * Monday to Friday, 09:00 to 18:00 - so an enquiry sent at 18:30 on Friday is
  * answered Monday morning, and this message says so rather than implying an
  * hour. A promise kept beats a promise that sounded better.
+ *
+ * Frame, palette and footer come from `theme.tsx`; only what is particular to
+ * an acknowledgement lives here.
  */
-
-const ink = "#2a2825";
-const muted = "#56534c";
-const line = "#e0ddd6";
-const accent = "#ffd400";
-
 export function EnquiryAcknowledgement({ enquiry }: { enquiry: EnquiryRecord }) {
   return (
-    <Html lang="bg">
-      <Head />
-      <Preview>Получихме запитването ви. {company.responsePromise}.</Preview>
-      <Body
-        style={{
-          backgroundColor: "#faf9f7",
-          fontFamily: "-apple-system, Segoe UI, Arial, sans-serif",
-          margin: 0,
-          padding: "24px 0",
-        }}
-      >
-        <Container
+    <MailShell preview={`Получихме запитването ви. ${company.responsePromise}.`}>
+      <Section style={{ padding: "28px 24px" }}>
+        <Text
           style={{
-            maxWidth: "560px",
-            margin: "0 auto",
-            backgroundColor: "#ffffff",
-            border: `1px solid ${line}`,
+            margin: 0,
+            fontSize: "22px",
+            lineHeight: "28px",
+            fontWeight: 700,
+            color: palette.ink,
           }}
         >
-          <Section
-            style={{
-              backgroundColor: accent,
-              padding: "4px 24px",
-            }}
-          />
+          Получихме запитването ви
+        </Text>
 
-          <Section style={{ padding: "28px 24px" }}>
-            <Heading as="h1" style={{ margin: 0, fontSize: "22px", color: ink }}>
-              Получихме запитването ви
-            </Heading>
+        <Text
+          style={{
+            margin: "14px 0 0",
+            fontSize: "15px",
+            lineHeight: "24px",
+            color: palette.ink,
+          }}
+        >
+          Здравейте, {enquiry.name}. Благодарим ви - ще прегледаме запитването и
+          ще се върнем с конкретна машина, срок и цена.
+        </Text>
 
-            <Text
-              style={{
-                margin: "14px 0 0",
-                fontSize: "15px",
-                lineHeight: "24px",
-                color: ink,
-              }}
-            >
-              Здравейте, {enquiry.name}. Благодарим ви - ще прегледаме
-              запитването и ще се върнем с конкретна машина, срок и цена.
-            </Text>
+        <Hr style={{ borderColor: palette.line, margin: "22px 0" }} />
 
-            <Hr style={{ borderColor: line, margin: "22px 0" }} />
+        <Eyebrow>Кога да очаквате отговор</Eyebrow>
+        <Text
+          style={{
+            margin: "4px 0 0",
+            fontSize: "15px",
+            lineHeight: "24px",
+            color: palette.ink,
+          }}
+        >
+          {company.responsePromise}. Работно време: {company.workingHours}
+        </Text>
+        <Text
+          style={{
+            margin: "8px 0 0",
+            fontSize: "14px",
+            lineHeight: "22px",
+            color: palette.muted,
+          }}
+        >
+          {company.outOfHoursNote}
+        </Text>
 
-            <Text
-              style={{
-                margin: "0 0 4px",
-                fontSize: "11px",
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                color: muted,
-                fontWeight: 700,
-              }}
-            >
-              Кога да очаквате отговор
-            </Text>
-            <Text
-              style={{ margin: 0, fontSize: "15px", lineHeight: "24px", color: ink }}
-            >
-              {company.responsePromise}. Работно време: {company.workingHours}
-            </Text>
-            <Text
-              style={{
-                margin: "8px 0 0",
-                fontSize: "14px",
-                lineHeight: "22px",
-                color: muted,
-              }}
-            >
-              {company.outOfHoursNote}
-            </Text>
+        <Hr style={{ borderColor: palette.line, margin: "22px 0" }} />
 
-            <Hr style={{ borderColor: line, margin: "22px 0" }} />
-
-            <Text style={{ margin: 0, fontSize: "13px", color: muted }}>
-              Номер на запитването: <strong style={{ color: ink }}>{enquiry.id}</strong>
-              <br />
-              Ако нещо се промени, отговорете на този имейл.
-            </Text>
-          </Section>
-        </Container>
-      </Body>
-    </Html>
+        <Text style={{ margin: 0, fontSize: "13px", lineHeight: "20px", color: palette.muted }}>
+          Номер на запитването:{" "}
+          <strong style={{ color: palette.ink, fontVariantNumeric: "tabular-nums" }}>
+            {enquiry.id}
+          </strong>
+          <br />
+          Ако нещо се промени, отговорете на този имейл.
+        </Text>
+      </Section>
+    </MailShell>
   );
 }
 

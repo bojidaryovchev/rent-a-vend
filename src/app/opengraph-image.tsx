@@ -66,6 +66,11 @@ export default async function Image() {
         >
           {/* -- the lockup, same order as the header ---------------------- */}
           <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
+            {/* next/image does not exist inside ImageResponse - this renders
+                through satori, not the browser, and a data-URI <img> is the
+                documented approach. The LCP warning does not apply to an image
+                that is itself the output. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={`data:image/png;base64,${mark}`}
               width={92}
