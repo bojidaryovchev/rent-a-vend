@@ -205,6 +205,14 @@ export const fasCrane: Draft[] = [
   {
     id: "crane-bevmax-media-2-6",
     slug: "crane-bevmax-media-2-6",
+    photos: [
+      {
+        src: "/machines/crane-bevmax-media-2-6/front.png",
+        alt: "Автомат за студени напитки Crane BevMax Media 2 6 с шест колони бутилки и кутии, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Crane BevMax Media 2 6",
     manufacturer: "crane",
     category: "cold",
