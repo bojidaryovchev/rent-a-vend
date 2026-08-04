@@ -23,9 +23,15 @@ import type { Category } from "@/content/taxonomy";
 const FALLBACK: Record<Category, { ratio: number; rows: number }> = {
   coffee: { ratio: 0.36, rows: 3 },
   snack: { ratio: 0.44, rows: 5 },
-  combo: { ratio: 0.72, rows: 4 },
+  /* One narrow stacked cabinet, not two side by side: a combo is 580mm across
+     and roughly 1830mm tall. */
+  combo: { ratio: 0.32, rows: 4 },
   cold: { ratio: 0.42, rows: 4 },
 };
+
+/** Where the snack base meets the coffee machine, as a share of the height.
+ *  The base is 1080mm of a ~1830mm assembled machine. */
+const COMBO_SPLIT = 1080 / 1830;
 
 export interface MachineShape {
   widthMm: number | null;
@@ -49,9 +55,14 @@ function Silhouette({
   // Body width follows the machine's real proportions against a 220-tall frame.
   const bodyH = 200;
   const bodyW = Math.round(bodyH * ratio * 1.55);
-  const vbW = isCombo ? bodyW * 2 + 24 : bodyW + 16;
+  const vbW = bodyW + 16;
 
-  const panels = isCombo ? [0, bodyW + 8] : [0];
+  /* A combination machine is ONE cabinet: a coffee machine bolted onto a snack
+     base. It used to draw as two panels standing side by side, which is a
+     different product - and one this catalogue does not carry. */
+  const splitY = 10 + Math.round(bodyH * (1 - COMBO_SPLIT));
+
+  const panels = [0];
 
   return (
     <svg
@@ -74,6 +85,11 @@ function Silhouette({
         const keyX = 8 + windowW + 14;
         const keyW = Math.max(16, bodyW - windowW - 22);
 
+        /* The snack half of a combo, drawn full width: the glass runs across
+           the whole base cabinet, unlike a Snakky's part-width window. */
+        const baseTop = splitY + 8;
+        const baseH = 10 + bodyH - 18 - baseTop;
+
         return (
           <g key={offset} transform={`translate(${offset + 8},0)`}>
             <rect x="0" y="10" width={bodyW} height={bodyH} fill="url(#steelface)" />
@@ -86,82 +102,145 @@ function Silhouette({
               strokeWidth="1.5"
             />
 
-            {/* Product window */}
-            <rect
-              x="10"
-              y="22"
-              width={windowW}
-              height={windowH}
-              fill="oklch(0.98 0.003 85 / 0.1)"
-              stroke="oklch(0.98 0.003 85 / 0.28)"
-            />
-
-            {/* Shelves, one per real tray */}
-            {!isCoffee &&
-              Array.from({ length: Math.min(rows, 6) }, (_, r) => (
-                <line
-                  key={r}
-                  x1="10"
-                  x2={10 + windowW}
-                  y1={40 + r * (windowH / Math.min(rows + 1, 7))}
-                  y2={40 + r * (windowH / Math.min(rows + 1, 7))}
-                  stroke="oklch(0.98 0.003 85 / 0.18)"
-                />
-              ))}
-
-            {/* Cup station */}
-            {isCoffee && (
+            {isCombo ? (
               <>
+                {/* Coffee machine on top: brew window, keypad, cup station. */}
                 <rect
-                  x={14}
-                  y="132"
+                  x="10"
+                  y="20"
+                  width={windowW}
+                  height={splitY - 48}
+                  fill="oklch(0.98 0.003 85 / 0.1)"
+                  stroke="oklch(0.98 0.003 85 / 0.28)"
+                />
+                <rect
+                  x={keyX}
+                  y="20"
+                  width={keyW}
+                  height={splitY - 48}
+                  fill="oklch(0.98 0.003 85 / 0.1)"
+                />
+                <circle cx={keyX + keyW / 2} cy={splitY - 18} r="2.5" fill="var(--color-accent)" />
+                <rect
+                  x="14"
+                  y={splitY - 26}
                   width={Math.max(30, windowW - 12)}
-                  height="42"
+                  height="20"
                   fill="var(--color-graphite-deep)"
                 />
+
+                {/* The join. One line, full width - the whole difference
+                    between a stack and a single tall box. */}
+                <line
+                  x1="0"
+                  x2={bodyW}
+                  y1={splitY}
+                  y2={splitY}
+                  stroke="var(--color-graphite-edge)"
+                  strokeWidth="1.5"
+                />
+
+                {/* Snack base: glass front with one shelf per real tray. */}
                 <rect
-                  x={22}
-                  y="152"
-                  width={Math.max(18, windowW - 28)}
-                  height="20"
-                  fill="oklch(0.98 0.003 85 / 0.12)"
+                  x="10"
+                  y={baseTop}
+                  width={bodyW - 20}
+                  height={baseH}
+                  fill="oklch(0.98 0.003 85 / 0.1)"
+                  stroke="oklch(0.98 0.003 85 / 0.28)"
+                />
+                {Array.from({ length: Math.min(rows, 5) }, (_, r) => (
+                  <line
+                    key={r}
+                    x1="10"
+                    x2={bodyW - 10}
+                    y1={baseTop + ((r + 1) * baseH) / (Math.min(rows, 5) + 1)}
+                    y2={baseTop + ((r + 1) * baseH) / (Math.min(rows, 5) + 1)}
+                    stroke="oklch(0.98 0.003 85 / 0.18)"
+                  />
+                ))}
+              </>
+            ) : (
+              <>
+                {/* Product window */}
+                <rect
+                  x="10"
+                  y="22"
+                  width={windowW}
+                  height={windowH}
+                  fill="oklch(0.98 0.003 85 / 0.1)"
+                  stroke="oklch(0.98 0.003 85 / 0.28)"
+                />
+
+                {/* Shelves, one per real tray */}
+                {!isCoffee &&
+                  Array.from({ length: Math.min(rows, 6) }, (_, r) => (
+                    <line
+                      key={r}
+                      x1="10"
+                      x2={10 + windowW}
+                      y1={40 + r * (windowH / Math.min(rows + 1, 7))}
+                      y2={40 + r * (windowH / Math.min(rows + 1, 7))}
+                      stroke="oklch(0.98 0.003 85 / 0.18)"
+                    />
+                  ))}
+
+                {/* Cup station */}
+                {isCoffee && (
+                  <>
+                    <rect
+                      x={14}
+                      y="132"
+                      width={Math.max(30, windowW - 12)}
+                      height="42"
+                      fill="var(--color-graphite-deep)"
+                    />
+                    <rect
+                      x={22}
+                      y="152"
+                      width={Math.max(18, windowW - 28)}
+                      height="20"
+                      fill="oklch(0.98 0.003 85 / 0.12)"
+                    />
+                  </>
+                )}
+
+                {/* Display, keypad, power light, delivery bay */}
+                <rect
+                  x={keyX}
+                  y="26"
+                  width={keyW}
+                  height="34"
+                  fill="oklch(0.98 0.003 85 / 0.1)"
+                />
+                {Array.from({ length: 4 }, (_, i) =>
+                  Array.from({ length: 2 }, (_, j) => (
+                    <rect
+                      key={`${i}-${j}`}
+                      x={keyX + 3 + j * 9}
+                      y={68 + i * 9}
+                      width="6"
+                      height="6"
+                      fill="oklch(0.98 0.003 85 / 0.22)"
+                    />
+                  )),
+                )}
+                <circle
+                  cx={keyX + keyW / 2}
+                  cy="118"
+                  r="3"
+                  fill="var(--color-accent)"
+                />
+                <rect
+                  x={keyX}
+                  y="132"
+                  width={keyW}
+                  height="8"
+                  fill="oklch(0.98 0.003 85 / 0.16)"
                 />
               </>
             )}
 
-            {/* Display, keypad, power light, delivery bay */}
-            <rect
-              x={keyX}
-              y="26"
-              width={keyW}
-              height="34"
-              fill="oklch(0.98 0.003 85 / 0.1)"
-            />
-            {Array.from({ length: 4 }, (_, i) =>
-              Array.from({ length: 2 }, (_, j) => (
-                <rect
-                  key={`${i}-${j}`}
-                  x={keyX + 3 + j * 9}
-                  y={68 + i * 9}
-                  width="6"
-                  height="6"
-                  fill="oklch(0.98 0.003 85 / 0.22)"
-                />
-              )),
-            )}
-            <circle
-              cx={keyX + keyW / 2}
-              cy="118"
-              r="3"
-              fill="var(--color-accent)"
-            />
-            <rect
-              x={keyX}
-              y="132"
-              width={keyW}
-              height="8"
-              fill="oklch(0.98 0.003 85 / 0.16)"
-            />
             <rect
               x="0"
               y={10 + bodyH - 14}

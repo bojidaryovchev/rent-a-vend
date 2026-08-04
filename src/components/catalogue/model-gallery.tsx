@@ -20,6 +20,11 @@ import { cn } from "@/lib/cn";
  * measured objects, and a cropped machine is a machine whose proportions you
  * cannot read - the one thing a buyer comparing a 701mm Snakky against a 1180mm
  * Merchant is actually looking for.
+ *
+ * There used to be a second mode here, for combination machines: two frames
+ * side by side, captioned as the two halves of a pair. A combo turned out to be
+ * one cabinet - a coffee machine standing on a snack base - and is photographed
+ * as one, so the mode described a product that is not in the catalogue.
  */
 export function ModelGallery({
   photos,
@@ -27,16 +32,12 @@ export function ModelGallery({
   name,
   shape,
   className,
-  /** True when the frames are the two halves of a combination machine, which
-   *  belong in one picture rather than behind a thumbnail each. */
-  isPair = false,
 }: {
   photos: Photo[];
   category: Category;
   name: string;
   shape?: MachineShape;
   className?: string;
-  isPair?: boolean;
 }) {
   const [active, setActive] = useState(0);
 
@@ -54,45 +55,6 @@ export function ModelGallery({
 
   // A stale index cannot outlive the photo list on a client transition.
   const current = photos[Math.min(active, photos.length - 1)];
-
-  /**
-   * A combination machine is the pair. Showing one cabinet and hiding the other
-   * behind a thumbnail sells the wrong product, so both stand in the frame,
-   * bottom-aligned the way they are installed.
-   */
-  if (isPair && photos.length > 1) {
-    return (
-      <div className={cn("flex flex-col", className)}>
-        <figure className="relative flex min-h-0 flex-1 flex-col border border-line bg-paper-sunken">
-          <div className="paper-grain relative flex min-h-64 flex-1 items-end justify-center gap-2 p-4">
-            {photos.map((photo) => (
-              <div key={photo.src} className="relative h-full min-w-0 flex-1">
-                <Image
-                  src={photo.src}
-                  alt={photo.alt}
-                  fill
-                  sizes="(min-width: 1024px) 25vw, 50vw"
-                  className="object-contain object-bottom"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </div>
-            ))}
-            <span className="serial absolute top-0 left-0 bg-graphite px-2 py-1 text-paper/80">
-              Двете машини от комплекта
-            </span>
-          </div>
-
-          <figcaption className="relative border-t border-line bg-paper-raised px-3 py-2">
-            <span className="serial text-ink-subtle">
-              Отделни изображения на двете машини, а не снимка на сглобения
-              комплект
-            </span>
-          </figcaption>
-        </figure>
-      </div>
-    );
-  }
 
   return (
     <div className={cn("flex flex-col", className)}>

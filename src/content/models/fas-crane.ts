@@ -13,7 +13,10 @@ import type { Model, PhotoInput } from "../schema";
  * Merchants from snack buyers and mislead drinks buyers.
  */
 
-type Draft = Omit<Model, "spec" | "recommendation" | "photos" | "cabinetOf"> & {
+type Draft = Omit<
+  Model,
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit"
+> & {
   /** Set only where a variant differs from its base model behind the panel. */
   cabinetOf?: string | null;
 } & {
@@ -40,7 +43,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "fas",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (Vending Systems, Vendex)",
     intro:
       "Широка италианска машина с шест рафта и до 56 позиции. Здрава конструкция за натоварени обекти.",
@@ -79,7 +81,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "fas",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "FAS International продуктова страница, VP Salestech",
     intro:
       "До 70 селекции и шест рафта по осем спирали. Поддържа Executive, BDV и MDB, тоест приема почти всяко платежно устройство.",
@@ -111,7 +112,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "fas",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на FAS 1050 - общ корпус",
     intro: "FAS 1050 с разширено оборудване.",
     spec: {
@@ -140,7 +140,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "fas",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на FAS 1050 - общ корпус, CO2 охлаждане",
     intro:
       "Обновената FAS 1050 с охлаждащ агрегат на CO2 (R744) - природен газ с нисък парников потенциал.",
@@ -177,7 +176,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "fas",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "FAS International продуктова страница, Westomatic",
     intro:
       "Барабанна машина за прясна храна. Осем барабана с регулируеми клетки и охлаждане до 5 °C - подходяща за сандвичи и салати.",
@@ -211,7 +209,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "crane",
     category: "cold",
     currentName: null,
-    comboOf: null,
     specSource: "Crane / CPI продуктова документация",
     intro:
       "Автомат за студени напитки с асансьорна доставка - бутилката не пада, а се сваля. Тъч дисплей 9 инча.",
@@ -234,11 +231,18 @@ export const fasCrane: Draft[] = [
   {
     id: "crane-bevmax-media-2-9",
     slug: "crane-bevmax-media-2-9",
+    photos: [
+      {
+        src: "/machines/crane-bevmax-media-2-9/front.png",
+        alt: "Автомат за студени напитки Crane BevMax Media 2 9 с девет колони бутилки и кутии, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Crane BevMax Media 2 9",
     manufacturer: "crane",
     category: "cold",
     currentName: null,
-    comboOf: null,
     specSource: "Crane / CPI продуктова документация",
     intro:
       "По-широкият BevMax с по-голям капацитет, за обекти с постоянен поток.",
@@ -263,11 +267,18 @@ export const fasCrane: Draft[] = [
   {
     id: "crane-merchant-4",
     slug: "crane-merchant-4",
+    photos: [
+      {
+        src: "/machines/crane-merchant-4/front.png",
+        alt: "Снакс автомат Crane Merchant 4, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Crane Merchant 4",
     manufacturer: "crane",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Crane / CPI продуктова документация",
     intro:
       "По-тесният Merchant, за обекти с ограничено място по ширина.",
@@ -301,7 +312,6 @@ export const fasCrane: Draft[] = [
     manufacturer: "crane",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (VendTek, AVS Companies)",
     intro:
       "Широка машина с ярко осветена витрина и до 564 продукта. 42 селекции, разширяеми до 58.",
@@ -328,11 +338,18 @@ export const fasCrane: Draft[] = [
   {
     id: "crane-merchant-media-2",
     slug: "crane-merchant-media-2",
+    photos: [
+      {
+        src: "/machines/crane-merchant-media-2/front.png",
+        alt: "Снакс автомат Crane Merchant Media 2 с тъч дисплей, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Crane Merchant Media 2",
     manufacturer: "crane",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Crane / CPI продуктова документация",
     intro:
       "Merchant с платформата Media2: по-бърз процесор и тъч дисплей с видео.",

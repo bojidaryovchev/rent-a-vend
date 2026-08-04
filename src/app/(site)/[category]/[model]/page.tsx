@@ -11,10 +11,10 @@ import { RentCalculator } from "@/components/tools/rent-calculator";
 import { ModelCard } from "@/components/catalogue/model-card";
 import { toCardData } from "@/lib/card-data";
 import {
+  COMBO_BASE_NAME,
   MODELS,
-  constituentsOf,
+  coffeeUnitOf,
   modelBySlug,
-  ownsItsPhotos,
 } from "@/content/models";
 import { alternativesWithOverrides } from "@/engine/alternatives";
 import { fromMonthly, quoteAllTerms, reductionLabel, INCLUDED_IN_RENT } from "@/engine/quote";
@@ -73,15 +73,14 @@ export async function generateMetadata(
 
   /**
    * A description has to be unique per page and long enough to be worth
-   * showing. Neither was true: the 15 combination machines all shared one
+   * showing. Neither was true: the combination machines all shared one
    * generated intro verbatim, and several model intros are a single short
    * clause - one was 20 characters.
+   *
+   * The combos now carry their own written intros, so there is nothing left to
+   * generate for them.
    */
-  const constituents = constituentsOf(model);
-  const base =
-    constituents.length === 2
-      ? `Комплект от ${constituents[0].name} и ${constituents[1].name} - топли напитки и снаксове на едно място.`
-      : (model.intro ?? "");
+  const base = model.intro ?? "";
 
   /* Kept terse so that even a 69-character intro plus this stays inside the
      ~160 characters Google will render. */
@@ -112,7 +111,7 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
   }
 
   const from = fromMonthly(model.id);
-  const constituents = constituentsOf(model);
+  const coffeeUnit = coffeeUnitOf(model);
   const alternatives = alternativesWithOverrides(model, { limit: 3 });
 
   return (
@@ -156,7 +155,6 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
           category={model.category}
           name={model.name}
           shape={model.spec}
-          isPair={constituents.length === 2 && !ownsItsPhotos(model)}
           className="h-[440px]"
         />
 
@@ -261,11 +259,21 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
             Технически характеристики
           </h2>
 
-          {constituents.length === 2 && (
+          {coffeeUnit && (
             <p className="mt-4 max-w-2xl border-l-2 border-line-strong pl-3 text-[13px] leading-6 text-ink-muted">
-              Комплект от {constituents[0].name} и {constituents[1].name}.
-              Ширината и капацитетът по-долу са сборът на двете машини, а
-              височината е на по-високата.
+              Една машина в два етажа:{" "}
+              <Link
+                href={routes.model(
+                  coffeeUnit.category as CategoryKey,
+                  coffeeUnit.slug,
+                )}
+                className="underline underline-offset-2 hover-fine:text-graphite"
+              >
+                {coffeeUnit.name}
+              </Link>{" "}
+              върху снакс корпус {COMBO_BASE_NAME}. Височината и теглото по-долу
+              са сборът на двете, а ширината и дълбочината са на по-големия
+              корпус. Капацитетът се отнася за снакс частта.
             </p>
           )}
 

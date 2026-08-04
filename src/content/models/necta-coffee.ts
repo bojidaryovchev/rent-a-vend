@@ -16,7 +16,10 @@ import type { Model, PhotoInput } from "../schema";
  * than an assumption. Where a variant changes the cabinet, it gets its own row.
  */
 
-type Draft = Omit<Model, "spec" | "recommendation" | "photos" | "cabinetOf"> & {
+type Draft = Omit<
+  Model,
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit"
+> & {
   /** Set only where a variant differs from its base model behind the panel. */
   cabinetOf?: string | null;
 } & {
@@ -43,7 +46,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (VendTrade, Vending Solutions)",
     intro:
       "Компактна настолна машина за малък офис. Заема минимално място и се зарежда бързо.",
@@ -80,7 +82,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Solista overview (архив)",
     intro:
       "Настолна еспресо машина с малък отпечатък, подходяща за приемна или малък екип.",
@@ -115,7 +116,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "N&W Global Vending Colibrì Automatic (архивен каталог)",
     intro:
       "Автоматична машина с малък отпечатък и капацитет от 180 чаши. Работи и върху стойка.",
@@ -146,7 +146,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Colibrì - общ корпус",
     intro: "Вариант на Colibrì с три контейнера за разтворими продукти.",
     spec: {
@@ -185,7 +184,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Brio manual H075U03 (архив)",
     intro:
       "Работният кон на малкия офис. Компактна, надеждна и лесна за поддръжка." +
@@ -223,7 +221,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Brio manual H075U03 (архив), общ корпус",
     intro:
       "Обновената версия на Brio, със същия отпечатък и по-нов интерфейс." +
@@ -261,7 +258,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Brio manual H075U03 (архив), общ корпус",
     intro:
       "Brio с тъч дисплей вместо бутони." +
@@ -299,7 +295,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Kikko service manual (архив)",
     intro:
       "Класическа машина за средно натоварен обект. Сервизните ръководства са широко достъпни, а частите се намират лесно.",
@@ -331,10 +326,9 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Kikko Max technical manual (архив), N&W каталог",
     intro:
-      "По-голямата Kikko, проектирана да стои редом до Snakky Max или Sfera и да образува комплект.",
+      "По-голямата Kikko. Еднаква на височина със Snakky Max и Sfera, така че застава до тях без разлика в силуета.",
     spec: {
       userInterface: "Бутони",
       heightMm: 1830,
@@ -366,7 +360,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: "Barista 500",
-    comboOf: null,
     specSource: "Дилърски спецификации (Vais Vending, Eurocoffee)",
     intro:
       "Една от най-разпространените машини в България. Части и сервиз се намират навсякъде.",
@@ -403,7 +396,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: "Barista 500 Touch",
-    comboOf: null,
     specSource: "Вариант на Concerto - общ корпус, тъч интерфейс",
     intro: "Concerto с тъч дисплей. Същият корпус, по-съвременно управление.",
     spec: {
@@ -439,7 +431,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (Vais Vending), N&W каталог",
     intro:
       "Голяма машина за интензивно натоварени обекти, с висок капацитет на контейнерите.",
@@ -476,7 +467,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Canto - общ корпус, тъч интерфейс",
     intro: "Canto с тъч дисплей.",
     spec: {
@@ -512,7 +502,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (Baristo, Vais Vending)",
     intro:
       "Висок капацитет: седем контейнера и 650 чаши между зарежданията. За обекти с постоянен поток.",
@@ -551,7 +540,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: "Barista 600",
-    comboOf: null,
     specSource: "Дилърски спецификации (VendTrade)",
     intro:
       "Машина от висок клас с широка гама напитки. Днес се предлага като Barista 600.",
@@ -590,7 +578,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: "Barista 600 Touch",
-    comboOf: null,
     specSource: "Вариант на Opera - общ корпус, тъч интерфейс",
     intro: "Opera с тъч дисплей и възможност за показване на съдържание.",
     spec: {
@@ -622,7 +609,6 @@ export const nectaCoffee: Draft[] = [
     manufacturer: "necta",
     category: "coffee",
     currentName: null,
-    comboOf: null,
     specSource: null,
     intro:
       "Топ моделът в гамата, с тъч интерфейс и най-широка гама напитки.",

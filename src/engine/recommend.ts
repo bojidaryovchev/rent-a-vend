@@ -346,12 +346,22 @@ export function recommend(
 
   // The combination machine, whole. Scored against the full request, because
   // covering all of it in one cabinet is exactly what it is for.
+  //
+  // Offered only to sites it actually fits. Every combo in the catalogue is a
+  // coffee machine on a four-tray snack base, sized for up to seventy people;
+  // suggesting one to a three-hundred-person plant as the alternative to its
+  // four machines is not a smaller answer, it is a wrong one. The headcount
+  // band gates it rather than the score, because a combo can out-score the
+  // field on venue and products while being far too small to feed the site.
   const linesWanted = wanted.map((w) => w.line);
   const spansHotAndSolid =
     linesWanted.includes("coffee") && linesWanted.includes("snack");
+  const fitsTheSite = (c: Candidate): boolean =>
+    (c.minHeadcount === null || profile.headcount >= c.minHeadcount) &&
+    (c.maxHeadcount === null || profile.headcount <= c.maxHeadcount);
   const comboInstead = spansHotAndSolid
     ? (candidates
-        .filter((c) => c.category === "combo")
+        .filter((c) => c.category === "combo" && fitsTheSite(c))
         .map((c) => score(c, profile, perMachineVolume))
         .sort((a, b) => b.score - a.score)[0] ?? null)
     : null;

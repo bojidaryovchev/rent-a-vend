@@ -117,9 +117,18 @@ export const modelSchema = z.object({
    *  is the old machines, so the legacy name leads and the current one clarifies. */
   currentName: z.string().nullable().default(null),
 
-  /** Combination machines are pairs of catalogued models. Specs derive from the
-   *  constituents rather than being entered again. */
-  comboOf: z.tuple([z.string(), z.string()]).nullable().default(null),
+  /**
+   * The catalogued coffee machine forming the top half of a combination
+   * machine.
+   *
+   * A combo is ONE cabinet, not two machines side by side: a Brio sits on a
+   * Mini Snakky snack base and is bought, delivered and installed as a single
+   * unit. The coffee half is a machine we also catalogue on its own, so it is
+   * named here and the combo's dimensions are stacked onto the base rather than
+   * entered by hand. The base cabinet is not sold separately and has no record
+   * of its own; its figures live beside the pairings in `models/combos.ts`.
+   */
+  coffeeUnit: z.string().nullable().default(null),
 
   /**
    * The model this one shares a cabinet with, where the difference is internal -

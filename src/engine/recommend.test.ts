@@ -109,13 +109,24 @@ describe("recommend", () => {
 
   it("offers a combination machine when hot and solid are both wanted", () => {
     const r = recommend(
-      profile({ products: ["coffee", "snack"], headcount: 120 }),
+      profile({ products: ["coffee", "snack"], headcount: 55 }),
       CANDIDATES,
     );
     expect(r.comboInstead?.candidate.category).toBe("combo");
     expect(r.comboInstead!.candidate.products).toEqual(
       expect.arrayContaining(["coffee", "snack"]),
     );
+  });
+
+  it("does not offer one to a site it is far too small for", () => {
+    // Every combo in the catalogue is a coffee machine on a four-tray snack
+    // base, sized to seventy people. Offering one as the compact alternative to
+    // a 300-person plant's four machines is a wrong answer, not a smaller one.
+    const r = recommend(
+      profile({ products: ["coffee", "snack"], headcount: 300, shifts: 3 }),
+      CANDIDATES,
+    );
+    expect(r.comboInstead).toBeNull();
   });
 
   it("does not offer one when only one product line was asked for", () => {

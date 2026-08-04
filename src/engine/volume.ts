@@ -57,7 +57,8 @@ const PEOPLE_PER_EXTRA_MACHINE = 200;
  */
 const MACHINES_PER_EXTRA_SHIFT = 1;
 
-/** A machine type on site. A combination unit is a pair, not a fourth line. */
+/** A machine type on site. A combination unit fills two of these lines at once
+ *  rather than being a fourth one, so it is offered whole instead of counted. */
 export type MachineLine = Exclude<Category, "combo">;
 
 /**

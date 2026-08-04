@@ -77,9 +77,8 @@ export const CASE_STUDIES: CaseStudy[] = [
     title: "Кафе и снаксове на мястото на една машина",
     venue: null,
     machine: "Necta Brio 3 + Mini Snakky",
-    modelSlug: "necta-brio-3-snakky",
-    machineNote:
-      "Доставената двойка е с Mini Snakky - по-малкият снакс шкаф. В каталога Brio 3 стои до стандартната Snakky.",
+    modelSlug: "necta-brio-3-minisnakky",
+    machineNote: null,
     problem:
       "Обектът разполагаше с ограничено пространство и нямаше възможност за поставяне на отделна кафе машина и отделна машина за закуски и напитки.",
     solution:

@@ -14,12 +14,11 @@ export function toCardData(model: Model): CardData {
     ...new Set(model.recommendation.venueTypes.map((v) => VENUE_TO_GROUP[v])),
   ] as VenueGroup[];
 
-  /* A combination machine shows both its cabinets; everything else leads on one
-   * frame. Capped at two so a model with a full four-view set does not turn the
-   * card into a contact sheet. */
-  const photos = model.comboOf
-    ? model.photos.slice(0, 2)
-    : [leadPhoto(model)].filter((p): p is NonNullable<typeof p> => p !== null);
+  /* One frame per card, combination machines included: a combo is a single
+   * stacked cabinet, so its front view already shows the whole product. */
+  const photos = [leadPhoto(model)].filter(
+    (p): p is NonNullable<typeof p> => p !== null,
+  );
 
   return {
     id: model.id,

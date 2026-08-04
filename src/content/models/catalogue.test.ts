@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MODELS,
   catalogueStats,
-  constituentsOf,
+  coffeeUnitOf,
   hasCompleteSet,
   leadPhoto,
   modelBySlug,
@@ -10,11 +10,12 @@ import {
   ownsItsPhotos,
   photoCoverage,
 } from "./index";
+import { MINI_SNAKKY } from "./combos";
 import { modelSchema, photoSchema } from "../schema";
 
 describe("catalogue", () => {
-  it("holds all 60 agreed models", () => {
-    expect(MODELS).toHaveLength(60);
+  it("holds all 48 agreed models", () => {
+    expect(MODELS).toHaveLength(48);
   });
 
   it("splits into the four agreed categories", () => {
@@ -22,9 +23,13 @@ describe("catalogue", () => {
     // and the three Wittenborgs) and added five SandenVendo. FAS Easy 7000 and
     // 8000 then went too: FAS's Easy line is 5000 and 6000, both of ours had a
     // null specSource, and the series had plainly been extrapolated upward.
+    //
+    // Twelve of the fifteen combinations went last. They described pairs of
+    // full-size cabinets standing side by side; the client supplies one
+    // combination machine - a Brio on a Mini Snakky base - in three trims.
     const { byCategory } = catalogueStats();
     expect(byCategory.coffee).toBe(17);
-    expect(byCategory.combo).toBe(15);
+    expect(byCategory.combo).toBe(3);
     expect(byCategory.cold).toBe(4);
     expect(byCategory.snack).toBe(24);
   });
@@ -95,38 +100,73 @@ describe("catalogue", () => {
 
 describe("combination machines", () => {
   const combos = modelsByCategory("combo");
+  const base = MINI_SNAKKY.spec;
 
-  it("all reference two real catalogued machines", () => {
+  it("is a coffee machine on a snack base, never two machines side by side", () => {
+    // The catalogue used to hold fifteen pairs of full-size cabinets standing
+    // next to each other. That is a different product, and not one the client
+    // supplies: what he lets out is a Brio bolted onto a Mini Snakky.
+    expect(combos).toHaveLength(3);
     for (const combo of combos) {
-      expect(constituentsOf(combo)).toHaveLength(2);
+      const coffee = coffeeUnitOf(combo);
+      expect(coffee, combo.slug).not.toBeNull();
+      expect(coffee!.category, combo.slug).toBe("coffee");
+      expect(combo.name, combo.slug).toContain("Mini Snakky");
     }
   });
 
-  it("adds the widths of its two machines", () => {
-    const combo = modelBySlug("necta-brio-3-snakky");
-    const [left, right] = constituentsOf(combo!);
-    expect(combo!.spec.widthMm).toBe(
-      (left.spec.widthMm ?? 0) + (right.spec.widthMm ?? 0),
-    );
-  });
+  it("stacks the heights rather than adding the widths", () => {
+    // The whole difference between one machine and two. A Brio is 540mm wide
+    // and 750mm tall; on a 580x1080 base the result is 580 wide and 1830 tall,
+    // not 1120 wide.
+    const combo = modelBySlug("necta-brio-3-minisnakky");
+    const coffee = coffeeUnitOf(combo!)!;
 
-  it("takes the taller of the two heights rather than adding them", () => {
-    const combo = modelBySlug("necta-brio-3-snakky");
-    const [left, right] = constituentsOf(combo!);
     expect(combo!.spec.heightMm).toBe(
-      Math.max(left.spec.heightMm ?? 0, right.spec.heightMm ?? 0),
+      (coffee.spec.heightMm ?? 0) + (base.heightMm ?? 0),
+    );
+    expect(combo!.spec.widthMm).toBe(
+      Math.max(coffee.spec.widthMm ?? 0, base.widthMm ?? 0),
+    );
+    expect(combo!.spec.depthMm).toBe(
+      Math.max(coffee.spec.depthMm ?? 0, base.depthMm ?? 0),
     );
   });
 
   it("sums weight and power draw", () => {
-    const combo = modelBySlug("necta-brio-3-snakky");
-    const [left, right] = constituentsOf(combo!);
+    const combo = modelBySlug("necta-brio-3-minisnakky");
+    const coffee = coffeeUnitOf(combo!)!;
     expect(combo!.spec.weightKg).toBe(
-      (left.spec.weightKg ?? 0) + (right.spec.weightKg ?? 0),
+      (coffee.spec.weightKg ?? 0) + (base.weightKg ?? 0),
     );
     expect(combo!.spec.maxPowerW).toBe(
-      (left.spec.maxPowerW ?? 0) + (right.spec.maxPowerW ?? 0),
+      (coffee.spec.maxPowerW ?? 0) + (base.maxPowerW ?? 0),
     );
+  });
+
+  it("takes capacity and trays from the snack base alone", () => {
+    // Cups and packets are different units. Adding a coffee machine's drink
+    // count to a snack cabinet's product count produces a number that means
+    // nothing, printed under the word "капацитет".
+    for (const combo of combos) {
+      expect(combo.spec.productCapacity, combo.slug).toBe(base.productCapacity);
+      expect(combo.spec.numTrays, combo.slug).toBe(base.numTrays);
+    }
+  });
+
+  it("is sized for the small site it actually fits", () => {
+    // Four trays of stock. A combo offered to a 300-person plant is not the
+    // compact answer, it is the wrong one - and the recommender gates on this.
+    for (const combo of combos) {
+      expect(combo.recommendation.maxHeadcount, combo.slug).toBeLessThanOrEqual(70);
+    }
+  });
+
+  it("is photographed assembled, as it is delivered", () => {
+    for (const combo of combos) {
+      expect(ownsItsPhotos(combo), combo.slug).toBe(true);
+      expect(leadPhoto(combo)?.view, combo.slug).toBe("front");
+    }
   });
 });
 
@@ -148,12 +188,10 @@ describe("photography", () => {
 
   it("falls back to the drawing rather than to a stock photograph", () => {
     // The gallery renders MachineImage on an empty list, and the catalogue has
-    // to stay shippable while models are still unshot. Combos borrow from their
-    // constituents and variants from their base cabinet; everything else that
-    // owns no photograph shows the drawing rather than a stand-in.
-    for (const m of MODELS.filter(
-      (x) => !ownsItsPhotos(x) && !x.comboOf && !x.cabinetOf,
-    )) {
+    // to stay shippable while models are still unshot. A variant may borrow its
+    // base cabinet; everything else that owns no photograph shows the drawing
+    // rather than a stand-in.
+    for (const m of MODELS.filter((x) => !ownsItsPhotos(x) && !x.cabinetOf)) {
       expect(m.photos, m.slug).toEqual([]);
       expect(leadPhoto(m), m.slug).toBeNull();
     }
@@ -161,8 +199,12 @@ describe("photography", () => {
 
   it("lends a variant its base model's cabinet, and says whose it is", () => {
     // A FAS 1050 EVO differs from a 1050 by a CO2 circuit behind the panel, so
-    // the same frame is the truthful one - provided the page admits it.
-    const variants = MODELS.filter((m) => m.cabinetOf && m.photos.length > 0);
+    // the same frame is the truthful one - provided the page admits it. Only
+    // applies where the variant has not been shot in its own right: Samba Top
+    // shares Samba's cabinet and still has its own frame.
+    const variants = MODELS.filter(
+      (m) => m.cabinetOf && m.photos.length > 0 && !ownsItsPhotos(m),
+    );
     expect(variants.length).toBeGreaterThan(0);
 
     for (const v of variants) {
@@ -219,36 +261,17 @@ describe("photography", () => {
     ).toThrow();
   });
 
-  it("never shows a combination machine as only one of its two halves", () => {
-    // The failure this prevents: Concerto Touch + Melodia led by a photograph
-    // of the Melodia snack machine alone, on a page selling a coffee pair.
+  it("never shows a combination machine as one of its halves", () => {
+    // The failure this prevents: a combo page led by a photograph of the coffee
+    // machine on its own, selling a cabinet the buyer is not getting. A combo
+    // is delivered assembled and has to be shown assembled, under its own slug.
     for (const combo of modelsByCategory("combo")) {
-      if (combo.photos.length === 0) continue;
-      if (ownsItsPhotos(combo)) continue;
-      const [left, right] = constituentsOf(combo);
-      expect(combo.photos.length, combo.slug).toBeGreaterThanOrEqual(2);
-      for (const half of [left, right]) {
-        expect(
-          combo.photos.some((p) =>
-            p.src.startsWith(`/machines/${half.slug}/`),
-          ),
-          `${combo.slug} is missing ${half.slug}`,
-        ).toBe(true);
-      }
-    }
-  });
-
-  it("lets a combination machine borrow its constituents' frames", () => {
-    // A combo is two catalogued machines side by side, so until the pair is
-    // photographed its frames legitimately come from elsewhere - but only from
-    // its own two constituents.
-    for (const combo of modelsByCategory("combo")) {
-      if (combo.photos.length === 0) continue;
-      const allowed = [combo, ...constituentsOf(combo)].map(
-        (m) => `/machines/${m.slug}/`,
-      );
+      expect(combo.photos.length, combo.slug).toBeGreaterThan(0);
       for (const photo of combo.photos) {
-        expect(allowed.some((prefix) => photo.src.startsWith(prefix))).toBe(true);
+        expect(
+          photo.src.startsWith(`/machines/${combo.slug}/`),
+          `${combo.slug} borrows ${photo.src}`,
+        ).toBe(true);
       }
     }
   });

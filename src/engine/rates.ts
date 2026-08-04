@@ -31,12 +31,19 @@ export const IS_PLACEHOLDER = true;
 /**
  * Category baselines, in the band observed across Europe: Italian coffee
  * machines run €50-150, snack and cold €100-250, combinations €150-400.
+ *
+ * The combo baseline sits under that band on purpose. It was set at 148 for a
+ * catalogue of full-size pairs - a Canto beside a Samba is two large machines
+ * and priced like it. What the client actually lets out is a Brio on a Mini
+ * Snakky base: one compact cabinet, four trays, 252 products. Pricing it above
+ * every snack machine in the catalogue would have been the formula outrunning
+ * the machine.
  */
 const CATEGORY_BASE: Record<Category, number> = {
   coffee: 78,
   snack: 84,
   cold: 96,
-  combo: 148,
+  combo: 126,
 };
 
 /**

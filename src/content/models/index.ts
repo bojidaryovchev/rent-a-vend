@@ -4,13 +4,14 @@ import { nectaCoffee } from "./necta-coffee";
 import { nectaSnack } from "./necta-snack";
 import { fasCrane } from "./fas-crane";
 import { vendo } from "./vendo";
-import { combos } from "./combos";
+import { combos, MINI_SNAKKY } from "./combos";
 
 /**
  * Assembles and validates the catalogue at module load.
  *
- * Combination machines get their specs computed from their two constituents
- * here, so a change to Snakky's weight flows into every combo containing one.
+ * A combination machine's specs are stacked here from the coffee machine on top
+ * and the snack base under it, so a change to the Brio's weight flows into every
+ * combo built on one.
  */
 
 type Draft = Parameters<typeof modelSchema.parse>[0];
@@ -21,57 +22,46 @@ const sum = (a: number | null, b: number | null): number | null =>
 const max = (a: number | null, b: number | null): number | null =>
   a === null && b === null ? null : Math.max(a ?? 0, b ?? 0);
 
-/** Two machines standing side by side: widths add, heights do not. */
-function deriveComboSpec(left: Spec, right: Spec): Spec {
-  return specSchema.parse({
-    userInterface: left.userInterface,
-    numberOfSelections: sum(left.numberOfSelections, right.numberOfSelections),
-    protocol: left.protocol ?? right.protocol,
-    heightMm: max(left.heightMm, right.heightMm),
-    widthMm: sum(left.widthMm, right.widthMm),
-    depthMm: max(left.depthMm, right.depthMm),
-    depthOpenMm: max(left.depthOpenMm, right.depthOpenMm),
-    weightKg: sum(left.weightKg, right.weightKg),
-    voltage: left.voltage ?? right.voltage,
-    maxPowerW: sum(left.maxPowerW, right.maxPowerW),
-    frequencyHz: left.frequencyHz ?? right.frequencyHz,
-    configuration: [left.configuration, right.configuration]
-      .filter(Boolean)
-      .join(" · ") || null,
-    numTrays: sum(left.numTrays, right.numTrays),
-    elevator: left.elevator ?? right.elevator,
-    dispensingSystem: [left.dispensingSystem, right.dispensingSystem]
-      .filter(Boolean)
-      .join(" · ") || null,
-    temperature: right.temperature ?? left.temperature,
-    productCapacity: sum(left.productCapacity, right.productCapacity),
-  });
-}
-
 /**
- * A combination machine is two catalogued machines standing side by side. Until
- * the pair itself is photographed it borrows its constituents' frames, each one
- * naming the machine it shows, so nothing implies the photograph is of the set.
+ * One machine, stacked: a coffee machine bolted onto a snack base.
+ *
+ * So heights ADD and widths do not - the opposite of the side-by-side pair this
+ * catalogue used to describe. Width and depth are the larger of the two, because
+ * the assembled cabinet is as wide as its widest half and has to clear a
+ * doorway on that figure.
+ *
+ * Capacity, trays and temperature come from the base alone: they describe the
+ * snack half, and the coffee half's cup count is a different unit that would be
+ * nonsense to add to it.
  */
-function deriveComboPhotos(left: Model, right: Model): Photo[] {
-  const halves = [left, right].map((m) => {
-    const lead = m.photos.find((p) => p.view === "front") ?? m.photos[0];
-    return lead ? { model: m, lead } : null;
+function deriveStackedSpec(top: Spec, base: Spec): Spec {
+  return specSchema.parse({
+    // The visitor operates the coffee machine's panel; it drives both halves.
+    userInterface: top.userInterface,
+    numberOfSelections: base.numberOfSelections,
+    protocol: top.protocol ?? base.protocol,
+
+    heightMm: sum(top.heightMm, base.heightMm),
+    widthMm: max(top.widthMm, base.widthMm),
+    depthMm: max(top.depthMm, base.depthMm),
+    depthOpenMm: max(top.depthOpenMm, base.depthOpenMm),
+    weightKg: sum(top.weightKg, base.weightKg),
+
+    voltage: top.voltage ?? base.voltage,
+    maxPowerW: sum(top.maxPowerW, base.maxPowerW),
+    frequencyHz: top.frequencyHz ?? base.frequencyHz,
+
+    configuration:
+      ["Топли напитки", base.configuration].filter(Boolean).join(" · ") || null,
+    numTrays: base.numTrays,
+    elevator: base.elevator ?? top.elevator,
+    dispensingSystem: base.dispensingSystem,
+    temperature: base.temperature,
+    productCapacity: base.productCapacity,
   });
-
-  // Both halves or neither. Half a combination is not a picture of it: a
-  // coffee-plus-snack pair whose only frame is the snack machine reads as the
-  // wrong product entirely, and the drawing - which does render two cabinets -
-  // is the more honest stand-in until the pair itself is shot.
-  if (halves.some((h) => h === null)) return [];
-
-  return (halves as { model: Model; lead: Photo }[]).map(({ model, lead }) => ({
-    ...lead,
-    alt: lead.alt.includes(model.name)
-      ? lead.alt
-      : `${model.name}: ${lead.alt}`,
-  }));
 }
+
+const MINI_SNAKKY_SPEC = specSchema.parse(MINI_SNAKKY.spec);
 
 const singles: Model[] = [
   ...nectaCoffee,
@@ -125,30 +115,19 @@ for (const model of singles) {
 
 const comboModels: Model[] = combos.map((draft) => {
   const parsed = modelSchema.parse(draft as Draft);
-  const [leftId, rightId] = parsed.comboOf ?? [];
-  const left = leftId ? singlesById.get(leftId) : undefined;
-  const right = rightId ? singlesById.get(rightId) : undefined;
+  const top = parsed.coffeeUnit ? singlesById.get(parsed.coffeeUnit) : undefined;
 
-  if (!left || !right) {
+  if (!top) {
     throw new Error(
-      `Комбинацията "${parsed.slug}" сочи към несъществуваща машина: ${leftId} / ${rightId}`,
+      `Комбинацията "${parsed.slug}" сочи към несъществуваща кафе машина: ${parsed.coffeeUnit}`,
     );
   }
 
   authored.push({ slug: parsed.slug, photos: parsed.photos });
 
-  const spec = deriveComboSpec(left.spec, right.spec);
-  const dailyCapacity =
-    sum(
-      left.recommendation.dailyCapacity,
-      right.recommendation.dailyCapacity,
-    ) ?? null;
-
   return {
     ...parsed,
-    spec,
-    photos: parsed.photos.length ? parsed.photos : deriveComboPhotos(left, right),
-    recommendation: { ...parsed.recommendation, dailyCapacity },
+    spec: deriveStackedSpec(top.spec, MINI_SNAKKY_SPEC),
   };
 });
 
@@ -195,10 +174,13 @@ export const modelBySlug = (slug: string): Model | undefined =>
 export const modelById = (id: string): Model | undefined =>
   MODELS.find((m) => m.id === id);
 
-export const constituentsOf = (model: Model): Model[] =>
-  model.comboOf
-    ? model.comboOf.map((id) => modelById(id)).filter((m): m is Model => !!m)
-    : [];
+/** The catalogued coffee machine forming a combo's top half, if this is one. */
+export const coffeeUnitOf = (model: Model): Model | null =>
+  model.coffeeUnit ? (modelById(model.coffeeUnit) ?? null) : null;
+
+/** The snack base under every combination machine. Named, not catalogued: the
+ *  client supplies it only under a Brio. */
+export const COMBO_BASE_NAME = MINI_SNAKKY.name;
 
 /** How complete a model's specification is, for the readiness report. */
 export const specCompleteness = (model: Model): number => {
@@ -219,12 +201,12 @@ export const hasCompleteSet = (model: Model): boolean =>
   PHOTO_VIEWS.every((view) => model.photos.some((p) => p.view === view));
 
 /** True when the frames on show belong to the model itself rather than being
- *  borrowed from a combo's two constituents. */
+ *  borrowed from the base model whose cabinet it shares. */
 export const ownsItsPhotos = (model: Model): boolean =>
   model.photos.some((p) => p.src.startsWith(`/machines/${model.slug}/`));
 
 /** Photography progress, for the readiness report. Counts only what a model
- *  owns: a combo borrowing its constituents' frames is not yet shot. */
+ *  owns: a variant showing its base model's cabinet is not yet shot. */
 export const photoCoverage = () => {
   const owned = MODELS.filter(ownsItsPhotos);
   return {

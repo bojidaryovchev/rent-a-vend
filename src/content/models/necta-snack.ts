@@ -8,7 +8,10 @@ import type { Model, PhotoInput } from "../schema";
  * noise level included. The rest come from refurbished-dealer listings.
  */
 
-type Draft = Omit<Model, "spec" | "recommendation" | "photos" | "cabinetOf"> & {
+type Draft = Omit<
+  Model,
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit"
+> & {
   /** Set only where a variant differs from its base model behind the panel. */
   cabinetOf?: string | null;
 } & {
@@ -34,7 +37,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Snakky service manual ed.2 H180U01 (архив)",
     intro:
       "Най-разпространеният снакс автомат в България. Компактен, надежден, с широко достъпни части.",
@@ -77,10 +79,9 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (Vending Systems, VendingOutlet)",
     intro:
-      "По-високата Snakky с 300 продукта. Проектирана да стои редом до Kikko Max и да образува комплект.",
+      "По-високата Snakky с 300 продукта. Еднаква на височина с Kikko Max, така че двете застават една до друга без разлика в силуета.",
     spec: {
       userInterface: "Бутони",
       heightMm: 1830,
@@ -119,7 +120,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Necta продуктова документация",
     intro:
       "Подчинена машина без собствено табло. Свързва се към водеща машина и разширява избора, без да заема второ платежно устройство.",
@@ -155,7 +155,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (VendTrade, VendingOutlet)",
     intro:
       "Широка машина с голяма витрина и висок капацитет. За обекти със сериозен поток хора.",
@@ -195,7 +194,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (RatioVending, VendTrade)",
     intro:
       "Компактна по височина машина за места с ограничено пространство. 27 селекции и до 344 продукта.",
@@ -231,7 +229,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Vendtrade продуктова страница",
     intro:
       "Машина с голяма витрина и регулируеми рафтове - снаксове, кутии и бутилки в една клетка. Клавиатура с 12 бутона и 5 бутона за директен избор.",
@@ -270,7 +267,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Дилърски спецификации (VendTrade, Bitesize Vending)",
     intro:
       "Голяма машина с до седем рафта. Управлява три температурни зони в една клетка.",
@@ -298,11 +294,18 @@ export const nectaSnack: Draft[] = [
     id: "samba-top",
     slug: "necta-samba-top",
     cabinetOf: "samba",
+    photos: [
+      {
+        src: "/machines/necta-samba-top/front.png",
+        alt: "Снакс автомат Necta Samba Top, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Necta Samba Top",
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Samba - общ корпус",
     intro: "Samba в конфигурация Top, с по-висок клас оборудване.",
     spec: {
@@ -328,11 +331,18 @@ export const nectaSnack: Draft[] = [
     id: "samba-top-lift",
     slug: "necta-samba-top-lift",
     cabinetOf: "samba",
+    photos: [
+      {
+        src: "/machines/necta-samba-top-lift/front.png",
+        alt: "Снакс автомат Necta Samba Top Lift с асансьор за доставка, изглед отпред",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Necta Samba Top Lift",
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Samba - общ корпус, с асансьор",
     intro:
       "Samba Top с асансьор за доставка. Продуктът не пада, а се сваля - подходящо за чупливи и топли артикули.",
@@ -371,7 +381,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: "Gusto 8 Classic",
-    comboOf: null,
     specSource: "Дилърски спецификации (VendingOutlet, Oldham Vending)",
     intro:
       "Универсална машина за снаксове, храна, кутии и бутилки - или всичко наведнъж. До 56 селекции.",
@@ -404,7 +413,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Tango - общ корпус, хранителна конфигурация",
     intro:
       "Tango в конфигурация за храна, с по-ниска работна температура.",
@@ -437,7 +445,6 @@ export const nectaSnack: Draft[] = [
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Вариант на Tango - общ корпус",
     intro: "Tango в конфигурация Top.",
     spec: {
@@ -462,11 +469,18 @@ export const nectaSnack: Draft[] = [
   {
     id: "swing",
     slug: "necta-swing",
+    photos: [
+      {
+        src: "/machines/necta-swing/front.png",
+        alt: "Снакс автомат Necta Swing, изглед отпред под ъгъл",
+        view: "front",
+        credit: "Фабрично изображение на производителя",
+      },
+    ],
     name: "Necta Swing",
     manufacturer: "necta",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: "Necta Swing operating manual (архив)",
     intro: "Машина за пакетирани продукти и напитки.",
     spec: { voltage: "230 V", dispensingSystem: "Спирали" },

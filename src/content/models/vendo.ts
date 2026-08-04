@@ -18,7 +18,10 @@ import type { Model, PhotoInput } from "../schema";
  * through a doorway a machine of this width otherwise would not.
  */
 
-type Draft = Omit<Model, "spec" | "recommendation" | "photos" | "cabinetOf"> & {
+type Draft = Omit<
+  Model,
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit"
+> & {
   /** Set only where a variant differs from its base model behind the panel. */
   cabinetOf?: string | null;
 } & {
@@ -52,7 +55,6 @@ export const vendo: Draft[] = [
     manufacturer: "vendo",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: SPEC_SOURCE,
     intro:
       "Най-тясната от трите G-Snack Design. Минава през врата, която по-широка машина не минава, защото платежната колона се отделя от корпуса.",
@@ -100,7 +102,6 @@ export const vendo: Draft[] = [
     manufacturer: "vendo",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: SPEC_SOURCE,
     intro:
       "Средната G-Snack Design - осем избора на рафт при 980 мм ширина. Работният кон за обект с две смени.",
@@ -148,7 +149,6 @@ export const vendo: Draft[] = [
     manufacturer: "vendo",
     category: "snack",
     currentName: null,
-    comboOf: null,
     specSource: SPEC_SOURCE,
     intro:
       "Най-широката G-Snack Design, до 70 избора. За обект, на който зареждането веднъж седмично трябва да стигне.",
@@ -196,7 +196,6 @@ export const vendo: Draft[] = [
     manufacturer: "vendo",
     category: "cold",
     currentName: null,
-    comboOf: null,
     specSource: SPEC_SOURCE,
     intro:
       "Автомат за студени напитки с вертикален асансьор - бутилката се сваля, а не пада, така че газираното не се разклаща. До 336 кутии или 240 бутилки.",
@@ -246,7 +245,6 @@ export const vendo: Draft[] = [
     manufacturer: "vendo",
     category: "cold",
     currentName: null,
-    comboOf: null,
     specSource: SPEC_SOURCE,
     intro:
       "Голямата G-Drink Design - до 504 кутии или 360 бутилки, също с вертикален асансьор. За обект, на който студената напитка свършва преди края на смяната.",

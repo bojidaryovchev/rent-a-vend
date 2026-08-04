@@ -74,7 +74,7 @@ const PROCESS = [
 const CATEGORY_INTRO: Record<CategoryKey, string> = {
   coffee: "Машини за кафе и топли напитки. Реални апарати от нашия склад.",
   snack: "Автомати за снаксове, пакетирани стоки и храна.",
-  combo: "Комплекти от две машини - топли напитки и снаксове на едно място.",
+  combo: "Кафе машина върху снакс шкаф - един корпус, едно място, едно плащане.",
   cold: "Автомати за студени напитки в кутии и бутилки.",
 };
 
@@ -97,10 +97,10 @@ function Stat({
   );
 }
 
-/** The pairing the hero leads on. Named rather than computed: this is an
- *  editorial recommendation, and the one machine in the catalogue photographed
- *  as the pair it is actually bought as. */
-const HERO_MODEL_SLUG = "necta-canto-samba";
+/** The machine the hero leads on. Named rather than computed: this is an
+ *  editorial recommendation, and the combination machine is the one product in
+ *  the catalogue photographed exactly as it is delivered - assembled. */
+const HERO_MODEL_SLUG = "necta-brio-up-minisnakky";
 
 /**
  * The hero's machine.
@@ -108,18 +108,18 @@ const HERO_MODEL_SLUG = "necta-canto-samba";
  * A recommendation, stated as ours. The site has no sales history, so "най-
  * избирано" would be a claim nobody can check, sitting three sections above
  * "Виждате и дефектите" - the page would be spending its own argument. What it
- * says instead is who the pair is for, which is a judgement we can defend from
- * the model's own record (120-350 души, 2-3 смени) and which lets a twenty-
- * person office rule itself out in one line.
+ * says instead is who the machine is for, which is a judgement we can defend
+ * from the model's own record (15-70 души, 1-2 смени) and which lets a
+ * three-hundred-person plant rule itself out in one line.
  *
  * Falls back to the drawing if the frame ever goes missing, so the hero degrades
  * rather than breaking.
  */
 function HeroFeature() {
-  const pair = modelBySlug(HERO_MODEL_SLUG);
-  const photo = pair ? leadPhoto(pair) : null;
+  const featured = modelBySlug(HERO_MODEL_SLUG);
+  const photo = featured ? leadPhoto(featured) : null;
 
-  if (!pair || !photo) {
+  if (!featured || !photo) {
     return (
       <MachineImage
         category="combo"
@@ -132,11 +132,11 @@ function HeroFeature() {
 
   return (
     <Link
-      href={routes.model(pair.category as CategoryKey, pair.slug)}
+      href={routes.model(featured.category as CategoryKey, featured.slug)}
       className="animate-shutter group flex flex-col overflow-hidden border border-line bg-paper-sunken"
     >
       {/* The render is white-backed, so it sits on paper rather than being
-          knocked out - the drop shadow under the cabinets is part of the image
+          knocked out - the drop shadow under the cabinet is part of the image
           and a cut-out would take it with it. */}
       <div className="paper-grain relative h-70 sm:h-80">
         <Image
@@ -159,15 +159,15 @@ function HeroFeature() {
       )}
 
       <div className="border-t border-line bg-paper-raised p-4">
-        <h2 className="plate text-[14px] text-graphite">{pair.name}</h2>
+        <h2 className="plate text-[14px] text-graphite">{featured.name}</h2>
         <p className="mt-2 text-[13px] leading-6 text-ink-muted">
-          Кафе и снаксове на едно място. За производство, склад и логистика на
-          две или три смени.
+          Кафе машина върху снакс шкаф - един корпус вместо две машини. За офис,
+          автосервиз и фитнес до 70 души.
         </p>
 
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3">
           <span className="tabular font-display text-[26px] leading-none text-graphite">
-            от {fromMonthly(pair.id)}&nbsp;€
+            от {fromMonthly(featured.id)}&nbsp;€
             <span className="ml-1 font-sans text-[12px] font-normal text-ink-muted">
               /месец
             </span>
