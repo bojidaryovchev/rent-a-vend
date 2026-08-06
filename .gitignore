@@ -41,3 +41,33 @@ next-env.d.ts
 # claude
 .claude/settings.local.json
 .data/
+
+
+.claude
+
+# Working files that are not this repository's to carry.
+#
+# THIS REPOSITORY IS PUBLIC, and everything below was untracked - which is a
+# fragile kind of safe, one `git add -A` from being published.
+#
+# `lovable/` is the design-adaptation prompt set. `todos.md` is a scratch list.
+# The loose PNGs at the root are payment-system and machine reference shots
+# dropped in for reference rather than added to `public/`. None of them is part
+# of the site, and none of them should be the thing a visitor to the repo finds.
+lovable/
+todos.md
+/*.png
+/*.pdf
+
+# Research and client correspondence.
+#
+# THIS REPOSITORY IS PUBLIC. `docs/` holds the SEO keyword and competitor
+# research, the competitor backlink analysis, the sale-price research with its
+# provenance, the decisions log and the numbered Q&A rounds with the client.
+# That is the commercial advantage this project was built on, plus one side of a
+# client conversation - and it was one `git add -A` away from being published.
+#
+# The files stay on disk and are used; they are simply not this repo's to carry.
+# If they should be version-controlled, put them in one of the private repos
+# (buy-a-vend or sell-a-vend), not here.
+docs/
