@@ -1,6 +1,6 @@
-import { MODELS } from "@/content/models";
 import { CATEGORIES, CATEGORY_LABEL } from "@/content/taxonomy";
 import { company, hasUnresolvedBrand } from "@/lib/company";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
 import { absolute, isIndexable } from "@/lib/seo";
@@ -20,19 +20,30 @@ import { absolute, isIndexable } from "@/lib/seo";
  */
 export const dynamic = "force-static";
 
-export function GET() {
+export async function GET() {
   if (!isIndexable()) {
     return new Response("Not found", { status: 404 });
   }
 
   const name = hasUnresolvedBrand() ? company.legalName : company.brandName;
-  const from = Math.min(...MODELS.map((m) => fromMonthly(m.id)));
+  const catalogue = await loadCatalogue();
+  const from = Math.min(
+    ...catalogue.models.map((m) => fromMonthly(catalogue, m.id)),
+  );
 
+  /* An empty category is dropped rather than listed. Its page 404s, and
+     `Math.min` of nothing is `Infinity` - pointing an assistant at either is
+     worse than saying nothing about that category at all. */
   const categories = CATEGORIES.map((c) => {
-    const models = MODELS.filter((m) => m.category === c);
-    const cheapest = Math.min(...models.map((m) => fromMonthly(m.id)));
+    const models = catalogue.byCategory(c);
+    if (models.length === 0) return null;
+    const cheapest = Math.min(
+      ...models.map((m) => fromMonthly(catalogue, m.id)),
+    );
     return `- [${CATEGORY_LABEL[c]}](${absolute(`/${CATEGORY_SLUGS[c as CategoryKey]}`)}): ${models.length} модела под наем, от ${cheapest} €/месец`;
-  }).join("\n");
+  })
+    .filter((line): line is string => line !== null)
+    .join("\n");
 
   const key = [
     [routes.pricing, "Цени - месечна цена по категории и какво влиза в нея"],

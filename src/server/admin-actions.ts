@@ -23,6 +23,16 @@ import {
   sendReply,
   type OutgoingAttachment,
 } from "./mailbox-reply";
+import { MODELS } from "@/content/models";
+import { TERMS, type Term } from "@/engine/rates";
+import { termsAreMonotonic } from "@/engine/terms";
+import { monthlyByTerm } from "@/engine/catalogue";
+import { loadCatalogue } from "./catalogue";
+import {
+  getModelSettingsStore,
+  parsePrice,
+  type ModelSettingsInput,
+} from "./model-settings-store";
 
 /**
  * Every action below re-checks the session.
@@ -80,6 +90,159 @@ export async function updateEnquiryNotes(formData: FormData): Promise<void> {
 
   await getEnquiryStore().setNotes(id, notes);
   revalidatePath("/admin/zapitvaniya");
+}
+
+/* -- prices and catalogue visibility --------------------------------------- */
+
+/**
+ * Everything a price change has to invalidate.
+ *
+ * A rent appears on the machine's own page, its category page, the home grid,
+ * `/tseni`, the prefilled enquiry form, the sitemap and `llms.txt` - and inside
+ * the JSON-LD offer on several of those. Enumerating them would mean this list
+ * silently going stale the first time a price lands on a new surface, and the
+ * failure mode is a customer being quoted one figure on the card and another on
+ * the page.
+ *
+ * So it revalidates the root layout, which purges every cached route. That is
+ * heavy-handed for a static site of ~60 pages and completely appropriate at this
+ * frequency: this fires when one person edits one price, not on a request path.
+ */
+function revalidateCatalogue(): void {
+  revalidatePath("/", "layout");
+  /* A route handler, not a page - it carries prices and is `force-static`, so
+     it needs naming even after the layout purge. */
+  revalidatePath("/llms.txt");
+  revalidatePath("/admin/tseni");
+}
+
+export type PricingState = { error?: string; savedId?: string };
+
+/**
+ * Save one machine: five prices, published, position.
+ *
+ * The whole machine at once rather than a field at a time. The admin form
+ * submits all five terms on every save, so a term left blank is an instruction
+ * to unprice it - which is how a machine goes back to the derived placeholder
+ * without a delete button.
+ */
+export async function saveModelPricing(
+  _prev: PricingState,
+  formData: FormData,
+): Promise<PricingState> {
+  if (!(await requireAdmin())) {
+    return { error: "Сесията е изтекла. Влезте отново и опитайте пак." };
+  }
+
+  const modelId = String(formData.get("modelId") ?? "");
+  if (!MODELS.some((m) => m.id === modelId)) {
+    return { error: "Непозната машина." };
+  }
+
+  const monthly: Partial<Record<Term, number | null>> = {};
+  try {
+    for (const term of TERMS) {
+      monthly[term] = parsePrice(formData.get(`monthly_${term}`));
+    }
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "Невалидна цена." };
+  }
+
+  /**
+   * Refused, not silently corrected.
+   *
+   * D27 makes "с X% по-ниска месечна вноска" the only permitted phrasing for a
+   * longer term, and a curve that rises would put a negative percentage in that
+   * sentence. `quote()` floors it at zero as a last defence, but the client
+   * should be told he typed something contradictory rather than have the site
+   * quietly hide it.
+   */
+  if (!termsAreMonotonic(monthly)) {
+    return {
+      error:
+        "По-дългият срок не може да е с по-висока месечна вноска. Проверете реда на цените.",
+    };
+  }
+
+  const input: ModelSettingsInput = {
+    monthly,
+    published: formData.get("published") === "on",
+    sortOrder: Number(formData.get("sortOrder") ?? 0) || 0,
+  };
+
+  try {
+    await getModelSettingsStore().save(modelId, input);
+  } catch (err) {
+    console.error("Записът на цената се провали:", err);
+    return { error: "Записът не бе успешен. Опитайте пак." };
+  }
+
+  revalidateCatalogue();
+  return { savedId: modelId };
+}
+
+/** Returns one machine to the derived placeholder and republishes it. */
+export async function resetModelPricing(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const modelId = String(formData.get("modelId") ?? "");
+  if (!MODELS.some((m) => m.id === modelId)) return;
+
+  await getModelSettingsStore().remove(modelId);
+  revalidateCatalogue();
+}
+
+/**
+ * Move one machine up or down within its category.
+ *
+ * Reordering is expressed as a swap rather than as a typed position, because a
+ * position field makes the client responsible for keeping 50 numbers distinct.
+ * Every row starts at 0, so the first move has to hand out real positions: the
+ * category is renumbered from its current visible order, and only then are the
+ * two neighbours exchanged.
+ */
+export async function moveModel(formData: FormData): Promise<void> {
+  if (!(await requireAdmin())) return;
+
+  const modelId = String(formData.get("modelId") ?? "");
+  const direction = String(formData.get("direction") ?? "");
+  const model = MODELS.find((m) => m.id === modelId);
+  if (!model || (direction !== "up" && direction !== "down")) return;
+
+  const catalogue = await loadCatalogue();
+
+  /* The admin lists unpublished machines too, so the order it shows - and the
+     order these arrows move things through - is the category's whole roster. */
+  const siblings = catalogue.all
+    .filter((m) => m.category === model.category)
+    .map((m, index) => ({ model: m, index }))
+    .sort((a, b) => {
+      const byOrder =
+        (catalogue.settings.get(a.model.id)?.sortOrder ?? 0) -
+        (catalogue.settings.get(b.model.id)?.sortOrder ?? 0);
+      return byOrder !== 0 ? byOrder : a.index - b.index;
+    })
+    .map((entry) => entry.model);
+
+  const at = siblings.findIndex((m) => m.id === modelId);
+  const to = direction === "up" ? at - 1 : at + 1;
+  if (at === -1 || to < 0 || to >= siblings.length) return;
+
+  [siblings[at], siblings[to]] = [siblings[to], siblings[at]];
+
+  const store = getModelSettingsStore();
+  for (const [position, sibling] of siblings.entries()) {
+    const existing = catalogue.settings.get(sibling.id);
+    await store.save(sibling.id, {
+      /* Prices are carried through untouched. Reordering must never be a way to
+         lose one, which is the risk in an upsert that writes every column. */
+      monthly: existing ? monthlyByTerm(existing) : {},
+      published: existing?.published ?? true,
+      sortOrder: position,
+    });
+  }
+
+  revalidateCatalogue();
 }
 
 /* -- the info@ mailbox ----------------------------------------------------- */

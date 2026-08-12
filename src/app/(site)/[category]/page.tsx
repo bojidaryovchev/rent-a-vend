@@ -5,9 +5,10 @@ import { Container } from "@/components/ui/container";
 import { Eyebrow } from "@/components/ui/bits";
 import { CatalogueGrid } from "@/components/catalogue/catalogue-grid";
 import { toCardData } from "@/lib/card-data";
-import { modelsByCategory } from "@/content/models";
 import { CATEGORY_LABEL, type Category } from "@/content/taxonomy";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
+import type { Catalogue } from "@/engine/catalogue";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import { JsonLd } from "@/components/seo/json-ld";
 import { breadcrumbJsonLd, categoryJsonLd, pageMetadata } from "@/lib/seo";
@@ -42,8 +43,10 @@ export function generateStaticParams() {
 }
 
 /** Cheapest headline rent in a category, for the title's price anchor. */
-function fromPrice(category: Category): number {
-  return Math.min(...modelsByCategory(category).map((m) => fromMonthly(m.id)));
+function fromPrice(catalogue: Catalogue, category: Category): number {
+  return Math.min(
+    ...catalogue.byCategory(category).map((m) => fromMonthly(catalogue, m.id)),
+  );
 }
 
 export async function generateMetadata(
@@ -53,7 +56,9 @@ export async function generateMetadata(
   const category = SLUG_TO_CATEGORY[slug];
   if (!category) return {};
 
-  const models = modelsByCategory(category);
+  const catalogue = await loadCatalogue();
+  const models = catalogue.byCategory(category);
+  if (models.length === 0) return {};
 
   /**
    * The price belongs in the title, not just on the page.
@@ -64,7 +69,7 @@ export async function generateMetadata(
    */
   return pageMetadata({
     path: routes.category(category),
-    title: `${CATEGORY_LABEL[category]} под наем — от ${fromPrice(category)} €/месец`,
+    title: `${CATEGORY_LABEL[category]} под наем — от ${fromPrice(catalogue, category)} €/месец`,
     description: `${INTRO[category]} ${models.length} модела с публикувана цена.`,
     /* "Автомати за студени напитки под наем — от 60 €/месец" is already 51
        characters. The suffix would take it to 71 and be truncated away. */
@@ -77,8 +82,20 @@ export default async function CategoryPage(props: PageProps<"/[category]">) {
   const category = SLUG_TO_CATEGORY[slug];
   if (!category) notFound();
 
-  const models = modelsByCategory(category);
-  const cards = models.map((m) => toCardData(m));
+  const catalogue = await loadCatalogue();
+  const models = catalogue.byCategory(category);
+
+  /**
+   * A category with nothing published in it 404s.
+   *
+   * The alternative is a heading, an intro and an empty grid - thin content on
+   * the pages D23a names as the site's entire SEO surface. It also protects the
+   * price anchor below: `Math.min` of no models is `Infinity`, and "от Infinity
+   * €/месец" would be in the page title.
+   */
+  if (models.length === 0) notFound();
+
+  const cards = models.map((m) => toCardData(m, catalogue));
   const fromEur = Math.min(...cards.map((c) => c.fromEur));
 
   return (

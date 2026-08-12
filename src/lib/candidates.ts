@@ -1,4 +1,4 @@
-import { MODELS } from "@/content/models";
+import type { Catalogue } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import type { Candidate } from "@/engine/recommend";
 
@@ -8,9 +8,13 @@ import type { Candidate } from "@/engine/recommend";
  * Built on the server and handed to the wizard as props, so the browser gets a
  * few kilobytes of decision data rather than the whole catalogue and the
  * pricing engine.
+ *
+ * Reads `catalogue.models`, not `MODELS`: a machine the client has unpublished
+ * must not come back as a recommendation. Being recommended a machine whose page
+ * 404s is worse than a slightly shorter shortlist.
  */
-export function toCandidates(): Candidate[] {
-  return MODELS.map((m) => ({
+export function toCandidates(catalogue: Catalogue): Candidate[] {
+  return catalogue.models.map((m) => ({
     id: m.id,
     slug: m.slug,
     name: m.name,
@@ -24,6 +28,6 @@ export function toCandidates(): Candidate[] {
     products: m.recommendation.products,
     supportsMdb: m.spec.protocol?.includes("MDB") ?? false,
     knownFields: Object.values(m.spec).filter((v) => v !== null).length,
-    fromEur: fromMonthly(m.id),
+    fromEur: fromMonthly(catalogue, m.id),
   }));
 }

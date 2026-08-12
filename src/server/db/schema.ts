@@ -1,4 +1,5 @@
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -66,6 +67,61 @@ export const enquiries = pgTable(
   },
   (table) => [index("enquiries_created_at_idx").on(table.createdAt)],
 );
+
+/* -- what the admin controls about a catalogued machine -------------------- */
+
+/**
+ * The one row per machine that the client owns.
+ *
+ * D50 removed the unit records and left the published price as the site's last
+ * remaining differentiator - which made it the one number that must be editable
+ * without a deploy. This table is that edit surface, and nothing else about a
+ * model lives here: specs, photos and copy stay in `src/content/models/`, where
+ * they are validated at import, reviewed in a diff and covered by tests. A form
+ * that can produce a half-filled machine page is the failure D50 recorded, so
+ * the admin decides what a machine COSTS and whether it is SHOWN, never what it
+ * is.
+ *
+ * FIVE COLUMNS, NOT FIVE ROWS. A `(model_id, term)` table would be the
+ * normalised shape, and it would let a write land three terms from today beside
+ * two from last month. The admin edits a whole machine at once, so a whole
+ * machine is one row and a save is one statement. It also gives `published` and
+ * `sort_order` somewhere sensible to live, which a per-term table does not.
+ *
+ * Every price column is NULLABLE and that is the mechanism, not an oversight: a
+ * null term falls through to the derived placeholder in `engine/rates.ts` and
+ * the machine keeps saying so on the page. Pricing the catalogue is therefore
+ * incremental - ten real machines are ten real prices, not a launch blocker.
+ *
+ * Whole euros, deliberately. The rent formula already rounds to the nearest 5
+ * because a catalogue should read like a price list, the client's own example
+ * figures are whole, and integers keep every existing display path - JSON-LD
+ * `price` included - working unchanged. Sub-euro rents would be a column
+ * widening plus a formatter, not a redesign.
+ */
+export const modelSettings = pgTable("model_settings", {
+  /** The catalogue model id, e.g. "canto-touch". Not a foreign key: the
+      catalogue is a TypeScript module, so integrity is enforced on read by
+      ignoring rows whose model no longer exists. */
+  modelId: text("model_id").primaryKey(),
+
+  monthly12: integer("monthly_12"),
+  monthly24: integer("monthly_24"),
+  monthly36: integer("monthly_36"),
+  monthly48: integer("monthly_48"),
+  monthly60: integer("monthly_60"),
+
+  /** Whether the machine appears on its category page, the home grid, the
+      recommender and the sitemap. Absent row means published - a catalogue
+      that has never been touched still shows everything. */
+  published: boolean("published").notNull().default(true),
+
+  /** Position within its category. Lower first; ties fall back to catalogue
+      order, so an untouched catalogue keeps the order it has today. */
+  sortOrder: integer("sort_order").notNull().default(0),
+
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull(),
+});
 
 /* -- the info@ mailbox ----------------------------------------------------- */
 

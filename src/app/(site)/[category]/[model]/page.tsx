@@ -17,6 +17,7 @@ import {
   modelBySlug,
 } from "@/content/models";
 import { alternativesWithOverrides } from "@/engine/alternatives";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly, quoteAllTerms, reductionLabel, INCLUDED_IN_RENT } from "@/engine/quote";
 import {
   AVAILABILITY_LABEL,
@@ -50,7 +51,7 @@ export async function generateMetadata(
   const model = modelBySlug(slug);
   if (!model) return {};
 
-  const from = fromMonthly(model.id);
+  const from = fromMonthly(await loadCatalogue(), model.id);
 
   /**
    * The category term leads, not the model name.
@@ -110,13 +111,31 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
     notFound();
   }
 
-  const from = fromMonthly(model.id);
+  const catalogue = await loadCatalogue();
+
+  /**
+   * An unpublished machine 404s rather than disappearing quietly.
+   *
+   * `generateStaticParams` still emits every model, and deliberately so: with
+   * `dynamicParams = false`, a param dropped here could never come back when the
+   * client republishes the machine - the route would simply not exist. So the
+   * page is always built and refuses to render instead, which is a state
+   * `revalidatePath` can undo.
+   */
+  if (!catalogue.isPublished(model.id)) notFound();
+
+  const from = fromMonthly(catalogue, model.id);
   const coffeeUnit = coffeeUnitOf(model);
-  const alternatives = alternativesWithOverrides(model, { limit: 3 });
+  /* Asked for six and cut to three AFTER dropping the unpublished ones. Filtering
+     a list of three would leave one alternative on a page that has room for
+     three, which reads as a thin catalogue rather than as a hidden machine. */
+  const alternatives = alternativesWithOverrides(model, { limit: 6 })
+    .filter((alt) => catalogue.isPublished(alt.id))
+    .slice(0, 3);
 
   return (
     <>
-      <JsonLd data={modelJsonLd(model.id)} />
+      <JsonLd data={modelJsonLd(model.id, catalogue)} />
       {/* Mirrors the visible trail below, built from the same `routes` helpers
           so the two can never describe different hierarchies. */}
       <JsonLd
@@ -216,7 +235,7 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
       </Container>
 
       <RentCalculator
-        quotes={quoteAllTerms(model.id).map((q) => ({
+        quotes={quoteAllTerms(catalogue, model.id).map((q) => ({
           term: q.term,
           monthlyEur: q.monthlyEur,
           dailyEur: q.dailyEur,
@@ -299,7 +318,7 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
             </p>
             <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {alternatives.map((alt) => (
-                <ModelCard key={alt.id} data={toCardData(alt)} />
+                <ModelCard key={alt.id} data={toCardData(alt, catalogue)} />
               ))}
             </div>
           </Container>

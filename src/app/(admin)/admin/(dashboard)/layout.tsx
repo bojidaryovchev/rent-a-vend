@@ -66,6 +66,12 @@ export default async function AdminLayout({
             >
               Поща
             </Link>
+            <Link
+              href="/admin/tseni"
+              className="text-ink-muted hover-fine:text-ink"
+            >
+              Цени
+            </Link>
           </nav>
           <form action={signOut} className="ml-auto">
             <button

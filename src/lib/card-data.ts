@@ -1,6 +1,7 @@
 import type { Model } from "@/content/schema";
 import { leadPhoto } from "@/content/models";
 import { VENUE_TO_GROUP, type VenueGroup } from "@/content/taxonomy";
+import type { Catalogue } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import type { CardData } from "@/components/catalogue/model-card";
 
@@ -8,8 +9,12 @@ import type { CardData } from "@/components/catalogue/model-card";
  * Flattens a model into the serialisable shape the client grid needs, so
  * filtering can happen in the browser without shipping the catalogue and the
  * pricing engine along with it.
+ *
+ * Takes the loaded catalogue rather than reading a price itself: this runs once
+ * per card, and a card grid asking the database 20 times for the same 50 rows is
+ * the shape this argument exists to prevent.
  */
-export function toCardData(model: Model): CardData {
+export function toCardData(model: Model, catalogue: Catalogue): CardData {
   const venueGroups = [
     ...new Set(model.recommendation.venueTypes.map((v) => VENUE_TO_GROUP[v])),
   ] as VenueGroup[];
@@ -28,7 +33,7 @@ export function toCardData(model: Model): CardData {
     manufacturer: model.manufacturer,
     currentName: model.currentName,
     capacity: model.spec.productCapacity,
-    fromEur: fromMonthly(model.id),
+    fromEur: fromMonthly(catalogue, model.id),
     venueGroups,
     shape: {
       widthMm: model.spec.widthMm,

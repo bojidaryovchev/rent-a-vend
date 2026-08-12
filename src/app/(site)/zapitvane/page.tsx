@@ -3,6 +3,7 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { EnquiryForm, type CarriedContext } from "@/components/forms/enquiry-form";
 import { modelBySlug } from "@/content/models";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import { company } from "@/lib/company";
 import { pageMetadata } from "@/lib/seo";
@@ -27,6 +28,7 @@ export const metadata: Metadata = pageMetadata({
 
 export default async function EnquiryPage(props: PageProps<"/zapitvane">) {
   const params = await props.searchParams;
+  const catalogue = await loadCatalogue();
 
   const first = (v: string | string[] | undefined): string | undefined =>
     Array.isArray(v) ? v[0] : v;
@@ -49,7 +51,7 @@ export default async function EnquiryPage(props: PageProps<"/zapitvane">) {
   const context: CarriedContext = {
     modelSlug: model?.slug,
     modelName: model?.name,
-    monthlyEur: model ? fromMonthly(model.id) : undefined,
+    monthlyEur: model ? fromMonthly(catalogue, model.id) : undefined,
     term: Number.isFinite(term) ? term : undefined,
     recommenderSummary: summary,
     source: summary

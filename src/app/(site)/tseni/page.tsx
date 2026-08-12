@@ -4,8 +4,9 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { ExcludedMark, IncludedMark } from "@/components/ui/bits";
 import { ButtonLink } from "@/components/ui/button";
-import { modelsByCategory } from "@/content/models";
 import { CATEGORIES, CATEGORY_LABEL, type Category } from "@/content/taxonomy";
+import type { Catalogue } from "@/engine/catalogue";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
 import { routes, type CategoryKey } from "@/lib/routes";
 import { pageMetadata } from "@/lib/seo";
@@ -30,8 +31,10 @@ export const metadata: Metadata = pageMetadata({
 });
 
 /** Cheapest headline rent in a category, computed rather than written down. */
-function fromPrice(category: Category): number {
-  return Math.min(...modelsByCategory(category).map((m) => fromMonthly(m.id)));
+function fromPrice(catalogue: Catalogue, category: Category): number {
+  return Math.min(
+    ...catalogue.byCategory(category).map((m) => fromMonthly(catalogue, m.id)),
+  );
 }
 
 /**
@@ -48,7 +51,9 @@ const AFTER_ASSESSMENT = [
   "зареждане с продукти, ако решите да го поемем ние",
 ];
 
-export default function PricingPage() {
+export default async function PricingPage() {
+  const catalogue = await loadCatalogue();
+
   return (
     <>
       <PageHeader
@@ -66,7 +71,11 @@ export default function PricingPage() {
           </p>
 
           <ul className="mt-8 grid gap-px border border-line-strong bg-line-strong sm:grid-cols-2">
-            {CATEGORIES.map((category) => (
+            {/* Empty categories drop out: their pages 404, and `fromPrice`
+                would read `Infinity` off an empty list. */}
+            {CATEGORIES.filter(
+              (category) => catalogue.byCategory(category).length > 0,
+            ).map((category) => (
               <li key={category} className="bg-paper-raised p-6 md:p-8">
                 <Link
                   href={routes.category(category as CategoryKey)}
@@ -78,14 +87,14 @@ export default function PricingPage() {
                   <p className="mt-3 flex items-end gap-2">
                     <span className="serial pb-1.5 text-ink-muted">от</span>
                     <span className="tabular font-display text-figure">
-                      {fromPrice(category)} €
+                      {fromPrice(catalogue, category)} €
                     </span>
                     <span className="pb-1.5 text-ui-sm text-ink-muted">
                       /месец
                     </span>
                   </p>
                   <p className="mt-3 text-ui-sm leading-relaxed text-ink-muted">
-                    {modelsByCategory(category).length} модела · вижте цената на
+                    {catalogue.byCategory(category).length} модела · вижте цената на
                     всяка машина
                   </p>
                 </Link>

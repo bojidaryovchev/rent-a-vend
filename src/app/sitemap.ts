@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { loadCatalogue } from "@/server/catalogue";
 import { sitemapEntries } from "@/lib/seo";
 
 /**
@@ -15,6 +16,10 @@ import { sitemapEntries } from "@/lib/seo";
  *
  * Revisit if per-model content dates ever become real data.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
-  return sitemapEntries().map(({ url, priority }) => ({ url, priority }));
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const catalogue = await loadCatalogue();
+  return sitemapEntries(catalogue).map(({ url, priority }) => ({
+    url,
+    priority,
+  }));
 }

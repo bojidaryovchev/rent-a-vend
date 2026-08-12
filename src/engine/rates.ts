@@ -1,32 +1,35 @@
 import { MODELS } from "@/content/models";
 import type { Category } from "@/content/taxonomy";
+import { TERMS, TERM_FACTOR, roundToFive, type Term } from "./terms";
 
 /**
- * Rental rates.
+ * The DERIVED rental rate - what a machine costs when nobody has priced it yet.
  *
- * PLACEHOLDER DATA — but no longer a flat one.
+ * This file used to be the price list. It is now the fallback under one, and the
+ * distinction is the whole point of the change: real prices live in the
+ * `model_settings` table and are edited by the client in `/admin/tseni`, and
+ * every term with no figure in that table lands here instead.
  *
- * A single rate across the whole catalogue made every card read "от 70 €/месец"
- * on a site whose entire positioning is "real stock, individually priced". The
- * page built to break the competitors' impression was reproducing it.
+ * So a machine is placeholder-priced or it is not, MODEL BY MODEL. There is no
+ * global `IS_PLACEHOLDER` any more, because the honest answer stopped being a
+ * single boolean the moment the first real price could be typed: ten priced
+ * machines beside forty derived ones is the normal state of this catalogue for
+ * as long as it takes the client to work through it, and the banner has to be
+ * able to say so.
  *
- * So the placeholder is now DERIVED from catalogue facts we already hold:
- * category, capacity, and physical footprint. Nothing is invented — a bigger
- * machine that holds more product costs more, which is true of the real market
- * and produces a believable spread instead of a flat line. It stays flagged as
- * placeholder, the banner stays up, and the readiness gate still blocks launch.
- *
- * The real model is per physical unit (decision D9): each machine in the
- * warehouse carries its own monthly rate across five contract terms. When that
- * table arrives, `rateFor` reads it and `IS_PLACEHOLDER` flips to false.
+ * The derivation itself is unchanged, and the reasoning still holds. A single
+ * flat rate across the catalogue made every card read "от 70 €/месец" on a site
+ * whose entire positioning is "real stock, individually priced" - the page built
+ * to break the competitors' impression was reproducing it. What is derived here
+ * comes from catalogue facts we already hold: category, capacity and physical
+ * footprint. Nothing is invented; a bigger machine that holds more product costs
+ * more, which is true of the real market and produces a believable spread.
  *
  * Currency is EUR only. Bulgaria joined the euro area on 1 January 2026.
  */
 
-export const TERMS = [12, 24, 36, 48, 60] as const;
-export type Term = (typeof TERMS)[number];
-
-export const IS_PLACEHOLDER = true;
+export { TERMS, TERM_FACTOR, roundToFive };
+export type { Term };
 
 /**
  * Category baselines, in the band observed across Europe: Italian coffee
@@ -44,21 +47,6 @@ const CATEGORY_BASE: Record<Category, number> = {
   snack: 84,
   cold: 96,
   combo: 126,
-};
-
-/**
- * Term multipliers.
- *
- * Twelve months is the baseline and the most expensive per month: the shortest
- * term recovers the machine's cost slowest, so it has to price highest. Longer
- * terms step down. Illustrative ratios only.
- */
-const TERM_FACTOR: Record<Term, number> = {
-  12: 1,
-  24: 0.88,
-  36: 0.8,
-  48: 0.74,
-  60: 0.7,
 };
 
 /** Scales a machine against the median of its own category. */
@@ -92,50 +80,22 @@ function sizeFactor(modelId: string): number {
   return Math.min(1.45, Math.max(0.72, raw));
 }
 
+/** Derived baseline monthly figure for a model, before the term discount. */
+export function derivedBaseMonthly(modelId: string): number {
+  const model = MODELS.find((m) => m.id === modelId);
+  const base = CATEGORY_BASE[model?.category ?? "coffee"];
+  return roundToFive(base * sizeFactor(modelId));
+}
+
+/** Derived monthly figure for one model on one term. */
+export function derivedMonthly(modelId: string, term: Term): number {
+  return roundToFive(derivedBaseMonthly(modelId) * TERM_FACTOR[term]);
+}
+
 export interface Rate {
   term: Term;
   monthlyEur: number;
+  /** True when this figure came from the derivation above rather than from a
+   *  price the client typed. Per model and per term, not per site. */
   isPlaceholder: boolean;
-}
-
-/** Baseline monthly figure for a model, before the term discount. */
-function baseMonthly(modelId: string): number {
-  const model = MODELS.find((m) => m.id === modelId);
-  const base = CATEGORY_BASE[model?.category ?? "coffee"];
-  // Rounded to the nearest 5 so the catalogue reads like a price list rather
-  // than the output of a formula.
-  return Math.round((base * sizeFactor(modelId)) / 5) * 5;
-}
-
-export function rateFor(modelId: string, term: Term): Rate {
-  return {
-    term,
-    monthlyEur: Math.round((baseMonthly(modelId) * TERM_FACTOR[term]) / 5) * 5,
-    isPlaceholder: IS_PLACEHOLDER,
-  };
-}
-
-export function ratesFor(modelId: string): Rate[] {
-  return TERMS.map((term) => rateFor(modelId, term));
-}
-
-/** Cheapest monthly figure across all terms, for "от X €/месец" headlines. */
-export function fromRate(modelId: string): Rate {
-  return ratesFor(modelId).reduce((cheapest, rate) =>
-    rate.monthlyEur < cheapest.monthlyEur ? rate : cheapest,
-  );
-}
-
-/**
- * Reduction against the 12-month baseline.
- *
- * Deliberately expressed as a lower monthly instalment, never as a saving: a
- * 60-month term has a lower monthly payment but a far higher total, so
- * "спестявате 30%" would be false and is exposed under Directive 2006/114/EC.
- */
-export function monthlyReductionVsBaseline(modelId: string, term: Term): number {
-  const baseline = rateFor(modelId, 12).monthlyEur;
-  const current = rateFor(modelId, term).monthlyEur;
-  if (baseline <= 0) return 0;
-  return Math.round(((baseline - current) / baseline) * 100);
 }

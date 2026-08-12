@@ -4,6 +4,7 @@ import { FAQ } from "@/content/faq";
 import { CASE_STUDIES } from "@/content/case-studies";
 import { GUIDES, type Guide } from "@/content/guides";
 import { company, hasUnresolvedBrand, mapPin, mapsLink } from "@/lib/company";
+import type { Catalogue } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
 
@@ -312,11 +313,12 @@ export function organizationJsonLd() {
   };
 }
 
-export function modelJsonLd(modelId: string) {
+export function modelJsonLd(modelId: string, catalogue: Catalogue) {
   const model = MODELS.find((m) => m.id === modelId);
   if (!model) return null;
 
   const spec = model.spec;
+  const monthly = fromMonthly(catalogue, modelId);
 
   return {
     "@context": "https://schema.org",
@@ -342,14 +344,14 @@ export function modelJsonLd(modelId: string) {
     offers: {
       "@type": "Offer",
       priceCurrency: "EUR",
-      price: fromMonthly(model.id),
+      price: monthly,
       priceValidUntil: undefined,
       availability: "https://schema.org/InStock",
       businessFunction: "https://purl.org/goodrelations/v1#LeaseOut",
       priceSpecification: {
         "@type": "UnitPriceSpecification",
         priceCurrency: "EUR",
-        price: fromMonthly(model.id),
+        price: monthly,
         valueAddedTaxIncluded: false,
         unitCode: "MON",
       },
@@ -371,7 +373,9 @@ export function faqJsonLd() {
 
 /* -- sitemap entries ------------------------------------------------------ */
 
-export function sitemapEntries(): { url: string; priority: number }[] {
+export function sitemapEntries(
+  catalogue: Catalogue,
+): { url: string; priority: number }[] {
   /**
    * The enquiry form is deliberately absent: it is `noindex, follow`, and
    * listing a page you are asking not to index is a contradictory signal.
@@ -402,7 +406,9 @@ export function sitemapEntries(): { url: string; priority: number }[] {
     (slug) => [`/${slug}`, 0.9] as [string, number],
   );
 
-  const models = MODELS.map(
+  /* Published models only. An unpublished machine's page returns 404, and
+     listing a 404 in the sitemap is the cheapest way to lose crawl trust. */
+  const models = catalogue.models.map(
     (m) =>
       [routes.model(m.category as CategoryKey, m.slug), 0.8] as [string, number],
   );

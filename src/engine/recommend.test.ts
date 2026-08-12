@@ -3,8 +3,9 @@ import { recommend, type SiteProfile } from "./recommend";
 import { alternativesFor } from "./alternatives";
 import { modelBySlug } from "@/content/models";
 import { toCandidates } from "@/lib/candidates";
+import { derivedCatalogue } from "./catalogue";
 
-const CANDIDATES = toCandidates();
+const CANDIDATES = toCandidates(derivedCatalogue());
 
 const profile = (over: Partial<SiteProfile> = {}): SiteProfile => ({
   venueType: "office",

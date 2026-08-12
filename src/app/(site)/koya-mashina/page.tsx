@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Recommender } from "@/components/tools/recommender";
 import { toCandidates } from "@/lib/candidates";
 import { toCardData } from "@/lib/card-data";
-import { MODELS } from "@/content/models";
+import { loadCatalogue } from "@/server/catalogue";
 import { pageMetadata } from "@/lib/seo";
 import { routes } from "@/lib/routes";
 
@@ -16,10 +16,13 @@ export const metadata: Metadata = pageMetadata({
 });
 
 export default async function RecommenderPage() {
-  const candidates = toCandidates();
+  const catalogue = await loadCatalogue();
+  const candidates = toCandidates(catalogue);
   /* The recommendation is computed in the browser, so the cards it may show
-     have to travel with it - the same data the catalogue grid already ships. */
-  const cards = MODELS.map((m) => toCardData(m));
+     have to travel with it - the same data the catalogue grid already ships.
+     Published models only, matching `toCandidates`: a card the recommender can
+     never propose is dead weight in the payload. */
+  const cards = catalogue.models.map((m) => toCardData(m, catalogue));
 
   return (
     <>

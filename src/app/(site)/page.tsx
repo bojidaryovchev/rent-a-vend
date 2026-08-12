@@ -8,7 +8,9 @@ import { ButtonLink } from "@/components/ui/button";
 import { MachineImage } from "@/components/ui/machine-image";
 import { ModelCard } from "@/components/catalogue/model-card";
 import { toCardData } from "@/lib/card-data";
-import { MODELS, catalogueStats, leadPhoto, modelBySlug } from "@/content/models";
+import { catalogueStats, leadPhoto, modelBySlug } from "@/content/models";
+import type { Catalogue } from "@/engine/catalogue";
+import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
 import { CATEGORIES, CATEGORY_LABEL } from "@/content/taxonomy";
 import { company } from "@/lib/company";
@@ -115,11 +117,14 @@ const HERO_MODEL_SLUG = "necta-brio-up-minisnakky";
  * Falls back to the drawing if the frame ever goes missing, so the hero degrades
  * rather than breaking.
  */
-function HeroFeature() {
+function HeroFeature({ catalogue }: { catalogue: Catalogue }) {
   const featured = modelBySlug(HERO_MODEL_SLUG);
   const photo = featured ? leadPhoto(featured) : null;
 
-  if (!featured || !photo) {
+  /* The hero machine is named in code, so unpublishing it has to be survivable:
+     the drawing fallback below is already the "no frame" path and serves here
+     too, rather than the home page linking to a 404. */
+  if (!featured || !photo || !catalogue.isPublished(featured.id)) {
     return (
       <MachineImage
         category="combo"
@@ -167,7 +172,7 @@ function HeroFeature() {
 
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3">
           <span className="tabular font-display text-[26px] leading-none text-graphite">
-            от {fromMonthly(featured.id)}&nbsp;€
+            от {fromMonthly(catalogue, featured.id)}&nbsp;€
             <span className="ml-1 font-sans text-[12px] font-normal text-ink-muted">
               /месец
             </span>
@@ -183,17 +188,20 @@ function HeroFeature() {
 
 export default async function HomePage() {
   const stats = catalogueStats();
+  const catalogue = await loadCatalogue();
 
   // Cheapest entry point across the whole catalogue - the honest "from" figure.
-  const from = Math.min(...MODELS.map((m) => fromMonthly(m.id)));
+  const from = Math.min(
+    ...catalogue.models.map((m) => fromMonthly(catalogue, m.id)),
+  );
 
   // The strip used to lead on whatever was rentable today. With one
   // availability state (D50) there is nothing to sort on, so it leads on the
   // cheapest four - the figure the page is already selling on.
-  const featured = [...MODELS]
-    .sort((a, b) => fromMonthly(a.id) - fromMonthly(b.id))
+  const featured = [...catalogue.models]
+    .sort((a, b) => fromMonthly(catalogue, a.id) - fromMonthly(catalogue, b.id))
     .slice(0, 4)
-    .map((m) => toCardData(m));
+    .map((m) => toCardData(m, catalogue));
 
   return (
     <>
@@ -249,7 +257,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <HeroFeature />
+          <HeroFeature catalogue={catalogue} />
         </Container>
 
         {/* Stat strip */}
@@ -317,8 +325,10 @@ export default async function HomePage() {
           />
 
           <div className="mt-10 grid gap-px border border-line-strong bg-line-strong sm:grid-cols-2 lg:grid-cols-4">
-            {CATEGORIES.map((c) => {
-              const list = MODELS.filter((m) => m.category === c);
+            {/* A category with nothing published in it 404s, so it must not be
+                linked from here either. */}
+            {CATEGORIES.filter((c) => catalogue.byCategory(c).length > 0).map((c) => {
+              const list = catalogue.byCategory(c);
 
               return (
                 <Link

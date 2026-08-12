@@ -1,4 +1,5 @@
-import { rateFor, ratesFor, IS_PLACEHOLDER, type Term } from "./rates";
+import type { Catalogue } from "./catalogue";
+import { TERMS, type Term } from "./rates";
 
 /**
  * Quote maths.
@@ -6,6 +7,12 @@ import { rateFor, ratesFor, IS_PLACEHOLDER, type Term } from "./rates";
  * One module computes every money figure on the site, so the machine page, the
  * rental calculator and the enquiry email can never disagree with each other in
  * front of a customer.
+ *
+ * Every function takes the loaded `Catalogue` as its first argument rather than
+ * reaching for prices itself. That keeps the maths synchronous and unit-testable
+ * against a literal now that the prices behind it come from a database, and it
+ * makes the data dependency visible in the signature instead of hidden in an
+ * import.
  */
 
 /** Working days used to convert a monthly rate into a per-day figure. */
@@ -48,31 +55,43 @@ export interface Quote {
   isPlaceholder: boolean;
 }
 
-export function quote(unitId: string, term: Term): Quote {
-  const rate = rateFor(unitId, term);
-  const baseline = rateFor(unitId, 12).monthlyEur;
+export function quote(
+  catalogue: Catalogue,
+  modelId: string,
+  term: Term,
+): Quote {
+  const rate = catalogue.rate(modelId, term);
+  const baseline = catalogue.rate(modelId, 12).monthlyEur;
 
   return {
     term,
     monthlyEur: rate.monthlyEur,
     dailyEur: Math.round((rate.monthlyEur / WORKING_DAYS_PER_MONTH) * 100) / 100,
     totalEur: rate.monthlyEur * term,
+    /**
+     * Clamped at zero.
+     *
+     * The derived curve could never produce a longer term that costs more, and
+     * the admin form refuses to save one - but a row written before that
+     * validation existed, or edited in the database by hand, still can. A
+     * negative reduction would render as "С -4% по-ниска месечна вноска", so
+     * the floor here is the last of three guards rather than the only one.
+     */
     monthlyReductionPct:
       baseline > 0
-        ? Math.round(((baseline - rate.monthlyEur) / baseline) * 100)
+        ? Math.max(0, Math.round(((baseline - rate.monthlyEur) / baseline) * 100))
         : 0,
     included: INCLUDED_IN_RENT,
-    isPlaceholder: IS_PLACEHOLDER,
+    isPlaceholder: rate.isPlaceholder,
   };
 }
 
-export const quoteAllTerms = (unitId: string): Quote[] =>
-  ratesFor(unitId).map((r) => quote(unitId, r.term));
+export const quoteAllTerms = (catalogue: Catalogue, modelId: string): Quote[] =>
+  TERMS.map((term) => quote(catalogue, modelId, term));
 
 /** Cheapest monthly figure, for "от X €/месец" headlines. */
-export function fromMonthly(unitId: string): number {
-  return Math.min(...ratesFor(unitId).map((r) => r.monthlyEur));
-}
+export const fromMonthly = (catalogue: Catalogue, modelId: string): number =>
+  catalogue.fromRate(modelId).monthlyEur;
 
 /**
  * Phrasing for a term's advantage. Returns null for the baseline term, where
