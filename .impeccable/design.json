@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-01T02:00:00.000Z",
+  "title": "Design System: Вендинг под наем",
+  "extensions": {
+    "colorMeta": {
+      "accent": {
+        "role": "primary",
+        "displayName": "Safety Yellow",
+        "canonical": "oklch(0.8809 0.1806 94.02)",
+        "tonalRamp": ["oklch(0.28 0.06 94)", "oklch(0.42 0.10 94)", "oklch(0.55 0.13 94)", "oklch(0.68 0.16 94)", "oklch(0.8809 0.1806 94.02)", "oklch(0.92 0.13 94)", "oklch(0.95 0.08 94)", "oklch(0.98 0.03 94)"]
+      },
+      "graphite": {
+        "role": "secondary",
+        "displayName": "Graphite",
+        "canonical": "oklch(0.2523 0.004 84.58)",
+        "tonalRamp": ["oklch(0.16 0.004 85)", "oklch(0.2138 0.0042 84.59)", "oklch(0.2523 0.004 84.58)", "oklch(0.2982 0.0061 78.24)", "oklch(0.3501 0.008 75.3)", "oklch(0.50 0.010 80)", "oklch(0.70 0.010 82)", "oklch(0.88 0.008 84)"]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Warm Paper",
+        "canonical": "oklch(0.9823 0.0029 84.56)",
+        "tonalRamp": ["oklch(0.2523 0.004 84.58)", "oklch(0.38 0.008 80)", "oklch(0.4622 0.0109 78.22)", "oklch(0.5541 0.0177 67.45)", "oklch(0.6184 0.0146 82.39)", "oklch(0.8644 0.013 86.84)", "oklch(0.9618 0.0086 84.57)", "oklch(0.9823 0.0029 84.56)"]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.2523 0.004 84.58)",
+        "tonalRamp": ["oklch(0.16 0.004 85)", "oklch(0.2523 0.004 84.58)", "oklch(0.35 0.008 80)", "oklch(0.4622 0.0109 78.22)", "oklch(0.5541 0.0177 67.45)", "oklch(0.72 0.014 80)", "oklch(0.8644 0.013 86.84)", "oklch(0.9618 0.0086 84.57)"]
+      },
+      "status-available": {
+        "role": "tertiary",
+        "displayName": "Stock Teal",
+        "canonical": "oklch(0.4609 0.0861 186.39)",
+        "tonalRamp": ["oklch(0.20 0.04 186)", "oklch(0.31 0.06 186)", "oklch(0.4609 0.0861 186.39)", "oklch(0.58 0.09 186)", "oklch(0.70 0.08 186)", "oklch(0.82 0.05 186)", "oklch(0.91 0.03 186)", "oklch(0.9585 0.0182 186.39)"]
+      },
+      "status-reserved": {
+        "role": "tertiary",
+        "displayName": "Held Blue",
+        "canonical": "oklch(0.4699 0.1121 254.2)",
+        "tonalRamp": ["oklch(0.21 0.06 254)", "oklch(0.33 0.09 254)", "oklch(0.4699 0.1121 254.2)", "oklch(0.59 0.11 254)", "oklch(0.71 0.09 254)", "oklch(0.83 0.06 254)", "oklch(0.91 0.03 254)", "oklch(0.9556 0.0198 254.2)"]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Fault Red",
+        "canonical": "oklch(0.5534 0.1739 38.4)",
+        "tonalRamp": ["oklch(0.24 0.09 38)", "oklch(0.38 0.14 38)", "oklch(0.5534 0.1739 38.4)", "oklch(0.66 0.15 38)", "oklch(0.76 0.11 38)", "oklch(0.86 0.07 38)", "oklch(0.92 0.04 38)", "oklch(0.9553 0.0224 38.4)"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (Oswald)",
+        "purpose": "Condensed signage lettering. The domain's native register — machine plates, warehouse racking, floor markings. Holds its tightness in Cyrillic where most condensed faces break down."
+      },
+      "body": {
+        "displayName": "Body (Commissioner)",
+        "purpose": "A humanist sans that reads long-form Bulgarian without fighting it. Condensed type is hostile to a paragraph."
+      },
+      "serial": {
+        "displayName": "Serial (JetBrains Mono)",
+        "purpose": "Stock references, asset tags, breadcrumbs. Anything that identifies rather than describes. Never body text."
+      },
+      "plate": {
+        "displayName": "Plate",
+        "purpose": "Condensed, uppercase, +0.14em. Stamped-plate lettering for wordmarks, eyebrows and section labels. Never below 11px."
+      }
+    },
+    "shadows": [
+      {
+        "name": "bay-panel",
+        "value": "inset 0 1px 0 oklch(1 0 0 / 0.9), 0 1px 0 oklch(0.25 0.01 80 / 0.08), 0 10px 22px -18px oklch(0.25 0.01 80 / 0.55)",
+        "purpose": "A lit top edge, a seating line, and a wide very soft shadow that sits UNDER the panel. Reads as a steel plate resting on a surface, not a card hovering over one."
+      },
+      {
+        "name": "button-accent",
+        "value": "inset 0 1px 0 oklch(1 0 0 / 0.45), 0 3px 0 var(--color-graphite)",
+        "purpose": "A hard 3px offset in graphite. On press the button travels the full 3px and the shadow closes to zero — a physical control being depressed, not a rectangle changing colour."
+      }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "The single easing token, project-wide. `ease-in` is banned on UI." },
+      { "name": "ease-drawer", "value": "cubic-bezier(0.32, 0.72, 0, 1)", "purpose": "Reserved for drawer and sheet transitions." },
+      { "name": "duration-fast", "value": "120ms", "purpose": "Colour and border changes on hover and press." },
+      { "name": "duration-base", "value": "180ms", "purpose": "Default state transitions, including the catalogue card lift." },
+      { "name": "duration-slow", "value": "280ms", "purpose": "Ceiling for any non-focal motion." },
+      { "name": "duration-focal", "value": "640ms", "purpose": "The site's one authored moment: the monthly price counting down as the contract term lengthens. Snaps to target under prefers-reduced-motion." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "The one action per viewport. Square, with a hard offset shadow it travels into on press.",
+      "html": "<button class=\"ds-btn-accent\">Коя машина ми трябва?</button>",
+      "css": ".ds-btn-accent { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 20px; background: var(--color-accent, oklch(0.8809 0.1806 94.02)); color: var(--color-graphite, oklch(0.2523 0.004 84.58)); border: 1px solid var(--color-graphite, oklch(0.2523 0.004 84.58)); border-radius: 0; font-family: Commissioner, system-ui, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.45), 0 3px 0 var(--color-graphite, oklch(0.2523 0.004 84.58)); transition: all 200ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-accent:hover { transform: translateY(2px); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.45), 0 1px 0 var(--color-graphite, oklch(0.2523 0.004 84.58)); } .ds-btn-accent:active { transform: translateY(3px); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.45), 0 0 0 var(--color-graphite, oklch(0.2523 0.004 84.58)); } .ds-btn-accent:focus-visible { outline: 2px solid var(--color-ink, oklch(0.2523 0.004 84.58)); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "The alternative path on paper. Fills to solid graphite rather than tinting.",
+      "html": "<button class=\"ds-btn-outline\">Виж наличните машини</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 10px 20px; background: transparent; color: var(--color-graphite, oklch(0.2523 0.004 84.58)); border: 1px solid var(--color-graphite, oklch(0.2523 0.004 84.58)); border-radius: 0; font-family: Commissioner, system-ui, sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 200ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-outline:hover { background: var(--color-graphite, oklch(0.2523 0.004 84.58)); color: var(--color-paper, oklch(0.9823 0.0029 84.56)); }"
+    },
+    {
+      "name": "Bay Panel",
+      "kind": "card",
+      "refersTo": "card-model",
+      "description": "The system's surface. A machined top edge and a wide soft shadow that seats the panel rather than lifting it. `riveted` adds corner screws where a panel should read as a fitted component.",
+      "html": "<div class=\"ds-bay ds-riveted\"><p class=\"ds-plate\">Каталог</p><p class=\"ds-bay-body\">Реални апарати от нашия склад, с година, състояние и месечна цена на всеки.</p></div>",
+      "css": ".ds-bay { position: relative; width: 320px; padding: 20px; background: var(--color-paper-raised, oklch(1 0 0)); border: 1px solid var(--color-line, oklch(0.8644 0.013 86.84)); border-radius: 3px; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.9), 0 1px 0 oklch(0.25 0.01 80 / 0.08), 0 10px 22px -18px oklch(0.25 0.01 80 / 0.55); font-family: Commissioner, system-ui, sans-serif; } .ds-riveted::before, .ds-riveted::after { content: \"\"; position: absolute; top: 7px; width: 5px; height: 5px; border-radius: 50%; opacity: 0.55; background: radial-gradient(circle at 35% 30%, oklch(1 0 0 / 0.55), var(--color-line-strong, oklch(0.6184 0.0146 82.39)) 60%, oklch(0.45 0.01 80 / 0.7) 100%); } .ds-riveted::before { left: 7px; } .ds-riveted::after { right: 7px; } .ds-plate { margin: 0 0 8px; font-family: Oswald, 'Arial Narrow', sans-serif; font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-subtle, oklch(0.5541 0.0177 67.45)); } .ds-bay-body { margin: 0; font-size: 15px; line-height: 1.5; color: var(--color-ink-muted, oklch(0.4622 0.0109 78.22)); }"
+    },
+    {
+      "name": "Availability Badge",
+      "kind": "chip",
+      "refersTo": "status-available",
+      "description": "Stock state. Text is generated by the availability engine, never hand-written, so label and state cannot disagree.",
+      "html": "<span class=\"ds-status ds-status-available\"><span class=\"ds-dot\"></span>Налична</span> <span class=\"ds-status ds-status-reserved\"><span class=\"ds-dot\"></span>Резервирана</span> <span class=\"ds-status ds-status-off\"><span class=\"ds-dot\"></span>Отдадена</span>",
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; margin-right: 6px; border-radius: 2px; font-family: Commissioner, system-ui, sans-serif; font-size: 13px; font-weight: 600; white-space: nowrap; } .ds-status .ds-dot { width: 6px; height: 6px; border-radius: 999px; background: currentColor; } .ds-status-available { background: oklch(0.9585 0.0182 186.39); color: oklch(0.4609 0.0861 186.39); } .ds-status-reserved { background: oklch(0.9556 0.0198 254.2); color: oklch(0.4699 0.1121 254.2); } .ds-status-off { background: oklch(0.9481 0.0053 67.45); color: oklch(0.5541 0.0177 67.45); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Form field. Sits on the body-lg step (17px) so iOS Safari does not zoom the viewport on focus — the smallest documented step that clears the 16px threshold.",
+      "html": "<label class=\"ds-label\" for=\"ds-company\">Фирма</label><input class=\"ds-input\" id=\"ds-company\" type=\"text\">",
+      "css": ".ds-label { display: block; margin-bottom: 8px; font-family: Commissioner, system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--color-ink, oklch(0.2523 0.004 84.58)); } .ds-input { width: 260px; height: 48px; padding: 0 14px; background: var(--color-paper-raised, oklch(1 0 0)); color: var(--color-ink, oklch(0.2523 0.004 84.58)); border: 1px solid var(--color-line-strong, oklch(0.6184 0.0146 82.39)); border-radius: 2px; font-family: Commissioner, system-ui, sans-serif; font-size: 17px; transition: border-color 120ms cubic-bezier(0.16,1,0.3,1); } .ds-input:focus { outline: none; border-color: var(--color-ink, oklch(0.2523 0.004 84.58)); } .ds-input[aria-invalid=\"true\"] { border-color: var(--color-danger, oklch(0.5534 0.1739 38.4)); }"
+    },
+    {
+      "name": "Stamped Wordmark",
+      "kind": "custom",
+      "refersTo": "wordmark",
+      "description": "PLACEHOLDER MARK. A stamped plate carrying an initial, with the wordmark beside it and the temporary-name note set in the serial register — a note on the object, not a tagline.",
+      "html": "<span class=\"ds-mark\"><span class=\"ds-mark-plate\">В</span><span><span class=\"ds-mark-name\">Вендинг под наем</span><span class=\"ds-mark-serial\">временно име</span></span></span>",
+      "css": ".ds-mark { display: inline-flex; align-items: flex-end; gap: 10px; font-family: Oswald, 'Arial Narrow', sans-serif; } .ds-mark-plate { position: relative; display: grid; place-items: center; width: 36px; height: 36px; background: var(--color-graphite, oklch(0.2523 0.004 84.58)); border: 1px solid var(--color-graphite, oklch(0.2523 0.004 84.58)); color: var(--color-accent, oklch(0.8809 0.1806 94.02)); font-size: 15px; letter-spacing: 0.14em; text-transform: uppercase; } .ds-mark-name { display: block; font-size: 15px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-graphite, oklch(0.2523 0.004 84.58)); } .ds-mark-serial { display: block; margin-top: 4px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-muted, oklch(0.4622 0.0109 78.22)); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Service Bay",
+    "overview": "A well-run workshop with the lights on. Everything is labelled, everything is where it should be, and nothing is dressed up. The product is fifteen-year-old refurbished equipment sold to people who will inspect it, so the design's job is to look like somewhere competent work happens — not like a café, and not like a brochure.\n\nThe world is built from three materials: graphite for the machines and the structural bands, warm paper for everything you read on, and safety yellow for the one thing you should act on. Safety yellow is the colour of machine labels, floor markings and power-on indicators. It is native to the domain in a way that a soft blue or a coffee brown is not, and it is unclaimed in this market.\n\nThe confirmed anti-reference is the Bulgarian vending field itself. Six competitor sites were captured and reviewed: all six lead with a category name over stock photography, none publishes a price, none publishes availability, and five have no contact form at all. Every rule exists to break one of those habits.\n\nDirection history: the first build asserted this world almost entirely through colour — no texture, no frame, no material, one hover lift and nothing else. A review named that as the ceiling. The world was then re-authored against exactly those gaps; the grain, the steel, the rivets, the plate and stencil lettering and the shutter animation all date from that pass.",
+    "keyCharacteristics": [
+      "Graphite, warm paper, safety yellow. No third accent.",
+      "Very tight radii (1-4px). Nothing is pill-shaped; a machined edge, not a web card.",
+      "Numerals are the hero. Prices, years, dimensions and capacities all set tabular.",
+      "Material, not flat. Paper has grain, steel has sheen and machining stripe, panels have a lit top edge and corner rivets.",
+      "Condensed signage lettering for display, humanist sans for reading, mono for asset tags.",
+      "One authored motion moment on the entire site.",
+      "Bulgarian Cyrillic set correctly, which no competitor bothers with."
+    ],
+    "rules": [
+      { "name": "The Yellow Is Not A Status Rule", "body": "Safety yellow never carries stock meaning. Availability speaks in teal, blue and grey only. If the brand accent could also mean \"available\", every yellow element on the page becomes ambiguous the moment stock changes.", "section": "colors" },
+      { "name": "The One Action Rule", "body": "At most one yellow control per viewport. Its job is to be the obvious next step; two of them means neither is.", "section": "colors" },
+      { "name": "The Measured Contrast Rule", "body": "Every neutral used for text carries its measured ratio in a comment beside its definition. De-emphasis is a design decision; illegibility is a defect.", "section": "colors" },
+      { "name": "The Bulgarian Letterforms Rule", "body": "The document carries lang=\"bg\" and the body enables locl. Bulgarian Cyrillic draws в г д и к л п ц ш щ differently from Russian, and without both the browser renders the wrong forms.", "section": "typography" },
+      { "name": "The Tabular Numbers Rule", "body": "Any figure a visitor might compare is set with tnum. A price list whose digits do not align reads as careless, and this site is asking to be trusted on numbers.", "section": "typography" },
+      { "name": "The Eleven Pixel Floor Rule", "body": "No functional text below 11px, footers and micro-labels included. Only non-interactive legal smallprint gets 10px.", "section": "typography" },
+      { "name": "The No Uppercase Sentences Rule", "body": "Uppercase is for labels of a few words. Anything approaching a sentence stays in sentence case; all-caps strips the ascenders and descenders we read by.", "section": "typography" },
+      { "name": "The Padding Not Height Rule", "body": "Interactive controls are sized with padding plus a minimum height, never a fixed height with centred text. Fixed heights look right until the label wraps or the user scales their text.", "section": "layout" },
+      { "name": "The Seated Not Floating Rule", "body": "Shadows sit under an element and stay soft and wide. If a shadow reads as elevation above the page rather than weight upon it, it is wrong. No 0 4px 6px card shadows.", "section": "elevation" },
+      { "name": "The No Nested Cards Rule", "body": "A tinted panel does not go inside another tinted panel. Cards inside cards read as visual noise; use a divider or a paper step instead.", "section": "elevation" },
+      { "name": "The Rivets Earn Their Place Rule", "body": "riveted goes on panels that represent a machine or a result — the calculator, the success state. Putting screws on every box makes the device meaningless.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do lead a page with the offer and a number. \"Вендинг машина под наем от 70 €/месец\" beats \"Вендинг машини\" on every measure that matters here.",
+      "Do set every comparable figure tabular.",
+      "Do carry lang=\"bg\" and locl so Bulgarian letterforms render correctly.",
+      "Do size controls with padding and a minimum height.",
+      "Do show a missing value as \"няма данни\" rather than hiding the row. A visible gap is information; a shortened table pretending to be complete is not.",
+      "Do publish the measured contrast ratio beside any neutral used for text.",
+      "Do keep the body measure at 60ch."
+    ],
+    "donts": [
+      "Don't use safety yellow for anything that could be read as a status.",
+      "Don't use a generic card shadow. Depth is bay-panel: a lit edge and a wide soft shadow that seats the element, never a 0 4px 6px lift.",
+      "Don't spend caution-tape anywhere but the demo banner.",
+      "Don't put a tinted panel inside a tinted panel.",
+      "Don't round anything into a pill.",
+      "Don't set a sentence in uppercase.",
+      "Don't use opacity to express a disabled state.",
+      "Don't put meaning in a title attribute. It is invisible on a phone and unreachable by keyboard, and the condition-grade rubric is a differentiator, not a tooltip.",
+      "Don't spend the focal motion budget twice. One authored moment per surface, and on this site it belongs to the monthly price stepping down as the contract lengthens."
+    ]
+  }
+}
