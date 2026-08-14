@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/container";
 import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
 import { Prose } from "@/components/ui/prose";
-import { CONDITION_POINTS } from "@/content/taxonomy";
+import { CONDITION_PROMISE } from "@/content/taxonomy";
 import { catalogueStats } from "@/content/models";
 import { LocationMap } from "@/components/site/location-map";
 import { company } from "@/lib/company";
@@ -65,7 +65,7 @@ export default function AboutPage() {
       <PageHeader
         eyebrow="Фирмата"
         title="Кои сме ние"
-        lead="Собствен склад, собствен сервиз и внос на употребявани машини от Европа. Отдаваме под наем това, което държим и обслужваме сами."
+        lead="Собствен склад, собствен сервиз, нови машини и внос на употребявани от Европа. Отдаваме под наем това, което държим и обслужваме сами."
       />
 
       <section className="py-14">
@@ -117,13 +117,15 @@ export default function AboutPage() {
             <Prose>
               <h2>В какво състояние са машините</h2>
               <p>
-                Не разделяме машините на класове. Всяка машина, която излиза от
-                базата, минава през едно и също - рециклиране, подмяна на
-                износените части и тест преди да тръгне към обекта.
+                Част от машините са нови, останалите са изцяло рециклирани. При
+                всеки модел пише кое от двете е. Класове не поставяме: всяка
+                машина, която излиза от базата, минава през едно и също - тест,
+                подмяна на износените части и проверка преди да тръгне към
+                обекта.
               </p>
               <p>
                 Снимките на машините са наши и показват конкретната техника,
-                вместо да я разкрасяват. Купувачът на употребявана машина и без
+                вместо да я разкрасяват. Наемателят на рециклирана машина и без
                 това знае, че тя не е нова - показаното вдъхва повече доверие от
                 перфектния рендер.
               </p>
@@ -148,7 +150,7 @@ export default function AboutPage() {
                 Преди всяка доставка
               </h2>
               <ul className="mt-5 divide-y divide-line border-y border-line">
-                {CONDITION_POINTS.map((point) => (
+                {CONDITION_PROMISE.map((point) => (
                   <li key={point} className="py-4 font-bold">
                     {point}
                   </li>

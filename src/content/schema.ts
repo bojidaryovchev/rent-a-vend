@@ -1,5 +1,11 @@
 import { z } from "@/lib/zod";
-import { CATEGORIES, PHOTO_VIEWS, PRODUCT_KINDS, VENUE_TYPES } from "./taxonomy";
+import {
+  CATEGORIES,
+  CONDITIONS,
+  PHOTO_VIEWS,
+  PRODUCT_KINDS,
+  VENUE_TYPES,
+} from "./taxonomy";
 
 /**
  * Content schemas.
@@ -150,6 +156,21 @@ export const modelSchema = z.object({
 
   /** Where the spec figures came from, so a future editor can re-check them. */
   specSource: z.string().nullable().default(null),
+
+  /**
+   * Supplied new, or refurbished.
+   *
+   * Defaulted rather than required, and the default is deliberate rather than
+   * lazy: the stock is overwhelmingly rebuilt, so every model already written
+   * keeps exactly the meaning it had, and stocking a new machine is one line in
+   * one file. Requiring it would mean touching ~60 records to restate something
+   * that was already true of all of them.
+   *
+   * Drives the condition sentence, the badge and `itemCondition` in the JSON-LD
+   * - see `taxonomy.ts`. This is the only place the distinction is declared, so
+   * a machine cannot read as new in the prose and refurbished to a crawler.
+   */
+  condition: z.enum(CONDITIONS).default("refurbished"),
 
   intro: z.string().nullable().default(null),
 });

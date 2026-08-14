@@ -18,8 +18,15 @@ import type { Model, PhotoInput, Spec } from "../schema";
  * Change the Brio's weight and every combo containing one follows.
  */
 
-type ComboDraft = Omit<Model, "spec" | "recommendation" | "photos" | "cabinetOf"> & {
+type ComboDraft = Omit<
+  Model,
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "condition"
+> & {
   cabinetOf?: string | null;
+  /** Set only on machines supplied new. Omitted is refurbished - see
+   *  `schema.ts`. A combo inherits nothing here: the pairing is stocked as a
+   *  unit, so its condition is its own rather than the coffee half's. */
+  condition?: Model["condition"];
   recommendation?: Partial<Model["recommendation"]>;
   photos?: PhotoInput[];
 };

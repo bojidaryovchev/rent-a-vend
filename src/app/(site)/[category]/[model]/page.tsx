@@ -256,7 +256,7 @@ export default async function ModelPage(props: PageProps<"/[category]/[model]">)
               {AVAILABILITY_LABEL}
             </StockLabel>
             <p className="mt-3 text-[15px] leading-7 text-ink-muted">
-              {CONDITION_STATEMENT}
+              {CONDITION_STATEMENT[model.condition]}
             </p>
             <div className="mt-6">
               <ButtonLink href={`${routes.enquiry}?model=${model.slug}`}>

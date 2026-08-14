@@ -10,10 +10,13 @@ import type { Model, PhotoInput } from "../schema";
 
 type Draft = Omit<
   Model,
-  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit"
+  "spec" | "recommendation" | "photos" | "cabinetOf" | "coffeeUnit" | "condition"
 > & {
   /** Set only where a variant differs from its base model behind the panel. */
   cabinetOf?: string | null;
+  /** Set only on machines supplied new. Omitted is refurbished, which is most
+   *  of the stock - see `schema.ts`. */
+  condition?: Model["condition"];
 } & {
   spec?: Partial<Model["spec"]>;
   recommendation?: Partial<Model["recommendation"]>;

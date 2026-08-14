@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MODELS } from "@/content/models";
 import { FAQ } from "@/content/faq";
 import { CASE_STUDIES } from "@/content/case-studies";
+import { CONDITION_SCHEMA_URL } from "@/content/taxonomy";
 import { GUIDES, type Guide } from "@/content/guides";
 import { company, hasUnresolvedBrand, mapPin, mapsLink } from "@/lib/company";
 import type { Catalogue } from "@/engine/catalogue";
@@ -348,6 +349,17 @@ export function modelJsonLd(modelId: string, catalogue: Catalogue) {
       priceValidUntil: undefined,
       availability: "https://schema.org/InStock",
       businessFunction: "https://purl.org/goodrelations/v1#LeaseOut",
+      /**
+       * Declared per model, never hardcoded.
+       *
+       * Nobody in this market declares condition in structured data, so it is
+       * free ground - but only while it is true of the page it sits on. Now
+       * that the catalogue is mixed, one baked-in value would tell a crawler
+       * something false about half the stock, which is worse than saying
+       * nothing: the prose is read by someone who can see the machine, this is
+       * read by a machine that cannot.
+       */
+      itemCondition: CONDITION_SCHEMA_URL[model.condition],
       priceSpecification: {
         "@type": "UnitPriceSpecification",
         priceCurrency: "EUR",

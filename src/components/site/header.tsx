@@ -13,6 +13,7 @@ import {
 import { company } from "@/lib/company";
 import { isUnresolved } from "@/components/ui/placeholder-value";
 import { cn } from "@/lib/cn";
+import { NavGroup } from "@/components/site/nav-group";
 
 /**
  * Two bands.
@@ -33,11 +34,21 @@ const CATEGORY_NAV: { key: CategoryKey; label: string }[] = [
   { key: "cold", label: "Студени напитки" },
 ];
 
-const PAGE_NAV = [
-  { href: routes.howItWorks, label: "Как работи" },
+/**
+ * The second group, named after the footer's column so the header and the
+ * footer call the same set the same thing.
+ *
+ * `recommender` is absent because it is the accent CTA, and `pricing` because
+ * it stays top-level - the published monthly price is what this site is for,
+ * and hiding the page that lists it one click deep to save 60px would spend
+ * the differentiator.
+ */
+const RENTAL_NAV = [
+  { href: routes.howItWorks, label: "Как протича наемът" },
   { href: routes.buyVsRent, label: "Наем или покупка" },
-  { href: routes.about, label: "За нас" },
-  { href: routes.contact, label: "Контакти" },
+  { href: routes.guides, label: "Ръководства" },
+  { href: routes.caseStudies, label: "Казуси" },
+  { href: routes.faq, label: "Често задавани въпроси" },
 ];
 
 const navLink =
@@ -99,23 +110,43 @@ export function SiteHeader() {
             aria-label="Основна навигация"
             className="hidden items-center gap-1 lg:flex"
           >
-            {CATEGORY_NAV.map((c) => (
-              <Link
-                key={c.key}
-                href={routes.category(c.key)}
-                aria-current={isActive(`/${CATEGORY_SLUGS[c.key]}`) ? "page" : undefined}
-                className={cn(
-                  navLink,
-                  isActive(`/${CATEGORY_SLUGS[c.key]}`) && "text-graphite",
-                )}
-              >
-                {c.label}
-              </Link>
-            ))}
+            {/* Two groups and three plain links, from eight plain links. At
+                1024px - where this bar first appears - four of the eight
+                labels wrapped onto two lines, because `navLink` sets no
+                `whitespace-nowrap` and they folded rather than overflowed. */}
+            <NavGroup
+              label="Машини"
+              items={CATEGORY_NAV.map((c) => ({
+                href: routes.category(c.key),
+                label: c.label,
+                active: isActive(`/${CATEGORY_SLUGS[c.key]}`),
+              }))}
+            />
 
-            <span aria-hidden className="mx-1.5 h-4 w-px bg-line" />
+            <Link
+              href={routes.pricing}
+              aria-current={isActive(routes.pricing) ? "page" : undefined}
+              className={cn(navLink, isActive(routes.pricing) && "text-graphite")}
+            >
+              Цени
+            </Link>
 
-            {PAGE_NAV.map((p) => (
+            <NavGroup
+              label="Наемът"
+              items={RENTAL_NAV.map((p) => ({
+                href: p.href,
+                label: p.label,
+                active: isActive(p.href),
+              }))}
+            />
+
+            {/* За нас and Контакти stay top-level. Контакти is the second-most
+                pressed thing here after the CTA, and putting it behind a
+                disclosure to save 70px would be a bad trade. */}
+            {[
+              { href: routes.about, label: "За нас" },
+              { href: routes.contact, label: "Контакти" },
+            ].map((p) => (
               <Link
                 key={p.href}
                 href={p.href}
@@ -163,7 +194,10 @@ export function SiteHeader() {
                   href: routes.category(c.key),
                   label: c.label,
                 })),
-                ...PAGE_NAV,
+                ...RENTAL_NAV,
+                { href: routes.pricing, label: "Цени" },
+                { href: routes.about, label: "За нас" },
+                { href: routes.contact, label: "Контакти" },
               ].map((item) => (
                 <li key={item.label} className="border-b border-line">
                   <Link
