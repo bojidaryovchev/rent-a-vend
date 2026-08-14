@@ -4,6 +4,12 @@ import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Eyebrow, IncludedMark, SectionHead } from "@/components/ui/bits";
+import {
+  ChoiceMark,
+  ContractMark,
+  InstallMark,
+  QuoteMark,
+} from "@/components/ui/process-icons";
 import { ButtonLink } from "@/components/ui/button";
 import { MachineImage } from "@/components/ui/machine-image";
 import { ModelCard } from "@/components/catalogue/model-card";
@@ -67,10 +73,10 @@ const DIFFS = [
 ];
 
 const PROCESS = [
-  { n: "01", t: "Избор", d: "Каталог или няколко въпроса." },
-  { n: "02", t: "Оферта", d: "Решение до 24 часа." },
-  { n: "03", t: "Договор", d: "На място или дистанционно." },
-  { n: "04", t: "Монтаж", d: "2 до 5 работни дни." },
+  { n: "01", t: "Избор", d: "Каталог или няколко въпроса.", Mark: ChoiceMark },
+  { n: "02", t: "Оферта", d: "Решение до 24 часа.", Mark: QuoteMark },
+  { n: "03", t: "Договор", d: "На място или дистанционно.", Mark: ContractMark },
+  { n: "04", t: "Монтаж", d: "2 до 5 работни дни.", Mark: InstallMark },
 ];
 
 const CATEGORY_INTRO: Record<CategoryKey, string> = {
@@ -377,8 +383,9 @@ export default async function HomePage() {
           <ol className="mt-10 grid gap-px bg-paper/12 sm:grid-cols-2 lg:grid-cols-4">
             {PROCESS.map((s) => (
               <li key={s.n} className="bg-graphite p-6">
-                <span className="serial text-accent">{s.n}</span>
-                <h3 className="plate mt-3 text-[14px] text-paper">{s.t}</h3>
+                <s.Mark className="h-12 w-12 text-paper" />
+                <span className="serial mt-6 block text-accent">{s.n}</span>
+                <h3 className="plate mt-2 text-[14px] text-paper">{s.t}</h3>
                 <p className="mt-2 text-[13px] leading-6 text-paper/75">{s.d}</p>
               </li>
             ))}
