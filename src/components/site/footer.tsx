@@ -2,6 +2,13 @@ import Link from "next/link";
 import { Wordmark } from "@/components/brand/wordmark";
 import { CATEGORY_LABELS, routes, type CategoryKey } from "@/lib/routes";
 import { company, UNRESOLVED } from "@/lib/company";
+import {
+  FAMILY_LABELS,
+  FAMILY_LANG,
+  FAMILY_LONG,
+  FAMILY_URL,
+  OTHER_SITES,
+} from "@/lib/family";
 import { ContactChannels } from "@/components/site/contact-channels";
 
 const CATEGORY_KEYS: CategoryKey[] = ["coffee", "snack", "combo", "cold"];
@@ -33,15 +40,33 @@ function FooterCol({
   );
 }
 
-function FooterLink({ href, children }: { href: string; children: string }) {
+function FooterLink({
+  href,
+  external = false,
+  hrefLang,
+  children,
+}: {
+  href: string;
+  /** Cross-domain links get a plain anchor - there is no route to prefetch. */
+  external?: boolean;
+  /** Set only for a destination with one language. See `FAMILY_LANG`. */
+  hrefLang?: string;
+  children: string;
+}) {
+  const className =
+    "flex min-h-9 items-center text-[13px] text-paper/75 transition-colors duration-200 hover-fine:text-accent";
+
   return (
     <li>
-      <Link
-        href={href}
-        className="flex min-h-9 items-center text-[13px] text-paper/75 transition-colors duration-200 hover-fine:text-accent"
-      >
-        {children}
-      </Link>
+      {external ? (
+        <a href={href} hrefLang={hrefLang} rel="noopener" className={className}>
+          {children}
+        </a>
+      ) : (
+        <Link href={href} className={className}>
+          {children}
+        </Link>
+      )}
     </li>
   );
 }
@@ -53,7 +78,10 @@ export function SiteFooter() {
        painted line closes a workshop bay. */
     <footer className="steel mt-24 border-t-2 border-accent/80">
       <div className="mx-auto max-w-310 px-4 py-14 md:px-6">
-        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        {/* Five columns since D51 put the other two sites here. The nav columns
+            lose ~40px each at `lg`, which they can afford - the family column's
+            lines wrap to two, which is what sell-a-vend's has always done. */}
+        <div className="grid gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr_1fr]">
           <div>
             <Wordmark tone="light" />
             <p className="mt-5 max-w-xs text-[13px] leading-6 text-paper/70">
@@ -104,6 +132,25 @@ export function SiteFooter() {
             <FooterLink href={routes.legal.terms}>Общи условия</FooterLink>
             <FooterLink href={routes.legal.privacy}>Поверителност</FooterLink>
             <FooterLink href={routes.legal.cookies}>Бисквитки</FooterLink>
+          </FooterCol>
+
+          {/* D51: three domains, one company. A visitor weighing rental against
+              ownership is on the wrong site half the time by definition, and an
+              operator who has just been paid for a retiring fleet is the most
+              plausible renter of a replacement there is. The header carries the
+              same three as one-word verbs; here there is room to name the
+              market, which is the part that says what language will answer. */}
+          <FooterCol title={FAMILY_LABELS.heading}>
+            {OTHER_SITES.map((site) => (
+              <FooterLink
+                key={site}
+                href={FAMILY_URL[site]}
+                hrefLang={FAMILY_LANG[site]}
+                external
+              >
+                {FAMILY_LONG[site]}
+              </FooterLink>
+            ))}
           </FooterCol>
         </div>
 

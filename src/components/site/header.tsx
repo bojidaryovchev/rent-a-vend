@@ -14,6 +14,8 @@ import { company } from "@/lib/company";
 import { isUnresolved } from "@/components/ui/placeholder-value";
 import { cn } from "@/lib/cn";
 import { NavGroup } from "@/components/site/nav-group";
+import { FamilyLinks, SiteSwitcher } from "@/components/site/site-switcher";
+import { FAMILY_LABELS } from "@/lib/family";
 
 /**
  * Two bands.
@@ -80,22 +82,32 @@ export function SiteHeader() {
             <span className="hidden sm:inline">{company.workingHours}</span>
           </div>
 
-          {isUnresolved(company.phone) ? (
-            /* A dashed stamp reads as "to be filled in" without leaking
-               developer syntax into the element this market converts on. */
-            <span className="serial flex items-center gap-1.5 border border-dashed border-paper/30 px-2 py-0.75 text-paper/70">
-              <Phone className="h-3 w-3" aria-hidden />
-              телефон
-            </span>
-          ) : (
-            <a
-              href={company.phoneHref}
-              className="serial flex items-center gap-1.5 border border-paper/30 px-2 py-0.75 text-paper transition-colors duration-200 hover-fine:border-accent hover-fine:text-accent"
-            >
-              <Phone className="h-3 w-3" aria-hidden />
-              {company.phone}
-            </a>
-          )}
+          {/* The right of the strip is where the controls live and the left is
+              where the message lives, so the three-site switcher joins the
+              phone rather than displacing the response promise. `lg` because
+              that is where the main nav appears too - below it the strip has
+              room for the promise or for this, and the promise wins. The
+              drawer picks the other two sites up instead. */}
+          <div className="flex items-center gap-2">
+            <SiteSwitcher labels={FAMILY_LABELS} className="hidden lg:block" />
+
+            {isUnresolved(company.phone) ? (
+              /* A dashed stamp reads as "to be filled in" without leaking
+                 developer syntax into the element this market converts on. */
+              <span className="serial flex items-center gap-1.5 border border-dashed border-paper/30 px-2 py-0.75 text-paper/70">
+                <Phone className="h-3 w-3" aria-hidden />
+                телефон
+              </span>
+            ) : (
+              <a
+                href={company.phoneHref}
+                className="serial flex items-center gap-1.5 border border-paper/30 px-2 py-0.75 text-paper transition-colors duration-200 hover-fine:border-accent hover-fine:text-accent"
+              >
+                <Phone className="h-3 w-3" aria-hidden />
+                {company.phone}
+              </a>
+            )}
+          </div>
         </div>
       </div>
 
@@ -227,6 +239,11 @@ export function SiteHeader() {
                 Запитване
               </Link>
             </div>
+
+            <FamilyLinks
+              labels={FAMILY_LABELS}
+              onNavigate={() => setOpen(false)}
+            />
           </div>
         </div>
       </div>
