@@ -58,6 +58,66 @@ export const OTHER_SITES: readonly FamilySite[] = FAMILY_ORDER.filter(
 export const FAMILY_LANG: Partial<Record<FamilySite, string>> = { rent: "bg" };
 
 /**
+ * Which locales each site publishes under a `/{locale}` prefix.
+ *
+ * ⚠ MIRRORED IN ALL THREE REPOS, and this is the copy most likely to drift,
+ * because all of it describes repos this one is not. Adding a locale to
+ * buy-a-vend's or sell-a-vend's `i18n/config.ts` means adding it here too.
+ *
+ * `rent` is absent rather than listed as `["bg"]`: this site has no `[lang]`
+ * segment at all, so there is no `/bg` to point at. Nothing here reads the
+ * `rent` entry anyway, since this site never links to itself.
+ *
+ * SHIPPING locales, not declared ones. buy-a-vend routes `/cs/` and has Czech
+ * slugs for every route, but its `LOCALE_READY.cs` is false and those pages
+ * 404 - so Czech is absent. A link is a promise that something is at the other
+ * end of it.
+ *
+ * The two lists differ because buy-a-vend ships Polish and sell-a-vend does
+ * not: Poland buys used machines, it does not sell them west. So `familyHref`
+ * has to check rather than assume.
+ */
+export const FAMILY_LOCALES: Partial<Record<FamilySite, readonly string[]>> = {
+  buy: ["bg", "en", "de", "fr", "pl", "nl", "es", "it", "pt", "sv", "da", "fi"],
+  sell: ["bg", "en", "de", "fr", "nl", "it", "es", "pt", "sv", "da", "fi"],
+};
+
+/**
+ * The language this site is read in, which is the only one it has.
+ *
+ * ⚠ NOT IN THE OTHER TWO REPOS, which take it from the `[lang]` route segment.
+ * It exists so the header and footer can hand `familyHref` and `SiteSwitcher`
+ * the same argument their counterparts do, and so the three components stay
+ * one component. If a `[lang]` segment ever appears here, this is what the
+ * route param replaces.
+ */
+export const SITE_LOCALE = "bg";
+
+/**
+ * A link to one of the other two sites that keeps the reader's language.
+ *
+ * The bug this exists for happened one door over: an operator reading
+ * buy-a-vend in Bulgarian clicked "Продавам", landed on the bare
+ * `https://sell-a-vend.com`, and got English - because a root can only guess,
+ * and their browser said `en-US` while they had spent the previous five minutes
+ * reading Bulgarian. Both other sites now negotiate that root properly, but the
+ * better answer is not to make them guess: the language is known when the link
+ * is rendered, so it travels with the link.
+ *
+ * This repo always passes `"bg"`, being Bulgarian and nothing else. The
+ * signature is identical across the three so the switcher can be too.
+ *
+ * Falls back to the bare root when the target does not publish that locale,
+ * which hands the visitor to that site's own negotiation rather than to a 404.
+ */
+export function familyHref(site: FamilySite, locale: string): string {
+  const locales = FAMILY_LOCALES[site];
+  return locales?.includes(locale)
+    ? `${FAMILY_URL[site]}/${locale}`
+    : FAMILY_URL[site];
+}
+
+/**
  * Labels for the switcher, in the visitor's grammar rather than ours.
  *
  * "Наемам / Купувам / Продавам", not "Наем / Продажба / Изкупуване". The

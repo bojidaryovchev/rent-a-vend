@@ -2,8 +2,8 @@ import {
   CURRENT_SITE,
   FAMILY_LANG,
   FAMILY_ORDER,
-  FAMILY_URL,
   OTHER_SITES,
+  familyHref,
   type FamilySite,
 } from "@/lib/family";
 import { cn } from "@/lib/cn";
@@ -38,6 +38,12 @@ import { cn } from "@/lib/cn";
  * navigation, not a citation; opening a new window unasked is WCAG 3.2.5's
  * problem and the browser's back button is a better answer than a tab the
  * visitor did not request.
+ *
+ * ⚠ THE LINKS CARRY THE LOCALE. `familyHref` appends `/{locale}` when the
+ * target site publishes that language, which is what stops a reader arriving on
+ * the next site in the wrong one. `locale` is a prop for the same reason
+ * `labels` is: this repo has no `[lang]` segment and passes its single `"bg"`,
+ * the other two pass what they are serving, and the file stays identical.
  */
 
 export type FamilyLabels = Record<FamilySite, string> & {
@@ -49,9 +55,12 @@ const item = "plate flex min-h-7 items-center px-2 py-0.75 text-[11px] leading-4
 
 export function SiteSwitcher({
   labels,
+  locale,
   className,
 }: {
   labels: FamilyLabels;
+  /** The language being read, carried across to the site being linked to. */
+  locale: string;
   className?: string;
 }) {
   return (
@@ -65,7 +74,7 @@ export function SiteSwitcher({
               </span>
             ) : (
               <a
-                href={FAMILY_URL[site]}
+                href={familyHref(site, locale)}
                 hrefLang={FAMILY_LANG[site]}
                 rel="noopener"
                 className={cn(
@@ -93,9 +102,12 @@ export function SiteSwitcher({
  */
 export function FamilyLinks({
   labels,
+  locale,
   onNavigate,
 }: {
   labels: FamilyLabels;
+  /** As above - the language being read travels with the link. */
+  locale: string;
   onNavigate?: () => void;
 }) {
   return (
@@ -105,7 +117,7 @@ export function FamilyLinks({
         {OTHER_SITES.map((site) => (
           <a
             key={site}
-            href={FAMILY_URL[site]}
+            href={familyHref(site, locale)}
             hrefLang={FAMILY_LANG[site]}
             rel="noopener"
             onClick={onNavigate}

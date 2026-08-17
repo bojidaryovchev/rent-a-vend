@@ -6,8 +6,9 @@ import {
   FAMILY_LABELS,
   FAMILY_LANG,
   FAMILY_LONG,
-  FAMILY_URL,
   OTHER_SITES,
+  SITE_LOCALE,
+  familyHref,
 } from "@/lib/family";
 import { ContactChannels } from "@/components/site/contact-channels";
 
@@ -144,7 +145,7 @@ export function SiteFooter() {
             {OTHER_SITES.map((site) => (
               <FooterLink
                 key={site}
-                href={FAMILY_URL[site]}
+                href={familyHref(site, SITE_LOCALE)}
                 hrefLang={FAMILY_LANG[site]}
                 external
               >

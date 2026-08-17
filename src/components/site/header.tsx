@@ -15,7 +15,7 @@ import { isUnresolved } from "@/components/ui/placeholder-value";
 import { cn } from "@/lib/cn";
 import { NavGroup } from "@/components/site/nav-group";
 import { FamilyLinks, SiteSwitcher } from "@/components/site/site-switcher";
-import { FAMILY_LABELS } from "@/lib/family";
+import { FAMILY_LABELS, SITE_LOCALE } from "@/lib/family";
 
 /**
  * Two bands.
@@ -89,7 +89,11 @@ export function SiteHeader() {
               room for the promise or for this, and the promise wins. The
               drawer picks the other two sites up instead. */}
           <div className="flex items-center gap-2">
-            <SiteSwitcher labels={FAMILY_LABELS} className="hidden lg:block" />
+            <SiteSwitcher
+              labels={FAMILY_LABELS}
+              locale={SITE_LOCALE}
+              className="hidden lg:block"
+            />
 
             {isUnresolved(company.phone) ? (
               /* A dashed stamp reads as "to be filled in" without leaking
@@ -242,6 +246,7 @@ export function SiteHeader() {
 
             <FamilyLinks
               labels={FAMILY_LABELS}
+              locale={SITE_LOCALE}
               onNavigate={() => setOpen(false)}
             />
           </div>

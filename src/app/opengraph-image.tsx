@@ -9,17 +9,31 @@ import { company } from "@/lib/company";
  * usually arrives after an office manager has forwarded the link to whoever
  * signs, and until now that forward rendered as a grey box.
  *
- * Generated rather than exported as a flat file, so it is built from the same
- * `company` values as the pages. A share card that still shows last quarter's
- * promise is worse than none, because it is the version that gets forwarded.
+ * ⚠ THE MARK ALONE, DELIBERATELY, AND IT IS A NARROWING.
+ *
+ * This card used to carry a headline, a sub-line and two live facts read from
+ * `company` - the coverage line and the response promise. It was asked to
+ * become the logo instead, and the trade is worth writing down rather than
+ * discovering later: a share card is the only piece of this site that gets
+ * seen by people who never visit it, and it now says nothing except who we
+ * are. What it buys is that it cannot go stale, cannot contradict the page it
+ * is attached to, and needs no copy review in any language.
+ *
+ * WHY IT IS STILL GENERATED rather than pointing `og:image` at the PNG in
+ * `public/`. Every logo asset here is square - the mark is 692x692, the full
+ * lockup 1254x1254 - and networks centre-crop a square to 1.91:1, which eats
+ * roughly a third of the height. `seo-blueprint.md` §11 already recorded that
+ * as owed work: *"A real 1200x630 OG image once the brand exists. logo.png is
+ * square and will be centre-cropped by every network."* Rendering the mark
+ * onto a correctly-proportioned ground is what stops that, and it costs one
+ * build-time rasterisation.
+ *
+ * No fonts are loaded any more. The previous card needed Oswald and
+ * Commissioner as real ttf files because next/og rasterises without a browser;
+ * with no text there is nothing to typeset, and two font reads leave the build.
  *
  * Statically rendered at build time - no request-time APIs here - so it costs
  * nothing per share.
- *
- * The fonts are real files in `assets/fonts/` because next/og rasterises with
- * no browser and no system fonts: it reads ttf, otf or woff only, and the
- * woff2 that next/font serves the site is not one of them. Latin and Cyrillic
- * subsets both, since the card sets a Latin wordmark over Bulgarian copy.
  */
 
 export const alt = `${company.brandName} - вендинг машини под наем в цяла България`;
@@ -28,17 +42,18 @@ export const contentType = "image/png";
 
 /* Straight out of globals.css, converted from oklch. Values, not tokens: this
    renders outside the browser, so there is no CSS to read them from. */
-const PAPER = "#faf9f7";
 const GRAPHITE_DEEP = "#1a1917";
-const GRAPHITE_EDGE = "#3d3a36";
 const ACCENT = "#ffd400";
 
 export default async function Image() {
-  const [oswald, commissioner, mark] = await Promise.all([
-    readFile(join(process.cwd(), "assets/fonts/Oswald-Medium.ttf")),
-    readFile(join(process.cwd(), "assets/fonts/Commissioner-Regular.ttf")),
-    readFile(join(process.cwd(), "assets/og-mark.png"), "base64"),
-  ]);
+  /* The light variant, because the ground is graphite - the mark is cream
+     linework and would disappear into paper. 692px down to 340 is a downscale,
+     so the linework stays crisp; `assets/og-mark.png` is the same artwork at
+     256px and would have had to be enlarged. */
+  const mark = await readFile(
+    join(process.cwd(), "public/logo-icon-only-light.png"),
+    "base64",
+  );
 
   return new ImageResponse(
     (
@@ -49,127 +64,35 @@ export default async function Image() {
           display: "flex",
           flexDirection: "column",
           backgroundColor: GRAPHITE_DEEP,
-          fontFamily: "Commissioner",
         }}
       >
-        {/* The accent rule that closes the footer, opening the card instead. */}
+        {/* The accent rule that closes the footer, opening the card instead.
+            The one piece of the old card worth keeping: it is what makes this
+            read as ours at thumbnail size rather than as a stock logo. */}
         <div style={{ display: "flex", height: 10, backgroundColor: ACCENT }} />
 
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
             flex: 1,
-            padding: "56px 64px 52px",
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          {/* -- the lockup, same order as the header ---------------------- */}
-          <div style={{ display: "flex", alignItems: "center", gap: 22 }}>
-            {/* next/image does not exist inside ImageResponse - this renders
-                through satori, not the browser, and a data-URI <img> is the
-                documented approach. The LCP warning does not apply to an image
-                that is itself the output. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`data:image/png;base64,${mark}`}
-              width={92}
-              height={92}
-              alt=""
-            />
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <div
-                style={{
-                  fontFamily: "Oswald",
-                  fontSize: 40,
-                  letterSpacing: "0.14em",
-                  color: PAPER,
-                  lineHeight: 1,
-                }}
-              >
-                {company.brandName.toUpperCase()}
-              </div>
-              <div
-                style={{
-                  fontFamily: "Oswald",
-                  fontSize: 18,
-                  letterSpacing: "0.22em",
-                  color: ACCENT,
-                  marginTop: 10,
-                  lineHeight: 1,
-                }}
-              >
-                ВЕНДИНГ МАШИНИ ПОД НАЕМ
-              </div>
-            </div>
-          </div>
-
-          {/* -- the claim ------------------------------------------------- */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{
-                fontFamily: "Oswald",
-                fontSize: 62,
-                letterSpacing: "0.01em",
-                color: PAPER,
-                lineHeight: 1.12,
-                maxWidth: 940,
-              }}
-            >
-              КАФЕ, СНАКС И КОМБИНИРАНИ МАШИНИ ПОД НАЕМ
-            </div>
-            <div
-              style={{
-                fontSize: 27,
-                color: "rgba(250, 249, 247, 0.72)",
-                marginTop: 22,
-                maxWidth: 880,
-                lineHeight: 1.4,
-              }}
-            >
-              Реални машини от нашия склад, с ясна месечна цена и включен
-              сервиз.
-            </div>
-          </div>
-
-          {/* -- what the site actually promises, from the same source the
-                 pages read ------------------------------------------------ */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              borderTop: `1px solid ${GRAPHITE_EDGE}`,
-              paddingTop: 24,
-            }}
-          >
-            {[company.coverage, company.responsePromise].map((line, i) => (
-              <div key={line} style={{ display: "flex", alignItems: "center", gap: 20 }}>
-                {i > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      width: 5,
-                      height: 5,
-                      backgroundColor: ACCENT,
-                    }}
-                  />
-                )}
-                <div style={{ fontSize: 23, color: "rgba(250, 249, 247, 0.78)" }}>
-                  {line}
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* next/image does not exist inside ImageResponse - this renders
+              through satori, not the browser, and a data-URI <img> is the
+              documented approach. The LCP warning does not apply to an image
+              that is itself the output. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`data:image/png;base64,${mark}`}
+            width={340}
+            height={340}
+            alt=""
+          />
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        { name: "Oswald", data: oswald, style: "normal", weight: 500 },
-        { name: "Commissioner", data: commissioner, style: "normal", weight: 400 },
-      ],
-    },
+    size,
   );
 }

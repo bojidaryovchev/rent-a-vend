@@ -223,8 +223,15 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: company.brandName,
+    /* Guarded, like `organizationJsonLd` ten lines down. It was raw
+       `company.brandName`, which defeated the guard: the point of
+       `hasUnresolvedBrand` is that a placeholder can never reach structured
+       data, and one unguarded copy is enough to publish one. Latent rather than
+       live - the brand is resolved - and fixed while it still is. */
+    name: hasUnresolvedBrand() ? company.legalName : company.brandName,
     url: SITE_URL,
+    /* Correct as a constant here, unlike buy-a-vend's: this site is Bulgarian
+       only (D2) and has no locale to vary. */
     inLanguage: "bg-BG",
   };
 }
