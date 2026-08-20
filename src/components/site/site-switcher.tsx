@@ -51,7 +51,16 @@ export type FamilyLabels = Record<FamilySite, string> & {
   heading: string;
 };
 
-const item = "plate flex min-h-7 items-center px-2 py-0.75 text-[11px] leading-4";
+/**
+ * ⚠ NO `min-h-7` HERE, unlike the locale switcher's trigger and the phone link.
+ *
+ * On those two the border sits on the same element as the minimum height, so
+ * `border-box` folds it into the 28px. Here the border is on the `ul` and the
+ * height was on each item, which made the whole control 28 + 2 = 30px and left
+ * it two pixels taller than everything beside it in the strip. The minimum now
+ * lives on the `ul` with the border, and the items stretch to fill it.
+ */
+const item = "plate flex items-center px-2 py-0.75 text-[11px] leading-4";
 
 export function SiteSwitcher({
   labels,
@@ -65,7 +74,7 @@ export function SiteSwitcher({
 }) {
   return (
     <nav aria-label={labels.heading} className={className}>
-      <ul className="flex items-center border border-paper/30">
+      <ul className="flex min-h-7 items-stretch border border-paper/30">
         {FAMILY_ORDER.map((site, index) => (
           <li key={site} className={cn(index > 0 && "border-l border-paper/20")}>
             {site === CURRENT_SITE ? (

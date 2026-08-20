@@ -98,14 +98,14 @@ export function SiteHeader() {
             {isUnresolved(company.phone) ? (
               /* A dashed stamp reads as "to be filled in" without leaking
                  developer syntax into the element this market converts on. */
-              <span className="serial flex items-center gap-1.5 border border-dashed border-paper/30 px-2 py-0.75 text-paper/70">
+              <span className="serial flex min-h-7 items-center gap-1.5 border border-dashed border-paper/30 px-2 py-0.75 leading-4 text-paper/70">
                 <Phone className="h-3 w-3" aria-hidden />
                 телефон
               </span>
             ) : (
               <a
                 href={company.phoneHref}
-                className="serial flex items-center gap-1.5 border border-paper/30 px-2 py-0.75 text-paper transition-colors duration-200 hover-fine:border-accent hover-fine:text-accent"
+                className="serial flex min-h-7 items-center gap-1.5 border border-paper/30 px-2 py-0.75 leading-4 text-paper transition-colors duration-200 hover-fine:border-accent hover-fine:text-accent"
               >
                 <Phone className="h-3 w-3" aria-hidden />
                 {company.phone}
