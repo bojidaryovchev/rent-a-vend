@@ -76,7 +76,15 @@ export function SiteSwitcher({
     <nav aria-label={labels.heading} className={className}>
       <ul className="flex min-h-7 items-stretch border border-paper/30">
         {FAMILY_ORDER.map((site, index) => (
-          <li key={site} className={cn(index > 0 && "border-l border-paper/20")}>
+          /* `flex` so the link or span inside stretches to the full height
+             of the row. Without it the item sizes to its own content and the
+             current-page fill and the hover fill both stop about two pixels
+             short of the control's top and bottom edges, which reads as a
+             misaligned block rather than a lit segment. */
+          <li
+            key={site}
+            className={cn("flex", index > 0 && "border-l border-paper/20")}
+          >
             {site === CURRENT_SITE ? (
               <span aria-current="true" className={cn(item, "bg-paper/12 text-paper")}>
                 {labels[site]}
