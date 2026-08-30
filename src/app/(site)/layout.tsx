@@ -38,7 +38,7 @@ export const metadata: Metadata = {
        brand has a name. Nineteen characters of a brand nobody searches for,
        in the slot Google truncates first, would cost the one term people do
        type. The brand identifies the site in `openGraph.siteName` below,
-       where it is not competing with a keyword. See docs/seo-blueprint.md. */
+       where it is not competing with a keyword. See docs/seo.md. */
     template: "%s · Вендинг под наем",
   },
   description:

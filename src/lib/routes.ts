@@ -30,7 +30,7 @@ export const routes = {
   /**
    * Answers `вендинг машина цена` - at 260/mo and KD 4 the strongest commercial
    * term measured in this market, and the one place a visitor explicitly asks
-   * for the thing no Bulgarian competitor publishes. See `docs/seo-blueprint.md`
+   * for the thing no Bulgarian competitor publishes. See `docs/seo.md`
    * §3.
    */
   pricing: "/tseni",

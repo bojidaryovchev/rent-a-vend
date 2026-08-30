@@ -25,7 +25,7 @@ type Draft = Omit<
 } & {
   spec?: Partial<Model["spec"]>;
   recommendation?: Partial<Model["recommendation"]>;
-  /** Empty until this model is photographed; see docs/photography.md. */
+  /** Empty until this model is photographed; see docs/catalogue.md. */
   photos?: PhotoInput[];
 };
 

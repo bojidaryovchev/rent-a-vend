@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Договор</title>
+  <desc id="desc">A contract sheet with signature and a square safety-yellow approval seal.</desc>
+  <g stroke="#FAF9F7" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- contract document -->
+    <path d="M14 9H49V55H14V9Z"/>
+    <path d="M20 17H42"/>
+    <path d="M20 23H42" stroke="#8F8778"/>
+    <path d="M20 29H37" stroke="#8F8778"/>
+    <!-- signature baseline -->
+    <path d="M20 45H40" stroke="#8F8778"/>
+    <!-- angular signature -->
+    <path d="M21 42L25 36L28 43L33 38L37 42"/>
+  </g>
+  <!-- approval seal: square, not pill/circle -->
+  <path d="M39 37H54V52H39V37Z" fill="#FFD400"/>
+  <path d="M42.5 44.5L45.5 47.5L51 41.5" stroke="#2A2825" stroke-width="2.4" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

@@ -22,7 +22,7 @@ import { company } from "@/lib/company";
  * WHY IT IS STILL GENERATED rather than pointing `og:image` at the PNG in
  * `public/`. Every logo asset here is square - the mark is 692x692, the full
  * lockup 1254x1254 - and networks centre-crop a square to 1.91:1, which eats
- * roughly a third of the height. `seo-blueprint.md` §11 already recorded that
+ * roughly a third of the height. `docs/launch.md` already records that
  * as owed work: *"A real 1200x630 OG image once the brand exists. logo.png is
  * square and will be centre-cropped by every network."* Rendering the mark
  * onto a correctly-proportioned ground is what stops that, and it costs one

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Оферта</title>
+  <desc id="desc">A formal quotation sheet with a safety-yellow lightning mark for a fast decision.</desc>
+  <g stroke="#FAF9F7" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- quote sheet -->
+    <path d="M13 10H43L51 18V54H13V10Z"/>
+    <path d="M43 10V18H51" stroke="#8F8778"/>
+    <!-- offer rows -->
+    <path d="M19 23H35"/>
+    <path d="M19 29H43" stroke="#8F8778"/>
+    <path d="M19 35H38" stroke="#8F8778"/>
+    <path d="M19 45H33" stroke="#8F8778"/>
+  </g>
+  <!-- fast-response bolt / decisive quote -->
+  <path d="M42 30H54L48.5 38H55L43 51L46.5 41H39.5L42 30Z" fill="#FFD400"/>
+</svg>

@@ -20,6 +20,7 @@ import {
 } from "./mailbox-store";
 import {
   REPLY_ATTACHMENT_LIMIT,
+  sendEnquiryReply,
   sendReply,
   type OutgoingAttachment,
 } from "./mailbox-reply";
@@ -90,6 +91,85 @@ export async function updateEnquiryNotes(formData: FormData): Promise<void> {
 
   await getEnquiryStore().setNotes(id, notes);
   revalidatePath("/admin/zapitvaniya");
+}
+
+export type EnquiryReplyState = { error?: string; sent?: boolean };
+
+/**
+ * Answer an enquiry, as info@, from the screen the enquiry is on.
+ *
+ * The same shape as `replyToThread` and for the same reason: a failed send has
+ * to put the typed text back in front of the person who typed it, so this
+ * returns state rather than redirecting. Losing a written quote to a transient
+ * Resend error is the most annoying failure available here.
+ *
+ * The attachment accounting is `replyToThread`'s, line for line. It is repeated
+ * rather than shared because the two actions differ in what they look the
+ * recipient up by and in nothing else, and a helper taking a FormData and
+ * returning either files or an error string would be harder to read than the
+ * eighteen lines it replaced.
+ */
+export async function replyToEnquiry(
+  _prev: EnquiryReplyState,
+  formData: FormData,
+): Promise<EnquiryReplyState> {
+  if (!(await requireAdmin())) {
+    return { error: "Сесията е изтекла. Влезте отново и опитайте пак." };
+  }
+
+  const id = String(formData.get("id") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+  if (!body) return { error: "Отговорът е празен." };
+
+  /* Read back rather than trusted from the form. The address the reply is sent
+     to decides where it goes, and a server action is a public endpoint - taking
+     it from a hidden input would let a POST send mail as info@ to anyone. */
+  const enquiry = (await getEnquiryStore().list()).find((e) => e.id === id);
+  if (!enquiry) return { error: "Запитването не е намерено." };
+
+  const files: OutgoingAttachment[] = [];
+  let total = 0;
+
+  for (const entry of formData.getAll("files")) {
+    /* An empty file input still submits a zero-byte File, so the size check is
+       what tells "no attachment" from "an attachment". */
+    if (!(entry instanceof File) || entry.size === 0) continue;
+
+    total += entry.size;
+    if (total > REPLY_ATTACHMENT_LIMIT) {
+      return {
+        error: `Файловете са общо над ${Math.round(REPLY_ATTACHMENT_LIMIT / 1_000_000)} MB. Изпратете ги с връзка за изтегляне.`,
+      };
+    }
+
+    files.push({
+      filename: entry.name,
+      contentType: entry.type || "application/octet-stream",
+      content: Buffer.from(await entry.arrayBuffer()).toString("base64"),
+      size: entry.size,
+    });
+  }
+
+  const result = await sendEnquiryReply(enquiry, body, files);
+  if (!result.ok) return { error: result.error };
+
+  /**
+   * A first answer moves the lead out of "new" on its own.
+   *
+   * Not a convenience. The count at the top of the screen is "за обработка",
+   * and an enquiry that has been personally answered but still reads as new
+   * makes that number lie in the direction that costs a sale - it hides the
+   * ones actually waiting among the ones already handled. Only from `new`:
+   * past that point the client is tracking the sale himself and it is not this
+   * action's business to move it.
+   */
+  if (enquiry.status === "new") {
+    await getEnquiryStore().setStatus(enquiry.id, "in-progress");
+  }
+
+  revalidatePath("/admin/zapitvaniya");
+  revalidatePath("/admin/poshta");
+  return { sent: true };
 }
 
 /* -- prices and catalogue visibility --------------------------------------- */

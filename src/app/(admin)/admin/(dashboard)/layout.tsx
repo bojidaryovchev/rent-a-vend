@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { isAdminConfigured, isSignedIn } from "@/server/auth";
 import { signOut } from "@/server/admin-actions";
 import { storageHealth } from "@/server/enquiry-store";
+import { company } from "@/lib/company";
 
 /**
  * Belt and braces, and deliberately so.
@@ -52,7 +54,47 @@ export default async function AdminLayout({
     <div className="min-h-full bg-paper-sunken">
       <header className="border-b border-line bg-paper-raised">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-5 py-3">
-          <span className="font-bold tracking-tight">Администрация</span>
+          {/**
+           * The mark, and the brand name beside it.
+           *
+           * Not decoration. rent-a-vend and buy-a-vend run the SAME admin, in
+           * the same language, at the same path, off the same login habit, and
+           * the operator keeps both open at once - so "Администрация" alone
+           * identifies nothing, and the price he is about to edit belongs to
+           * whichever tab he happened to click. The mark answers that before
+           * he reads a word, which is the one thing a logo is genuinely faster
+           * at than a heading.
+           *
+           * Linked to /admin rather than to the site: this is the panel's
+           * home, and a lockup in the top-left that leaves the panel is the
+           * behaviour nobody expects here. Leaving is the separate link on the
+           * right, and it says so in words.
+           */}
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-2.5 select-none"
+          >
+            <Image
+              /* Decorative: the brand name is set as text right beside it, so
+                 announcing the mark would only say it twice. */
+              src="/logo-icon-only.png"
+              alt=""
+              width={692}
+              height={692}
+              /* 28px at every breakpoint. Without this next/image assumes the
+                 mark could be full-bleed and ships a 1920w candidate. */
+              sizes="28px"
+              priority
+              className="h-7 w-auto"
+            />
+            <span className="font-bold tracking-tight">
+              {company.brandName}
+              <span className="font-normal text-ink-muted">
+                {" "}
+                · Администрация
+              </span>
+            </span>
+          </Link>
           <nav className="flex items-center gap-4 text-ui">
             <Link
               href="/admin/zapitvaniya"
@@ -73,7 +115,25 @@ export default async function AdminLayout({
               Цени
             </Link>
           </nav>
-          <form action={signOut} className="ml-auto">
+          {/**
+           * Out to the public site.
+           *
+           * Every screen in here edits something a visitor sees - a price, a
+           * machine's visibility, its position in a category - and none of them
+           * shows the result. Checking it should not mean typing the domain.
+           *
+           * Same tab, no target="_blank", for the reason the site switcher
+           * gives: this is navigation between our own pages, and the back
+           * button is a better answer than a window nobody asked for. The
+           * session is a cookie, so coming back costs one press.
+           */}
+          <Link
+            href="/"
+            className="ml-auto text-ui text-ink-muted hover-fine:text-ink"
+          >
+            Към сайта
+          </Link>
+          <form action={signOut}>
             <button
               type="submit"
               className="text-ui text-ink-muted hover-fine:text-ink"

@@ -1,6 +1,6 @@
 ---
-name: Вендинг под наем
-description: Bulgarian B2B rental catalogue for refurbished vending machines — priced, in stock, and honest about it.
+name: Rent-a-Vend
+description: Bulgarian B2B rental catalogue for refurbished vending machines — priced, specified, and honest about it.
 colors:
   paper: "#faf9f7"
   paper-raised: "#ffffff"
@@ -251,7 +251,7 @@ components:
     padding: "4px 8px"
 ---
 
-# Design System: Вендинг под наем
+# Design System: Rent-a-Vend
 
 ## Overview
 

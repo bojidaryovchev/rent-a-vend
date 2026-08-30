@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Избор</title>
+  <desc id="desc">Three vending machine options with the middle machine selected by safety-yellow corner brackets.</desc>
+  <!-- Service Bay icon system: square geometry, warm-paper linework, one safety-yellow signal -->
+  <g stroke="#FAF9F7" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- three machine options -->
+    <path d="M6 22H19V50H6V22Z"/>
+    <path d="M8.5 26H16.5" stroke="#8F8778"/>
+    <path d="M8.5 42H16.5V46H8.5V42Z" stroke="#8F8778"/>
+
+    <path d="M24 16H40V52H24V16Z"/>
+    <path d="M27 20H37" stroke="#8F8778"/>
+    <path d="M27 25H37" stroke="#8F8778"/>
+    <path d="M27 43H37V48H27V43Z" stroke="#8F8778"/>
+
+    <path d="M45 22H58V50H45V22Z"/>
+    <path d="M47.5 26H55.5" stroke="#8F8778"/>
+    <path d="M47.5 42H55.5V46H47.5V42Z" stroke="#8F8778"/>
+  </g>
+  <!-- selected machine: hard-corner selection frame -->
+  <path d="M20 20V12H28 M36 12H44V20 M44 48V56H36 M28 56H20V48" stroke="#FFD400" stroke-width="2.75" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

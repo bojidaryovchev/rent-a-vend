@@ -3,7 +3,7 @@
  *
  * Keyword research found the rental market is ~300 searches/month while permit,
  * registration and tax questions carry ~710/month at difficulty 0
- * (`docs/seo-keyword-research.md` §3). These pages exist to answer those, and
+ * (`docs/seo.md` §2). These pages exist to answer those, and
  * they earn their place twice over: a workplace manager putting a machine in
  * their own building genuinely needs to know the permit and БАБХ position
  * before they sign, and D18 already commits us to explaining it openly.

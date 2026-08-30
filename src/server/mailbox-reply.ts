@@ -1,4 +1,5 @@
 import "server-only";
+import { randomUUID } from "node:crypto";
 import { company } from "@/lib/company";
 import { Reply } from "@/emails/reply";
 import { renderEmail } from "@/emails/render";
@@ -37,7 +38,9 @@ export interface OutgoingAttachment {
   size: number;
 }
 
-export type ReplyResult = { ok: true } | { ok: false; error: string };
+export type ReplyResult =
+  | { ok: true; threadId?: string }
+  | { ok: false; error: string };
 
 /** "оферта" -> "Re: оферта", and "Re: оферта" stays as it is. */
 function replySubject(subject: string): string {
@@ -179,6 +182,76 @@ export async function sendReply(
   if (thread.status === "done") await store.setThreadStatus(threadId, "open");
 
   return { ok: true };
+}
+
+/* -- answering an enquiry -------------------------------------------------- */
+
+/**
+ * The subject an enquiry's conversation carries.
+ *
+ * Built from the reference rather than from the machine or the company, because
+ * it is the ONE part of the thread that has to be reproducible: this module owns
+ * no link from an enquiry to a thread - no column, no join - and finds the
+ * conversation again by asking the mailbox for this correspondent and this
+ * normalised subject. A subject derived from anything editable would hand the
+ * client a second thread on his second reply.
+ *
+ * The customer already has the reference: it is in the acknowledgement they
+ * received, and it is what they are asked to quote on the phone.
+ */
+export const enquiryThreadSubject = (enquiryId: string): string =>
+  `Вашето запитване ${enquiryId}`;
+
+/**
+ * Answer an enquiry as info@, in a real conversation.
+ *
+ * WHY THIS EXISTS AT ALL. The enquiry notification lands in the owner's Gmail
+ * with `Reply-To` set to the customer, so the fastest thing to do - press Reply -
+ * sends from the Gmail address. That is precisely what the info@ mailbox was
+ * built to stop: the customer wrote to a company and gets answered by a person
+ * at gmail.com, on a quote they are comparing against two other suppliers. The
+ * form had a status control and a notes field and no way to say anything back.
+ *
+ * IT DELEGATES RATHER THAN SENDING. Everything below the thread is `sendReply`'s
+ * job already - the DKIM-signed sender, the plain-text twin and its signature,
+ * the attachment limit, recording the message only after Resend accepts it. A
+ * second sending path would be a second place for those to drift, and the one
+ * that drifted would be this one, because it runs on the screen nobody opens
+ * twice.
+ *
+ * The thread it opens is an ordinary mailbox thread, so the answer to "where did
+ * this conversation go" is the same as for every other: Поща. When the customer
+ * replies, the inbound webhook matches it by References and it lands there
+ * beside the rest.
+ */
+export async function sendEnquiryReply(
+  enquiry: { id: string; name: string; email: string },
+  body: string,
+  files: OutgoingAttachment[],
+): Promise<ReplyResult> {
+  const store = getMailboxStore();
+  const subject = enquiryThreadSubject(enquiry.id);
+
+  let threadId = await store.findThreadByCorrespondent(
+    enquiry.email,
+    normalizeSubject(subject),
+  );
+
+  if (!threadId) {
+    threadId = randomUUID().slice(0, 8).toUpperCase();
+    await store.createThread({
+      id: threadId,
+      createdAt: new Date().toISOString(),
+      subject,
+      correspondent: enquiry.email,
+      /* The name they typed into the form. The mailbox otherwise learns a name
+         only from a From header, and an enquiry has none to read. */
+      correspondentName: enquiry.name || null,
+    });
+  }
+
+  const result = await sendReply(threadId, body, files);
+  return result.ok ? { ok: true, threadId } : result;
 }
 
 /** Exported for the thread view, which shows the subject a reply would carry. */

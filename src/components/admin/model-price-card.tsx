@@ -64,8 +64,38 @@ function SaveButton({ dirty }: { dirty: boolean }) {
   );
 }
 
-/** A bare submit that carries only the model id - used by the arrows and the
- *  reset, neither of which has anything to type. */
+/** The shared look of the small square controls. Split out from IconAction so
+ *  the reset can keep its place in the save form's button row while its own
+ *  form stays outside it - a <form> inside a <form> is invalid HTML and React
+ *  refuses to hydrate it. */
+function IconButton({
+  label,
+  disabled,
+  form,
+  children,
+}: {
+  label: string;
+  disabled?: boolean;
+  /** Id of the form this submits, when the button sits outside that form. */
+  form?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="submit"
+      form={form}
+      disabled={disabled}
+      aria-label={label}
+      title={label}
+      className="flex min-h-9 min-w-9 items-center justify-center rounded-sm border border-line-strong bg-paper-raised text-ink-muted transition-colors duration-[--duration-fast] ease-[--ease-out] disabled:opacity-35 hover-fine:not-disabled:border-ink hover-fine:not-disabled:text-ink"
+    >
+      {children}
+    </button>
+  );
+}
+
+/** A bare submit carrying only the model id - used by the arrows, which have
+ *  nothing to type. */
 function IconAction({
   action,
   modelId,
@@ -87,15 +117,9 @@ function IconAction({
       {Object.entries(extra ?? {}).map(([name, value]) => (
         <input key={name} type="hidden" name={name} value={value} />
       ))}
-      <button
-        type="submit"
-        disabled={disabled}
-        aria-label={label}
-        title={label}
-        className="flex min-h-9 min-w-9 items-center justify-center rounded-sm border border-line-strong bg-paper-raised text-ink-muted transition-colors duration-[--duration-fast] ease-[--ease-out] disabled:opacity-35 hover-fine:not-disabled:border-ink hover-fine:not-disabled:text-ink"
-      >
+      <IconButton label={label} disabled={disabled}>
         {children}
-      </button>
+      </IconButton>
     </form>
   );
 }
@@ -115,6 +139,8 @@ export function ModelPriceCard({ model }: { model: PriceCardModel }) {
     ) as Record<Term, string>,
   );
   const [published, setPublished] = useState(model.published);
+
+  const resetFormId = `reset-${model.id}`;
 
   const dirty =
     published !== model.published ||
@@ -210,6 +236,15 @@ export function ModelPriceCard({ model }: { model: PriceCardModel }) {
         </div>
       </div>
 
+      {/* Reset is its own submit, so it needs its own form - and a form
+          cannot nest inside another. It sits beside the save form; the
+          button down in the button row reaches it by id. */}
+      {!unpriced && (
+        <form id={resetFormId} action={resetModelPricing} className="hidden">
+          <input type="hidden" name="modelId" value={model.id} />
+        </form>
+      )}
+
       <form action={action} className="flex flex-1 flex-col p-3">
         <input type="hidden" name="modelId" value={model.id} />
         <input type="hidden" name="sortOrder" value={model.sortOrder} />
@@ -262,13 +297,12 @@ export function ModelPriceCard({ model }: { model: PriceCardModel }) {
 
           <div className="flex items-center gap-2">
             {!unpriced && (
-              <IconAction
-                action={resetModelPricing}
-                modelId={model.id}
+              <IconButton
+                form={resetFormId}
                 label="Изчисти цените и върни временните"
               >
                 <span className="px-1 text-[11px] font-medium">нулирай</span>
-              </IconAction>
+              </IconButton>
             )}
             <SaveButton dirty={dirty} />
           </div>

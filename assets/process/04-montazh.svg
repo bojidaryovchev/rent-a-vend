@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 64 64" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Монтаж</title>
+  <desc id="desc">A vending machine positioned on the floor and connected to a safety-yellow power plug.</desc>
+  <g stroke="#FAF9F7" stroke-width="2.25" stroke-linecap="square" stroke-linejoin="miter">
+    <!-- vending machine -->
+    <path d="M9 11H35V52H9V11Z"/>
+    <path d="M13 16H31" stroke="#8F8778"/>
+    <path d="M13 21H31" stroke="#8F8778"/>
+    <path d="M13 39H31V46H13V39Z" stroke="#8F8778"/>
+    <path d="M13 52V56 M31 52V56"/>
+    <path d="M5 56H39" stroke="#8F8778"/>
+    <!-- power cable -->
+    <path d="M35 30H42V39H48"/>
+  </g>
+  <!-- plug / hookup indicator -->
+  <path d="M47 34H57V44H47V34Z" fill="#FFD400"/>
+  <path d="M50 30V34 M54 30V34" stroke="#FFD400" stroke-width="2.25" stroke-linecap="square"/>
+  <path d="M50 39H54" stroke="#2A2825" stroke-width="2.25" stroke-linecap="square"/>
+</svg>

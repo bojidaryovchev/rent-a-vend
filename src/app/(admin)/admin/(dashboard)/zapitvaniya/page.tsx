@@ -7,6 +7,8 @@ import {
 } from "@/server/enquiry-store";
 import { updateEnquiryNotes, updateEnquiryStatus } from "@/server/admin-actions";
 import { modelBySlug } from "@/content/models";
+import { company } from "@/lib/company";
+import { EnquiryReplyForm } from "@/components/admin/enquiry-reply-form";
 import { cn } from "@/lib/cn";
 
 export const metadata: Metadata = {
@@ -125,6 +127,15 @@ export default async function AdminEnquiriesPage() {
                     );
                   })}
                 </div>
+
+                {/* Between the pipeline buttons and the private note, because
+                    that is the order the work happens in: decide where the lead
+                    stands, answer it, then write down what you promised. */}
+                <EnquiryReplyForm
+                  enquiryId={e.id}
+                  recipient={e.email}
+                  sender={company.email}
+                />
 
                 <form action={updateEnquiryNotes} className="mt-4 flex gap-2">
                   <input type="hidden" name="id" value={e.id} />

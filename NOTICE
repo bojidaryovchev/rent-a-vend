@@ -1,4 +1,11 @@
-This project vendors and derives from three third-party design skills.
+The design skills described below were vendored under .claude/skills/ during
+development. That directory is no longer part of this repository, so none of the
+third-party files are present any more. What remains derived from them is the
+format of DESIGN.md and the design vocabulary it records; the attributions are
+kept for that reason.
+
+--------------------------------------------------------------------------------
+This project derived from three third-party design skills.
 
 --------------------------------------------------------------------------------
 impeccable - https://github.com/pbakaus/impeccable

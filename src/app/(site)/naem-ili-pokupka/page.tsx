@@ -14,7 +14,7 @@ import { BuyVsRentCalculator } from "@/components/tools/buy-vs-rent";
  * costing up a purchase and shows them the rental arithmetic honestly. It is
  * also the cleanest gap found in either research pass - the vending
  * rent-versus-buy question has no specialist incumbent in Bulgarian at all.
- * `docs/seo-blueprint.md` §3.
+ * `docs/seo.md` §7.
  */
 export const metadata: Metadata = pageMetadata({
   path: routes.buyVsRent,

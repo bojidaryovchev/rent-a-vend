@@ -22,7 +22,7 @@ import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
  *    lead the *title*: keyword research found no measurable Bulgarian search
  *    demand for any of the 21 catalogue model names, so titles lead with the
  *    category term people actually type and keep the model name for
- *    recognition. Decision D24a; evidence in `docs/seo-keyword-research.md` §2.
+ *    recognition. Decision D24a; evidence in `docs/seo.md` §3.
  * 3. Every page declares its own canonical, through `pageMetadata`. Until now
  *    only model pages did, which left eleven static pages relying on Google
  *    guessing correctly.
