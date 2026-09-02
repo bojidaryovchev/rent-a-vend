@@ -86,6 +86,18 @@ const nextConfig: NextConfig = {
      * it sits below this on purpose.
      */
     serverActions: { bodySizeLimit: "5mb" },
+
+    /**
+     * Required by `src/app/global-not-found.tsx`, and that file is required by
+     * this app's shape.
+     *
+     * A root `not-found.tsx` renders inside a root layout; the only two roots
+     * here live in route groups (`(site)`, `(admin)`), so there is none for it
+     * to nest into and Next served a bare, unstyled document for every URL that
+     * matched no route. `global-not-found` is the documented answer: it
+     * bypasses layouts and brings its own `<html>`. See that file.
+     */
+    globalNotFound: true,
   },
 };
 

@@ -1,25 +1,24 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { CATEGORY_LABELS, PRIMARY_NAV, routes } from "@/lib/routes";
 
 /**
- * 404.
+ * The 404 body, shared by both 404s.
  *
- * Lives at the root rather than inside `(site)` so it also catches URLs that
- * match no segment at all. Next's built-in fallback renders "404: This page
- * could not be found." in English, which on a Bulgarian-only site reads as a
- * broken server rather than a mistyped address.
+ * There are two entry points and they are not interchangeable:
+ *
+ *   - `app/global-not-found.tsx` - no route matched at all. Renders its own
+ *     document, because it bypasses layouts entirely.
+ *   - `app/(site)/not-found.tsx` - a segment matched and called `notFound()` -
+ *     an unpublished machine, a guide that was withdrawn - so the site layout
+ *     is present and the visitor keeps the header and footer.
+ *
+ * The body lives here so those two cannot drift into two different 404s.
  *
  * Deliberately a set of routes rather than an apology: most 404s here will be
  * a stale link to a machine that has been sold or renamed, and the useful
  * response is the catalogue, not sympathy.
  */
-export const metadata: Metadata = {
-  title: "Страницата не е намерена",
-  robots: { index: false, follow: true },
-};
-
-export default function NotFound() {
+export function NotFoundBody() {
   return (
     <div className="mx-auto flex min-h-[70vh] w-full max-w-2xl flex-col justify-center px-5 py-20">
       <span className="serial text-ink-muted">404</span>
@@ -50,17 +49,23 @@ export default function NotFound() {
       </nav>
 
       <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2 text-ui text-ink-muted">
-        {PRIMARY_NAV.filter((i) => !i.href.includes("-pod-naem") && !i.href.includes("studeni")).map(
-          (item) => (
-            <li key={item.href}>
-              <Link href={item.href} className="underline-offset-4 hover-fine:underline">
-                {item.label}
-              </Link>
-            </li>
-          ),
-        )}
+        {PRIMARY_NAV.filter(
+          (i) => !i.href.includes("-pod-naem") && !i.href.includes("studeni"),
+        ).map((item) => (
+          <li key={item.href}>
+            <Link
+              href={item.href}
+              className="underline-offset-4 hover-fine:underline"
+            >
+              {item.label}
+            </Link>
+          </li>
+        ))}
         <li>
-          <Link href={routes.home} className="underline-offset-4 hover-fine:underline">
+          <Link
+            href={routes.home}
+            className="underline-offset-4 hover-fine:underline"
+          >
             Начало
           </Link>
         </li>
