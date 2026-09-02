@@ -31,8 +31,29 @@ import { CATEGORY_SLUGS, routes, type CategoryKey } from "@/lib/routes";
 export const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://example.invalid";
 
-export const isIndexable = (): boolean =>
-  process.env.NEXT_PUBLIC_SITE_INDEXABLE === "true";
+/**
+ * Whether search engines may index this deployment.
+ *
+ * TWO conditions, not one, and the second is the important one.
+ *
+ * `NEXT_PUBLIC_SITE_INDEXABLE` is the deliberate switch: the site stays
+ * `noindex` until someone sets it. But a `NEXT_PUBLIC_*` value is inlined at
+ * build time, so a variable scoped to "All Environments" in the Vercel
+ * dashboard is baked into PREVIEW builds too - and a preview deployment then
+ * serves `index,follow` plus a real sitemap on a `*.vercel.app` hostname,
+ * competing with the live domain on its own content.
+ *
+ * `VERCEL_ENV` is `production` only for the production deployment, so checking
+ * it makes that mistake impossible to make from a dashboard. Off Vercel the
+ * variable is absent and the switch alone decides, which is the old behaviour.
+ *
+ * buy-a-coffee's `robots.ts` has always done this; these three sites did not.
+ */
+export const isIndexable = (): boolean => {
+  if (process.env.NEXT_PUBLIC_SITE_INDEXABLE !== "true") return false;
+  const hostEnvironment = process.env.VERCEL_ENV;
+  return hostEnvironment ? hostEnvironment === "production" : true;
+};
 
 export const absolute = (path: string): string =>
   new URL(path, SITE_URL).toString();

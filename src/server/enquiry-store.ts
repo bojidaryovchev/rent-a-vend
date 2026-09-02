@@ -170,9 +170,22 @@ let store: EnquiryStore | null = null;
 
 export function getEnquiryStore(): EnquiryStore {
   if (!store) {
-    store = process.env.DATABASE_URL
-      ? new PostgresEnquiryStore()
-      : new FileEnquiryStore();
+    if (process.env.DATABASE_URL) {
+      store = new PostgresEnquiryStore();
+    } else {
+      /* The file store is right on a laptop and catastrophic on a serverless
+         host: the write succeeds, the visitor is thanked, and the filesystem is
+         discarded when the instance goes. It looks like nothing is wrong, which
+         is why this shouts. `VERCEL` is set on every Vercel runtime. */
+      if (process.env.VERCEL) {
+        console.error(
+          "DATABASE_URL is not set on a serverless host. Enquiries are being " +
+            "written to an ephemeral filesystem and WILL be lost. The " +
+            "notification email is currently the only copy.",
+        );
+      }
+      store = new FileEnquiryStore();
+    }
   }
   return store;
 }

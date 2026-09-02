@@ -20,9 +20,19 @@ this document is the half a script cannot check.
 
 - **Flip `NEXT_PUBLIC_SITE_INDEXABLE=true`** — but only after prices are real.
   It gates `robots.txt`, the per-page `noindex` and `/llms.txt` together.
-- Set `DATABASE_URL`, `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`,
-  `RESEND_API_KEY`, `MAIL_FROM`, `MAIL_TO`, `RESEND_WEBHOOK_SECRET`,
-  `TURNSTILE_SECRET_KEY` and `NEXT_PUBLIC_TURNSTILE_SITE_KEY`.
+- Set `DATABASE_URL` (the **pooled** Neon host, the one with `-pooler`),
+  `MAIL_TO` and `RESEND_API_KEY` first — those three decide whether an enquiry
+  survives. Then `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET`, `MAIL_FROM`,
+  `RESEND_WEBHOOK_SECRET`.
+- Turnstile is **both keys or neither**: `NEXT_PUBLIC_TURNSTILE_SITE_KEY`
+  renders the widget, `TURNSTILE_SECRET_KEY` verifies its token. Either alone
+  means no bot protection.
+- Scope `NEXT_PUBLIC_SITE_INDEXABLE` to **Production only**. It is inlined at
+  build time, so an "all environments" value reaches preview builds; the
+  `VERCEL_ENV` check in `isIndexable()` is the backstop, not the plan.
+- Run `npm run env:check` against the production values. It catches the things
+  a checklist cannot: an unpooled Neon host, a half-configured Turnstile, an
+  indexable preview.
 - Run `db:migrate` against the production database. Nothing creates tables at
   runtime, so the first enquiry fails without it.
 - Verify `npm run build:launch` passes — the strict readiness gate.

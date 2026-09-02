@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { z } from "@/lib/zod";
 import Link from "next/link";
 import { submitEnquiry } from "@/server/enquiry-action";
+import { Turnstile, resetTurnstile, turnstileEnabled } from "./turnstile";
 import { company } from "@/lib/company";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
@@ -104,6 +105,10 @@ const inputClass = (invalid: boolean) =>
 export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  /* Empty until Cloudflare hands one over, and empty again after a rejection.
+     The server refuses a blank token only when a site key is configured, so
+     this stays harmless on a deployment with no bot protection. */
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const {
     register,
@@ -128,6 +133,11 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
       data.set("source", context.source ?? "direct");
       data.set("recommenderSummary", context.recommenderSummary ?? "");
 
+      /* Set explicitly rather than left to the widget's own hidden input: this
+         form builds its FormData from react-hook-form's values, so anything the
+         widget injects into the DOM never reaches the action. */
+      data.set("turnstileToken", turnstileToken);
+
       const result = await submitEnquiry({ status: "idle" }, data);
 
       if (result.status === "success") {
@@ -135,6 +145,12 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
         toast.success("Запитването е изпратено.");
       } else if (result.status === "error") {
         toast.error(result.message);
+        // A token is single-use. Retrying with the spent one fails as "not
+        // human", which would blame the visitor for our error.
+        if (turnstileEnabled) {
+          setTurnstileToken("");
+          resetTurnstile();
+        }
       }
     });
   });
@@ -286,6 +302,8 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
           </p>
         )}
       </div>
+
+      <Turnstile onToken={setTurnstileToken} language="bg" />
 
       <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
         {isPending ? "Изпращане..." : "Изпрати запитване"}
