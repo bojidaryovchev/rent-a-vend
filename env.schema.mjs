@@ -207,17 +207,6 @@ export const vars = [
     summary: 'Set "true" to hide the demo banner, once real prices and photos are in.',
     missing: null,
   },
-  {
-    name: "NEXT_PUBLIC_PLAUSIBLE_DOMAIN",
-    kind: "config",
-    value: "rent-a-vend.com",
-    targets: PROD,
-    required: false,
-    section: "Presentation",
-    summary: "Bare domain. Renders the cookieless Plausible script; unset renders nothing.",
-    missing: null,
-  },
-
   { name: "VERCEL_ENV", kind: "system", section: "Platform", summary: 'Gates indexing - isIndexable() requires "production".' },
   { name: "VERCEL", kind: "system", section: "Platform", summary: "Set on every Vercel runtime; triggers the ephemeral-storage error." },
   { name: "VERCEL_DEPLOYMENT_ID", kind: "system", section: "Platform", summary: "Feeds deploymentId for version-skew protection." },

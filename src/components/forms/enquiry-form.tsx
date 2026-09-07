@@ -8,6 +8,7 @@ import { z } from "@/lib/zod";
 import Link from "next/link";
 import { submitEnquiry } from "@/server/enquiry-action";
 import { Turnstile, resetTurnstile, turnstileEnabled } from "./turnstile";
+import { trackEvent } from "@/components/site/analytics";
 import { company } from "@/lib/company";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
@@ -143,6 +144,22 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
       if (result.status === "success") {
         setSubmitted(result.id);
         toast.success("Запитването е изпратено.");
+        /**
+         * The one event that matters on this site.
+         *
+         * Fired after the server confirms, never on click: an event on the
+         * button counts intent, and intent is not the number anyone is trying
+         * to learn. The properties are the context the enquiry already carries,
+         * so the figures answer whether the recommender, the calculator or the
+         * plain model pages are what produce enquiries. No personal data - the
+         * machine and the route, never the name or the phone number.
+         */
+        trackEvent("enquiry_submitted", {
+          source: context.source ?? "direct",
+          model: context.modelSlug ?? "none",
+          term: context.term ?? 0,
+          fromRecommender: Boolean(context.recommenderSummary),
+        });
       } else if (result.status === "error") {
         toast.error(result.message);
         // A token is single-use. Retrying with the spent one fails as "not
