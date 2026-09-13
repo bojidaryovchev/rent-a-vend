@@ -61,7 +61,7 @@ export function LocationMap() {
             "03" would imply two sections above it that do not exist. */}
         <SectionHead
           title="Къде сме"
-          lead="Машините стоят в нашия склад, не при доставчик. Заповядайте да видите тази, която ви интересува, преди да наемете."
+          lead="Машините стоят в нашия склад. Заповядайте да видите тази, която ви интересува, преди да наемете."
         />
 
         <div className="bay-panel mt-8">

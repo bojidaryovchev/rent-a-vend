@@ -59,7 +59,7 @@ export function MapEmbed({
           бисквитки. Затова я зареждаме само ако я поискате.
         </p>
         <p className="mt-2 text-[13px] leading-5 text-ink-muted">
-          Адресът е изписан отдолу - за да го прочетете, картата не ви трябва.
+          Адресът е изписан отдолу.
         </p>
         {/* Outline, not accent. Safety yellow is spent on the enquiry - the
             action that earns - and a map that shouts as loudly as it is a

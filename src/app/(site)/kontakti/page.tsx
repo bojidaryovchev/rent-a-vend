@@ -34,7 +34,7 @@ export default function ContactPage() {
       <PageHeader
         eyebrow="Контакти"
         title="Контакти"
-        lead="Обадете се или пишете. Запитванията се обработват лично, не от кол център."
+        lead="Обадете се или пишете. Запитванията обработваме лично."
       />
 
       <section className="paper-grain">
