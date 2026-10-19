@@ -151,6 +151,6 @@ export const FAMILY_LABELS = {
  */
 export const FAMILY_LONG: Record<FamilySite, string> = {
   rent: "Вендинг машини под наем в България",
-  buy: "Реновирани машини за продажба в Европа",
+  buy: "Нови и реновирани машини за продажба в Европа",
   sell: "Изкупуваме машини втора употреба в Европа",
 };
