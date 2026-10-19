@@ -1,6 +1,11 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { company } from "@/lib/company";
+import {
+  hasAddresses,
+  isAddressedToDomain,
+  isSentFromDomain,
+} from "./recipients";
 import { bodyFont, palette } from "@/emails/theme";
 import {
   getMailboxStore,
@@ -72,7 +77,11 @@ export type InboundResult =
 function displayName(from: string): string {
   const withoutAddress = from.replace(/<[^>]*>/, "").trim();
   const name = withoutAddress.replace(/^"|"$/g, "").trim() || from;
-  return name.replace(/[<>"\\,;:\r\n]/g, " ").replace(/\s+/g, " ").trim().slice(0, 60);
+  return name
+    .replace(/[<>"\\,;:\r\n]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 60);
 }
 
 /** The envelope, restated at the top of the forwarded copy. Without it the
@@ -99,7 +108,10 @@ export async function handleInboundEmail(
   const secret = process.env.RESEND_WEBHOOK_SECRET;
 
   if (!key || !secret) {
-    return { status: "failed", error: "липсва RESEND_API_KEY или RESEND_WEBHOOK_SECRET" };
+    return {
+      status: "failed",
+      error: "липсва RESEND_API_KEY или RESEND_WEBHOOK_SECRET",
+    };
   }
 
   /* MAIL_TO is deliberately NOT checked here. It configures the forward, and
@@ -124,8 +136,28 @@ export async function handleInboundEmail(
 
   /* The sender is on our own domain: our own acknowledgement bouncing, or a
      copy of something we sent. Forwarding it starts a ping-pong. */
-  if (event.data.from.toLowerCase().includes(`@${OUR_DOMAIN}`)) {
+  if (isSentFromDomain(event.data.from, OUR_DOMAIN)) {
     return { status: "ignored", reason: `подател от @${OUR_DOMAIN}` };
+  }
+
+  /* The mail account holds all four sites' domains and fires every site's
+     webhook for mail to any of them. Only mail addressed to OUR domain belongs
+     in this admin; the rest is another site's correspondence and is neither
+     stored nor forwarded. Decided before anything is recorded, and answered
+     200 (a retry would reach the same verdict). The event carries
+     to/cc/bcc/received_for, so this costs no API call. */
+  const eventRecipients = [
+    event.data.to,
+    event.data.cc,
+    event.data.bcc,
+    event.data.received_for,
+  ];
+  const eventNamesRecipients = hasAddresses(eventRecipients);
+  if (
+    eventNamesRecipients &&
+    !isAddressedToDomain(eventRecipients, OUR_DOMAIN)
+  ) {
+    return { status: "ignored", reason: `няма получател @${OUR_DOMAIN}` };
   }
 
   const { data: email, error } = await resend.emails.receiving.get(emailId);
@@ -133,7 +165,23 @@ export async function handleInboundEmail(
     return { status: "failed", error: error?.message ?? "празен отговор" };
   }
 
-  const { data: list } = await resend.emails.receiving.attachments.list({ emailId });
+  /* An event with no recipient fields at all is decided on the fetched message
+     instead; if that names none of ours either, it is not ours. */
+  if (!eventNamesRecipients) {
+    const fetchedRecipients = [
+      email.to,
+      email.cc,
+      email.bcc,
+      email.received_for,
+    ];
+    if (!isAddressedToDomain(fetchedRecipients, OUR_DOMAIN)) {
+      return { status: "ignored", reason: `няма получател @${OUR_DOMAIN}` };
+    }
+  }
+
+  const { data: list } = await resend.emails.receiving.attachments.list({
+    emailId,
+  });
   const held = list?.data ?? [];
 
   /* Recorded before anything is forwarded. If this throws we answer 500 and
@@ -153,7 +201,10 @@ export async function handleInboundEmail(
      panel and answerable, so a forward that cannot be configured is reported
      and shrugged off rather than turned into a 500 and an endless retry. */
   if (!INBOX) {
-    return { status: "recorded", reason: "липсва MAIL_TO - копие не беше изпратено" };
+    return {
+      status: "recorded",
+      reason: "липсва MAIL_TO - копие не беше изпратено",
+    };
   }
   if (INBOX.endsWith(`@${OUR_DOMAIN}`)) {
     // Forwarding our own domain to itself is an infinite loop with a rate limit
@@ -163,7 +214,11 @@ export async function handleInboundEmail(
 
   /* Attachments come back as signed download URLs, not bytes. Fetch each and
      re-encode, stopping at the budget rather than failing the whole message. */
-  const attachments: { filename: string; content: string; contentType: string }[] = [];
+  const attachments: {
+    filename: string;
+    content: string;
+    contentType: string;
+  }[] = [];
   const skipped: string[] = [];
   let spent = 0;
 
@@ -199,7 +254,13 @@ export async function handleInboundEmail(
     );
   }
 
-  const text = [...envelope, "", "---", "", email.text ?? "(празно съобщение)"].join("\n");
+  const text = [
+    ...envelope,
+    "",
+    "---",
+    "",
+    email.text ?? "(празно съобщение)",
+  ].join("\n");
   /* The palette comes from src/emails/theme.tsx so the forwarded envelope
      matches the mail the site sends, rather than being a second set of greys
      invented here. Built as a string and not as a template because the body it
@@ -207,7 +268,9 @@ export async function handleInboundEmail(
   const html = email.html
     ? `<div style="font:13px/1.5 ${bodyFont};color:${palette.muted}">${envelope
         .map((line) => `${escapeHtml(line)}<br>`)
-        .join("")}</div><hr style="border:0;border-top:1px solid ${palette.line};margin:16px 0">${email.html}`
+        .join(
+          "",
+        )}</div><hr style="border:0;border-top:1px solid ${palette.line};margin:16px 0">${email.html}`
     : undefined;
 
   /* Reply-To points at the customer so that pressing Reply in Gmail answers
