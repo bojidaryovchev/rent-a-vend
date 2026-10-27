@@ -85,6 +85,36 @@ describe("hero picks", () => {
     );
   });
 
+  /* The guard is on the figure the card prints - the cheapest term, "от X €" -
+     and not on any one term. The admin accepts a row with some terms blank,
+     and the blank ones fall back to derived figures, so a partly priced
+     machine can show either. These two pin the guard to that figure. */
+  const partlyPriced = (twelveMonths: number) =>
+    pricedPicks({ "necta-brio-up": { monthly: { "12": twelveMonths } } });
+  const derivedRates = derivedCatalogue()
+    .rates(model("necta-brio-up").id)
+    .map((rate) => rate.monthlyEur);
+
+  it("drops a pick priced for 12 months only when its card would show a derived figure", () => {
+    // Above every derived term, so the cheapest - what the card shows - is one
+    // the owner never set.
+    const catalogue = partlyPriced(Math.max(...derivedRates) + 50);
+    const shown = catalogue.fromRate(model("necta-brio-up").id);
+    expect(shown.term).not.toBe(12);
+    expect(shown.isPlaceholder).toBe(true);
+    expect(heroPicks(catalogue).map((m) => m.slug)).not.toContain("necta-brio-up");
+  });
+
+  it("keeps a pick priced for 12 months only when that is the figure its card shows", () => {
+    // Below every derived term, so the card shows the owner's own price - even
+    // though the 60-month term behind it is blank.
+    const catalogue = partlyPriced(Math.min(...derivedRates) - 1);
+    const shown = catalogue.fromRate(model("necta-brio-up").id);
+    expect(shown).toMatchObject({ term: 12, isPlaceholder: false });
+    expect(catalogue.rate(model("necta-brio-up").id, 60).isPlaceholder).toBe(true);
+    expect(heroPicks(catalogue).map((m) => m.slug)).toContain("necta-brio-up");
+  });
+
   it("shows none when no price is the owner's - the drawing, not five derived figures", () => {
     expect(heroPicks(derivedCatalogue())).toEqual([]);
   });

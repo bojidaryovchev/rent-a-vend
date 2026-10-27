@@ -102,8 +102,9 @@ export function featuredStrip(
  * The venue half of a pick's audience line stays on one line at 320px.
  *
  * Measured, not guessed: Commissioner at 13px fits about 28 characters of the
- * widest venue labels into the 211px a slide's text gets on a 320px screen
- * ("Производствено предприятие" alone is 195px). A character count rather
+ * widest venue labels into the 213.7px a slide's text gets on a 320px screen
+ * - 86% of a 288px rail, less the card's border and padding - and
+ * "Производствено предприятие" alone is 195px. A character count rather
  * than a measured width keeps this a pure function the tests can hold to it.
  */
 const VENUE_LINE_MAX = 28;
