@@ -275,7 +275,9 @@ export function ModelCard({
         </dl>
 
         <div className="mt-4 flex items-center justify-end border-t border-line pt-3">
-          <span className="serial text-line-strong transition-colors duration-200 group-hover:text-graphite">
+          {/* Subtle ink, 4.8:1 on the card. The hairline tone it used to
+              borrow measured 3.7:1 - fine for a rule, too faint for words. */}
+          <span className="serial text-ink-subtle transition-colors duration-200 group-hover:text-graphite">
             детайли →
           </span>
         </div>

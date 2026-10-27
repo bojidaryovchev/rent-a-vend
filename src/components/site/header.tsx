@@ -118,7 +118,10 @@ export function SiteHeader() {
       {/* -- main bar ------------------------------------------------------ */}
       <div className="border-b border-line bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80">
         <div className="mx-auto flex max-w-310 items-center justify-between gap-4 px-4 py-3 md:px-6">
-          <Link href={routes.home} aria-label="Начало">
+          {/* Named by the lockup's own words. An "Начало" label replaced the
+              visible "Rent-a-Vend" in the accessible name, so a voice-control
+              user saying what they could see would not reach the link. */}
+          <Link href={routes.home}>
             <Wordmark priority />
           </Link>
 

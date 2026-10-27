@@ -224,10 +224,21 @@ export default async function HomePage() {
                   className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-accent transition-transform duration-300 group-hover:scale-x-100"
                 />
                 <div className="flex items-center justify-between">
-                  <span className="font-display text-[44px] leading-none text-line">
-                    {d.n}
-                  </span>
-                  <span className="serial border border-line px-1.5 py-0.5 text-line-strong">
+                  {/* Decoration, at 1.5:1 on purpose - a stamped number on a
+                      plate, not something to read. Drawn by CSS from a data
+                      attribute and hidden from assistive tech, so it is not
+                      text at all: WCAG exempts decoration from contrast, but
+                      an audit can only tell decoration from text if it isn't
+                      text. */}
+                  <span
+                    aria-hidden
+                    data-n={d.n}
+                    className="font-display text-[44px] leading-none text-line before:content-[attr(data-n)]"
+                  />
+                  {/* Subtle ink at rest, 4.8:1 on the panel; one step darker on
+                      hover, where the panel steps down to the sunken fill and
+                      subtle ink would fall to 4.3:1. */}
+                  <span className="serial border border-line px-1.5 py-0.5 text-ink-subtle group-hover:text-ink-muted">
                     {d.tag}
                   </span>
                 </div>
@@ -261,7 +272,9 @@ export default async function HomePage() {
                   className="group flex flex-col justify-between gap-8 bg-paper-raised p-6 transition-colors duration-200 hover-fine:bg-paper-sunken"
                 >
                   <div>
-                    <span className="serial text-line-strong">
+                    {/* The same two steps as the thesis tags above: the card
+                        darkens on hover, so the label does too. */}
+                    <span className="serial text-ink-subtle group-hover:text-ink-muted">
                       {CATEGORY_LABELS[c as CategoryKey]}
                     </span>
                     <h3 className="plate mt-3 text-[14px] leading-6 text-graphite">

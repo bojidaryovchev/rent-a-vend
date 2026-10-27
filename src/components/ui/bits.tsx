@@ -97,7 +97,9 @@ export function Eyebrow({
  * Section head with an optional serial index.
  *
  * The index is set in mono and reads as an asset tag rather than a decorative
- * number - the same register as the stock references on the machines.
+ * number - the same register as the stock references on the machines. Being
+ * read, it is held to 4.5:1: subtle ink, 4.55:1 on paper. It sat in the
+ * hairline tone at 3.5:1 until an audit said so.
  */
 export function SectionHead({
   index,
@@ -118,7 +120,7 @@ export function SectionHead({
             aria-hidden
             className={cn(
               "serial",
-              tone === "dark" ? "text-line-strong" : "text-paper/70",
+              tone === "dark" ? "text-ink-subtle" : "text-paper/70",
             )}
           >
             {index}
