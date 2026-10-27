@@ -145,7 +145,9 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
      The server refuses a blank token only when a site key is configured, so
      this stays harmless on a deployment with no bot protection. */
   const [turnstileToken, setTurnstileToken] = useState("");
-  /* One prefix per form, so the ids stay unique if a page ever holds two. */
+  /* One prefix per form, so the ids stay unique if a page ever holds two -
+     every id in the form takes it, the honeypot's included. Ids only: the
+     field names, and so what the form submits, are unchanged. */
   const uid = useId();
   const id = (field: string) => `${uid}-${field}`;
 
@@ -240,8 +242,14 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
     <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
       {/* Honeypot. */}
       <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-        <label htmlFor="website">Не попълвайте това поле</label>
-        <input id="website" type="text" tabIndex={-1} autoComplete="off" {...register("website")} />
+        <label htmlFor={id("website")}>Не попълвайте това поле</label>
+        <input
+          id={id("website")}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          {...register("website")}
+        />
       </div>
 
       {/* Their evidence that the context travelled. Shown in the words they
@@ -359,21 +367,30 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
           <input
             type="checkbox"
             className="mt-1 h-4 w-4 shrink-0 accent-accent"
+            aria-invalid={!!errors.consent}
+            aria-describedby={describedBy(id("consent"), { error: !!errors.consent })}
             {...register("consent")}
           />
+          {/* Each space sits inside a string with words in it. On its own, as
+              `{" "}` beside the link, Chrome dropped it from the checkbox's
+              name: "сполитиката за поверителности искам". */}
           <span>
-            Запознах се с{" "}
+            {"Запознах се с "}
             <Link
               href={routes.legal.privacy}
               className="underline underline-offset-4"
             >
               политиката за поверителност
-            </Link>{" "}
-            и искам да получа оферта.
+            </Link>
+            {" и искам да получа оферта."}
           </span>
         </label>
         {errors.consent && (
-          <p className="mt-1.5 text-sm font-medium text-danger" role="alert">
+          <p
+            id={`${id("consent")}-error`}
+            className="mt-1.5 text-sm font-medium text-danger"
+            role="alert"
+          >
             {errors.consent.message}
           </p>
         )}
