@@ -5,7 +5,7 @@ import { leadPhoto } from "@/content/models";
 import { CATEGORY_LABEL } from "@/content/taxonomy";
 import type { Catalogue } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
-import { audienceLines } from "@/lib/hero-picks";
+import { audienceLines, pickVenues } from "@/lib/hero-picks";
 import { routes, type CategoryKey } from "@/lib/routes";
 import { MachineImage } from "@/components/ui/machine-image";
 import { HeroPicksControls } from "@/components/catalogue/hero-picks-controls";
@@ -60,7 +60,7 @@ function PickCard({
 }) {
   // Resolved upstream by `heroPicks`, which drops any pick without a frame.
   const photo = leadPhoto(model)!;
-  const { venues, fit } = audienceLines(model);
+  const { venues, fit } = audienceLines(model, pickVenues(model.slug));
 
   return (
     /* The focus ring is drawn inside the edge, and a positioned photo bed

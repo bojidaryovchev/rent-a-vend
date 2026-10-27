@@ -10,11 +10,14 @@ import {
 } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
 import { HeroPicks } from "@/components/catalogue/hero-picks";
+import { VENUE_LABEL } from "@/content/taxonomy";
 import {
+  HERO_PICKS,
   HERO_PICK_SLUGS,
   audienceLines,
   featuredStrip,
   heroPicks,
+  pickVenues,
 } from "./hero-picks";
 
 const model = (slug: string): Model => {
@@ -68,9 +71,9 @@ describe("hero picks", () => {
 
   it("drops a pick the client has unpublished rather than linking to a 404", () => {
     const slugs = heroPicks(
-      pricedPicks({ "necta-melodia": { published: false } }),
+      pricedPicks({ "necta-snakky": { published: false } }),
     ).map((m) => m.slug);
-    expect(slugs).not.toContain("necta-melodia");
+    expect(slugs).not.toContain("necta-snakky");
     expect(slugs).toHaveLength(HERO_PICK_SLUGS.length - 1);
   });
 
@@ -148,7 +151,7 @@ describe("the hero row, rendered", () => {
 describe("audience lines", () => {
   it("are read off the record, not written beside it", () => {
     expect(audienceLines(model("necta-brio-up-minisnakky"))).toEqual({
-      venues: "Офис, автосервиз, автомивка",
+      venues: "Офис, автосервиз",
       fit: "15-70 души · 1-2 смени",
     });
     expect(audienceLines(model("necta-astro"))).toEqual({
@@ -179,25 +182,69 @@ describe("audience lines", () => {
     });
   });
 
-  it("keep the venue line to one line at 320px for every pick", () => {
-    // 28 characters is what the widest venue labels fit into a slide's text
-    // width at 320px; see VENUE_LINE_MAX.
-    for (const slug of HERO_PICK_SLUGS) {
-      const { venues } = audienceLines(model(slug));
-      expect(venues, slug).not.toBeNull();
-      expect(venues!.length, slug).toBeLessThanOrEqual(28);
-    }
+  it("lead with the chosen venues, in the order chosen", () => {
+    expect(
+      audienceLines(model("necta-astro"), ["warehouse", "logistics"]).venues,
+    ).toBe("Склад, логистична база");
   });
 
-  it("name at most three venues, in record order", () => {
-    const base = model("necta-melodia");
+  it("drop a chosen venue the record does not list, and fill from the record", () => {
+    // The Astro is not a hotel machine; its record leads with manufacturing,
+    // which is too long to share the line, so the next one that fits is used.
+    expect(audienceLines(model("necta-astro"), ["hotel", "warehouse"]).venues).toBe(
+      "Склад, логистична база",
+    );
+    expect(audienceLines(model("necta-astro"), ["hotel"]).venues).toBe(
+      "Производствено предприятие",
+    );
+  });
+
+  it("keep a short label that fits after a long one that does not", () => {
+    // "Офис, производствено предприятие" is 32 characters; the old cut stopped
+    // there and lost "автосервиз" behind it.
+    expect(audienceLines(model("necta-snakky")).venues).toBe("Офис, автосервиз");
+  });
+
+  it("name at most two venues", () => {
+    const base = model("necta-snakky");
     const many: Model = {
       ...base,
       recommendation: {
         ...base.recommendation,
-        venueTypes: ["office", "gym", "school", "hotel", "retail"],
+        venueTypes: ["office", "gym", "hotel", "retail"],
       },
     };
-    expect(audienceLines(many).venues).toBe("Офис, фитнес, училище");
+    expect(audienceLines(many).venues).toBe("Офис, фитнес");
+  });
+});
+
+describe("the hero's chosen venues", () => {
+  it("come only from each machine's own record", () => {
+    for (const pick of HERO_PICKS) {
+      const record = model(pick.slug).recommendation.venueTypes;
+      expect(pick.venues, pick.slug).toHaveLength(2);
+      for (const venue of pick.venues) expect(record, pick.slug).toContain(venue);
+    }
+  });
+
+  it("are what each card shows, two to a card, on one line at 320px", () => {
+    // 28 characters is what the widest venue labels fit into a slide's text
+    // width at 320px; see VENUE_LINE_MAX.
+    for (const pick of HERO_PICKS) {
+      const { venues } = audienceLines(model(pick.slug), pickVenues(pick.slug));
+      const expected = pick.venues
+        .map((v, i) => (i === 0 ? VENUE_LABEL[v] : VENUE_LABEL[v].toLowerCase()))
+        .join(", ");
+      expect(venues, pick.slug).toBe(expected);
+      expect(venues!.length, pick.slug).toBeLessThanOrEqual(28);
+    }
+  });
+
+  it("differ from slide to slide, down to the word each card opens on", () => {
+    const lines = HERO_PICKS.map(
+      (pick) => audienceLines(model(pick.slug), pickVenues(pick.slug)).venues!,
+    );
+    expect(new Set(lines).size).toBe(lines.length);
+    expect(new Set(lines.map((l) => l.split(",")[0])).size).toBe(lines.length);
   });
 });

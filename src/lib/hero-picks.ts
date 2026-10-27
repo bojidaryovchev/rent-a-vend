@@ -1,6 +1,6 @@
 import type { Model } from "@/content/schema";
 import { leadPhoto, modelBySlug } from "@/content/models";
-import { VENUE_LABEL } from "@/content/taxonomy";
+import { VENUE_LABEL, type VenueType } from "@/content/taxonomy";
 import type { Catalogue } from "@/engine/catalogue";
 import { fromMonthly } from "@/engine/quote";
 
@@ -25,25 +25,38 @@ import { fromMonthly } from "@/engine/quote";
  *   or Solista, and none of those has an owner price yet - their figures are
  *   derived. The hero does not recommend a machine at a price its owner never
  *   set.
- * - The Melodia is the recommender's runner-up for an office wanting snacks.
- *   Its pick, the Snakky, lost the slot on its render: the machine sits in a
- *   wide 566x400 white canvas, so on a phone, where the bed is narrow, the
- *   canvas is scaled to the bed's width and the machine shows small inside a
- *   white box.
+ * - The Snakky is the recommender's pick for an office wanting snacks, with
+ *   the Melodia as runner-up, and the cheaper of the two at the owner's price
+ *   (75 against 105 €/month on 60 months). It once lost this slot on its
+ *   photograph - a small copy of the render, the machine 377px tall in a wide
+ *   white canvas - and the file is now Necta's own render at full size.
  * - The G-Drink Design 6 is the recommender's pick for cold drinks.
  * - The Astro is the recommender's pick for a plant or warehouse on two or
  *   three shifts, with the Canto as runner-up.
  *
- * The snack slot may yet go to the Snakky. That is a one-word change here,
- * and nothing else needs to know.
+ * Each pick also names the two places its card says it is for. Read off the
+ * record alone, three cards opened on the same "Офис, автосервиз", because
+ * most records list the office first; a row of five recommendations should
+ * show five kinds of site. So the pair is chosen here - but only from the
+ * machine's own `recommendation.venueTypes`, which `audienceLines` enforces,
+ * so the card can never send a visitor somewhere the recommender would not.
+ * The cold-drinks record also lists the school, left out on purpose: a
+ * soft-drinks machine for pupils is not the first thing this row should offer.
  */
-export const HERO_PICK_SLUGS = [
-  "necta-brio-up-minisnakky",
-  "necta-brio-up",
-  "necta-melodia",
-  "vendo-g-drink-design-6",
-  "necta-astro",
-] as const;
+export const HERO_PICKS = [
+  { slug: "necta-brio-up-minisnakky", venues: ["car-service", "car-wash"] },
+  { slug: "necta-brio-up", venues: ["office", "retail"] },
+  { slug: "necta-snakky", venues: ["gym", "office"] },
+  { slug: "vendo-g-drink-design-6", venues: ["retail", "gym"] },
+  { slug: "necta-astro", venues: ["warehouse", "logistics"] },
+] as const satisfies readonly { slug: string; venues: readonly VenueType[] }[];
+
+export const HERO_PICK_SLUGS = HERO_PICKS.map((pick) => pick.slug);
+
+/** The two places a pick's card names, as chosen above; none for a machine
+ *  that is not a pick. */
+export const pickVenues = (slug: string): readonly VenueType[] =>
+  HERO_PICKS.find((pick) => pick.slug === slug)?.venues ?? [];
 
 /**
  * The picks that can actually be shown, in order.
@@ -94,7 +107,7 @@ export function featuredStrip(
  * than a measured width keeps this a pure function the tests can hold to it.
  */
 const VENUE_LINE_MAX = 28;
-const VENUES_MAX = 3;
+const VENUES_MAX = 2;
 
 /** "15-70 души", "до 25 души", "от 100 души" - or nothing, when the record
  *  has no band at all. */
@@ -123,25 +136,36 @@ function shiftPhrase(shifts: number[]): string | null {
  * would mark the machine down for. A hand-written line agrees with the record
  * only for as long as someone remembers to keep it in step.
  *
- * Venues are taken in record order, at most three, and stop at the first one
- * that would push the line past what fits on one line at 320px. Shifts are
- * named only when the record covers a second or third: "1 смяна" describes
- * every workplace and tells nobody anything.
+ * Two venues at most. The `chosen` ones come first, in the order given, but
+ * only those the record actually lists: one it does not is dropped, and the
+ * record's own order fills the gap. Every label that still fits the line at
+ * 320px is kept, so one long label does not cost the card a short one after
+ * it. Shifts are named only when the record covers a second or third:
+ * "1 смяна" describes every workplace and tells nobody anything.
  */
-export function audienceLines(model: Model): {
+export function audienceLines(
+  model: Model,
+  chosen: readonly VenueType[] = [],
+): {
   venues: string | null;
   fit: string | null;
 } {
   const { venueTypes, minHeadcount, maxHeadcount, shifts } =
     model.recommendation;
 
+  const candidates = [
+    ...chosen.filter((venue) => venueTypes.includes(venue)),
+    ...venueTypes.filter((venue) => !chosen.includes(venue)),
+  ];
+
   const venues: string[] = [];
-  for (const venue of venueTypes.slice(0, VENUES_MAX)) {
+  for (const venue of candidates) {
+    if (venues.length === VENUES_MAX) break;
     const label =
       venues.length === 0 ? VENUE_LABEL[venue] : VENUE_LABEL[venue].toLowerCase();
-    const next = [...venues, label].join(", ");
-    if (venues.length > 0 && next.length > VENUE_LINE_MAX) break;
-    venues.push(label);
+    if (venues.length === 0 || [...venues, label].join(", ").length <= VENUE_LINE_MAX) {
+      venues.push(label);
+    }
   }
 
   const fit = [headcountPhrase(minHeadcount, maxHeadcount), shiftPhrase(shifts)]

@@ -139,13 +139,17 @@ measured on. The second is the Brio Up: the cheapest coffee machine the owner
 has priced (55 €/month on 60 months), sized for 15–50 people. For a small office
 the recommender itself answers Colibri, Korinto, Brio 3 or Solista, and on 27
 October 2026 none of the four had an owner price — their figures were derived.
-The other three are the recommender's own answers, checked against the live
-catalogue that day: the Melodia is its runner-up for snacks, the G-Drink
-Design 6 its pick for cold drinks, and the Astro its pick for a plant or
-warehouse on two or three shifts. The snack pick, the Snakky, lost the slot on
-its render: the machine sits in a wide white canvas, which on a phone is scaled
-to the narrow bed and leaves the machine small inside a white box. The slot may
-yet go to the Snakky; that is a one-word change.
+The other three are the recommender's own picks, checked against the live
+catalogue that day: the Snakky for snacks (75 €/month on 60 months, against 105
+for the Melodia, its runner-up), the G-Drink Design 6 for cold drinks, and the
+Astro for a plant or warehouse on two or three shifts. The Snakky first lost
+its slot to the Melodia on its photograph — a small copy of Necta's render, the
+machine 377px tall in a wide white canvas — and got it back once the file was
+replaced with the same render at full size, from Necta's own CDN.
+
+Each card names two places the machine is for, chosen per pick but only from
+the machine's own record. Read off the records alone, three of the five cards
+opened on the same "Офис, автосервиз".
 
 **Every pick carries a price the owner set.** A pick whose figure would be
 derived — because the owner never priced it, or cleared the price — drops out
