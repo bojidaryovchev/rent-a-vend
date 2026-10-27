@@ -29,6 +29,22 @@ const WHOLE = 0.98;
  *  press during it is counted from where the first was headed. */
 const GLIDE_MS = 700;
 
+/** Where the rail stands with each slide at its start, clamped to how far
+ *  the rail can actually scroll. */
+function stopsOf(rail: HTMLElement): number[] {
+  const slides = Array.from(rail.children) as HTMLElement[];
+  const origin = slides[0]?.offsetLeft ?? 0;
+  const end = rail.scrollWidth - rail.clientWidth;
+  return slides.map((slide) => Math.min(slide.offsetLeft - origin, end));
+}
+
+/** Glide unless the visitor has asked the system for less motion. The CSS
+ *  rule for that cannot reach a `behavior` passed from script. */
+const glide = (): ScrollBehavior =>
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
+
 export function HeroPicksControls({
   railId,
   count,
@@ -62,7 +78,29 @@ export function HeroPicksControls({
     );
 
     for (const slide of slides) observer.observe(slide);
-    return () => observer.disconnect();
+
+    /* Tabbing onto a card brings that card to the front. The browser scrolls
+       a focused element into view only when it is out of view, and a card in
+       the peek counts as in view - so focus landed on a card the visitor could
+       see a sliver of, with the counter still naming the one before it. This
+       moves the rail, not the page, and the counter with it. */
+    const onFocus = (event: FocusEvent) => {
+      const index = slides.findIndex((slide) =>
+        slide.contains(event.target as Node),
+      );
+      if (index === -1) return;
+      const stop = stopsOf(rail)[index];
+      setLead(index);
+      if (Math.abs(rail.scrollLeft - stop) < 2) return;
+      aim.current = { left: stop, at: performance.now() };
+      rail.scrollTo({ left: stop, behavior: glide() });
+    };
+    rail.addEventListener("focusin", onFocus);
+
+    return () => {
+      observer.disconnect();
+      rail.removeEventListener("focusin", onFocus);
+    };
   }, [railId]);
 
   /* Scrolls the rail, never the page: `scrollIntoView` would also pull the
@@ -81,27 +119,21 @@ export function HeroPicksControls({
     const rail = document.getElementById(railId);
     if (!rail) return;
 
-    const slides = Array.from(rail.children) as HTMLElement[];
-    const origin = slides[0]?.offsetLeft ?? 0;
-    const stops = slides.map((slide) => slide.offsetLeft - origin);
+    const stops = stopsOf(rail);
     const pending =
       aim.current && performance.now() - aim.current.at < GLIDE_MS
         ? aim.current.left
         : null;
     const here = pending ?? rail.scrollLeft;
 
-    const found =
+    const target =
       direction === 1
         ? stops.find((stop) => stop > here + 1)
         : [...stops].reverse().find((stop) => stop < here - 1);
-    if (found === undefined) return;
+    if (target === undefined) return;
 
-    // Past the last full stop the rail cannot scroll; aim at its end instead.
-    const target = Math.min(found, rail.scrollWidth - rail.clientWidth);
     aim.current = { left: target, at: performance.now() };
-
-    const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    rail.scrollTo({ left: target, behavior: still ? "auto" : "smooth" });
+    rail.scrollTo({ left: target, behavior: glide() });
   }
 
   return (

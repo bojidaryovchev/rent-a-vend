@@ -36,17 +36,16 @@ const RAIL_ID = "hero-picks-rail";
 /**
  * The rendered width of a card's photo bed, per breakpoint, so the browser
  * picks a file for the bed rather than for the screen. Derived from the
- * layout below: a 16/24px container gutter, a 12px gap, a 1px card border
- * each side, and from `lg` the hero's 0.85fr column of a 1240px container.
+ * layout below: a 16/24px container gutter, a 1px card border each side, and
+ * from `lg` the hero's 0.85fr column of a 1240px container.
  *
- *   < 640    85% of the rail             0.85 x (100vw - 32) - 2
- *   640-767  half the rail               (100vw - 32 - 12) / 2 - 2
- *   768-1023 half the rail               (100vw - 48 - 12) / 2 - 2
+ *   < 768    86% of the rail             0.86 x (100vw - 32) - 2
+ *   768-1023 86% of the rail             0.86 x (100vw - 48) - 2
  *   1024+    the hero's right column     0.425 x (100vw - 48 - 40) - 2
  *   1240+    that column at its maximum  488px
  */
 const BED_SIZES =
-  "(min-width: 1240px) 488px, (min-width: 1024px) calc(42.5vw - 39px), (min-width: 768px) calc(50vw - 32px), (min-width: 640px) calc(50vw - 24px), calc(85vw - 29px)";
+  "(min-width: 1240px) 488px, (min-width: 1024px) calc(42.5vw - 39px), (min-width: 768px) calc(86vw - 43px), calc(86vw - 30px)";
 
 function PickCard({
   model,
@@ -184,10 +183,16 @@ export function HeroPicks({
         <HeroPicksControls railId={RAIL_ID} count={picks.length} />
       </div>
 
-      {/* A peek of the next card on a phone says "swipe" without a word; two
-          to a row on a tablet, where the hero is still one column; one at a
-          time beside the headline on a desktop. The scrollbar is hidden
-          because the buttons already say this scrolls. */}
+      {/* One card at a time. Below `lg`, where the hero is one column, a
+          strip of the next card shows at the edge and says "swipe" without a
+          word; beside the headline on a desktop the buttons say it instead.
+          Not two to a row on a tablet: the second card's photograph then
+          became the page's largest paint, and the counter stopped at "4 / 5".
+
+          86% is the widest card whose peek never shows the next machine:
+          measured against all five renders from 320 to 1023px, the nearest
+          machine stays at least 10px clear of the peek. The scrollbar is
+          hidden because the buttons already say this scrolls. */}
       <ul
         id={RAIL_ID}
         className="relative flex snap-x snap-mandatory gap-3 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -195,7 +200,7 @@ export function HeroPicks({
         {picks.map((model, i) => (
           <li
             key={model.id}
-            className="flex shrink-0 basis-[85%] snap-start sm:basis-[calc((100%_-_0.75rem)/2)] lg:basis-full"
+            className="flex shrink-0 basis-[86%] snap-start lg:basis-full"
           >
             {/* The slide role sits on a wrapper, not on the `li`: a list item
                 given another role stops being a list item, and a list of
