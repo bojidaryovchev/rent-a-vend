@@ -96,11 +96,16 @@ export function HeroPicksControls({
        a focused element into view only when it is out of view, and a card in
        the peek counts as in view - so focus landed on a card the visitor could
        see a sliver of, with the counter still naming the one before it. This
-       moves the rail, not the page, and the counter with it. */
+       moves the rail, not the page, and the counter with it.
+
+       Keyboard focus only. A mouse press focuses the link too, on the way
+       down, and sliding the card away under the pointer before the button
+       comes up turned a slow click on the peek into no click at all. A
+       pointer that is already on the card has nothing to bring forward. */
     const onFocus = (event: FocusEvent) => {
-      const index = slides.findIndex((slide) =>
-        slide.contains(event.target as Node),
-      );
+      const target = event.target as Element;
+      if (!target.matches(":focus-visible")) return;
+      const index = slides.findIndex((slide) => slide.contains(target));
       if (index === -1) return;
       const stop = stopsOf(rail)[index];
       setLead(index);
