@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Eyebrow, IncludedMark, SectionHead } from "@/components/ui/bits";
@@ -11,11 +10,11 @@ import {
   QuoteMark,
 } from "@/components/ui/process-icons";
 import { ButtonLink } from "@/components/ui/button";
-import { MachineImage } from "@/components/ui/machine-image";
 import { ModelCard } from "@/components/catalogue/model-card";
+import { HeroPicks } from "@/components/catalogue/hero-picks";
 import { toCardData } from "@/lib/card-data";
-import { catalogueStats, leadPhoto, modelBySlug } from "@/content/models";
-import type { Catalogue } from "@/engine/catalogue";
+import { heroPicks } from "@/lib/hero-picks";
+import { catalogueStats } from "@/content/models";
 import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
 import { CATEGORIES, CATEGORY_LABEL } from "@/content/taxonomy";
@@ -105,93 +104,6 @@ function Stat({
   );
 }
 
-/** The machine the hero leads on. Named rather than computed: this is an
- *  editorial recommendation, and the combination machine is the one product in
- *  the catalogue photographed exactly as it is delivered - assembled. */
-const HERO_MODEL_SLUG = "necta-brio-up-minisnakky";
-
-/**
- * The hero's machine.
- *
- * A recommendation, stated as ours. The site has no sales history, so "най-
- * избирано" would be a claim nobody can check, sitting three sections above
- * "Виждате и дефектите" - the page would be spending its own argument. What it
- * says instead is who the machine is for, which is a judgement we can defend
- * from the model's own record (15-70 души, 1-2 смени) and which lets a
- * three-hundred-person plant rule itself out in one line.
- *
- * Falls back to the drawing if the frame ever goes missing, so the hero degrades
- * rather than breaking.
- */
-function HeroFeature({ catalogue }: { catalogue: Catalogue }) {
-  const featured = modelBySlug(HERO_MODEL_SLUG);
-  const photo = featured ? leadPhoto(featured) : null;
-
-  /* The hero machine is named in code, so unpublishing it has to be survivable:
-     the drawing fallback below is already the "no frame" path and serves here
-     too, rather than the home page linking to a 404. */
-  if (!featured || !photo || !catalogue.isPublished(featured.id)) {
-    return (
-      <MachineImage
-        category="combo"
-        name="Вендинг машина"
-        showNote
-        className="animate-shutter h-105"
-      />
-    );
-  }
-
-  return (
-    <Link
-      href={routes.model(featured.category as CategoryKey, featured.slug)}
-      className="animate-shutter group flex flex-col overflow-hidden border border-line bg-paper-sunken"
-    >
-      {/* The render is white-backed, so it sits on paper rather than being
-          knocked out - the drop shadow under the cabinet is part of the image
-          and a cut-out would take it with it. */}
-      <div className="paper-grain relative h-70 sm:h-80">
-        <Image
-          src={photo.src}
-          alt={photo.alt}
-          fill
-          priority
-          sizes="(min-width: 1024px) 40vw, 100vw"
-          className="object-contain p-3"
-        />
-        <span className="serial absolute top-0 left-0 bg-graphite px-2 py-1 text-paper/80">
-          препоръчваме
-        </span>
-      </div>
-
-      {photo.credit && (
-        <p className="border-t border-line bg-paper-raised px-3 py-2">
-          <span className="serial text-ink-subtle">{photo.credit}</span>
-        </p>
-      )}
-
-      <div className="border-t border-line bg-paper-raised p-4">
-        <h2 className="plate text-[14px] text-graphite">{featured.name}</h2>
-        <p className="mt-2 text-[13px] leading-6 text-ink-muted">
-          Кафе машина върху снакс шкаф - един корпус вместо две машини. За офис,
-          автосервиз и фитнес до 70 души.
-        </p>
-
-        <div className="mt-4 flex items-end justify-between gap-3 border-t border-line pt-3">
-          <span className="tabular font-display text-[26px] leading-none text-graphite">
-            от {fromMonthly(catalogue, featured.id)}&nbsp;€
-            <span className="ml-1 font-sans text-[12px] font-normal text-ink-muted">
-              /месец
-            </span>
-          </span>
-          <span className="serial text-line-strong transition-colors duration-200 group-hover:text-graphite">
-            детайли →
-          </span>
-        </div>
-      </div>
-    </Link>
-  );
-}
-
 export default async function HomePage() {
   const stats = catalogueStats();
   const catalogue = await loadCatalogue();
@@ -201,10 +113,16 @@ export default async function HomePage() {
     ...catalogue.models.map((m) => fromMonthly(catalogue, m.id)),
   );
 
+  const picks = heroPicks(catalogue);
+  const picked = new Set(picks.map((m) => m.id));
+
   // The strip used to lead on whatever was rentable today. With one
   // availability state (D50) there is nothing to sort on, so it leads on the
-  // cheapest four - the figure the page is already selling on.
+  // cheapest four - the figure the page is already selling on. Machines the
+  // hero already recommends are left out, so the same card is not shown twice
+  // a screen apart.
   const featured = [...catalogue.models]
+    .filter((m) => !picked.has(m.id))
     .sort((a, b) => fromMonthly(catalogue, a.id) - fromMonthly(catalogue, b.id))
     .slice(0, 4)
     .map((m) => toCardData(m, catalogue));
@@ -263,7 +181,7 @@ export default async function HomePage() {
             </p>
           </div>
 
-          <HeroFeature catalogue={catalogue} />
+          <HeroPicks picks={picks} catalogue={catalogue} />
         </Container>
 
         {/* Stat strip */}

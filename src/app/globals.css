@@ -210,6 +210,20 @@ h4 {
   border-radius: var(--radius-xs);
 }
 
+/* Two exceptions, for frames that would otherwise hide the ring. On steel the
+   ring is drawn in paper, because ink vanishes on graphite. Inside a scroll
+   rail or a clipped reveal it is drawn inside the edge, because an outline
+   offset outward is cut off by the frame. Plain CSS rather than Tailwind
+   utilities on purpose: utilities sit in a cascade layer, and this file's
+   unlayered rule above beats any layered one whatever its specificity. */
+.focus-light:focus-visible {
+  outline-color: var(--color-paper);
+}
+
+.focus-inset:focus-visible {
+  outline-offset: -4px;
+}
+
 /* ---------------------------------------------------------------------------
    Material
 

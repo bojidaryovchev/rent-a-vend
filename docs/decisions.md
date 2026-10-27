@@ -128,6 +128,29 @@ which is why D19 is load-bearing rather than housekeeping.
 and is not is the one version that is prohibited. No such claim is currently on
 the site.
 
+**D79 — The home page hero recommends five named machines, not one.** They
+are named in code rather than computed, for the reason the single machine was:
+the site has no sales history, so an order "by popularity" would be a
+performance figure nobody can check, and PRODUCT.md rules those out.
+
+The first is unchanged — the Brio Up + Mini Snakky — because its frame is the
+page's largest paint, and swapping it would move the number the page is
+measured on. Each of the other four is what the site's own recommender answers
+for one kind of site, as its pick or its first runner-up, checked against the
+live catalogue on 27 October 2026: a small office or car service wanting coffee
+(Korinto), snacks (Melodia), cold drinks (G-Drink Design 6), and a plant or
+warehouse on two or three shifts (Astro). Where the recommender's own pick lost
+the slot, it lost on the photograph: the Colibri, Snakky and Canto renders
+show the machine under 380px tall and go soft on a phone. The snack slot may
+yet go to the Snakky; that is a one-word change.
+
+The row moves only when the visitor moves it. No autoplay: the site's one
+authored motion is spent elsewhere, and a hero that turns itself is a second.
+Each card's line on who the machine is for is generated from the model record,
+so it cannot disagree with what the recommender scores. The cheapest-four strip
+further down leaves the hero's machines out, so the same card is not shown
+twice a screen apart.
+
 ## Money
 
 **D9 / D19 — Prices are per model per term, and a placeholder must never ship
