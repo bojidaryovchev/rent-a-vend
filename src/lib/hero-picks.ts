@@ -2,6 +2,7 @@ import type { Model } from "@/content/schema";
 import { leadPhoto, modelBySlug } from "@/content/models";
 import { VENUE_LABEL } from "@/content/taxonomy";
 import type { Catalogue } from "@/engine/catalogue";
+import { fromMonthly } from "@/engine/quote";
 
 /**
  * The machines the home page hero recommends, in the order it shows them.
@@ -11,26 +12,34 @@ import type { Catalogue } from "@/engine/catalogue";
  * these by popularity would be a performance figure nobody can check, and
  * PRODUCT.md rules those out.
  *
- * What the names rest on. The first is the combination machine the hero has
- * always led on - the one product photographed exactly as it is delivered,
- * assembled - and it stays first because its frame is the page's largest
- * paint: moving it would change the number the page is measured on. Each of
- * the other four is what `recommend()` itself answers for one kind of site,
- * as its pick or its first runner-up: a small office or car service wanting
- * coffee (Korinto), snacks (Melodia), cold drinks (G-Drink Design 6), and a
- * plant or warehouse on two or three shifts (Astro).
+ * What each name rests on:
  *
- * Where the recommender's own pick lost the slot, it lost on the photograph.
- * The Colibri, Snakky and Canto renders show the machine 358-377px tall, and
- * a 280-320px bed on a phone screen at two or three device pixels per pixel
- * enlarges that past sharp. These five show it at 430px and up.
+ * - The Brio Up + Mini Snakky leads because it always has. It is the one
+ *   product photographed exactly as it is delivered, assembled, and its frame
+ *   is the page's largest paint, so moving it would change the number the page
+ *   is measured on.
+ * - The Brio Up is the cheapest coffee machine the owner has put a price on,
+ *   sized for 15-50 people, and its render is the sharpest of any coffee
+ *   machine here - the machine itself is 1000px tall in it.
+ *   For a small office the recommender itself answers Colibri, Korinto, Brio 3
+ *   or Solista, and none of those has an owner price yet - their figures are
+ *   derived. The hero does not recommend a machine at a price its owner never
+ *   set.
+ * - The Melodia is the recommender's runner-up for an office wanting snacks.
+ *   Its pick, the Snakky, lost the slot on its render: the machine sits in a
+ *   wide 566x400 white canvas, so on a phone, where the bed is narrow, the
+ *   canvas is scaled to the bed's width and the machine shows small inside a
+ *   white box.
+ * - The G-Drink Design 6 is the recommender's pick for cold drinks.
+ * - The Astro is the recommender's pick for a plant or warehouse on two or
+ *   three shifts, with the Canto as runner-up.
  *
  * The snack slot may yet go to the Snakky. That is a one-word change here,
  * and nothing else needs to know.
  */
 export const HERO_PICK_SLUGS = [
   "necta-brio-up-minisnakky",
-  "necta-korinto",
+  "necta-brio-up",
   "necta-melodia",
   "vendo-g-drink-design-6",
   "necta-astro",
@@ -39,18 +48,41 @@ export const HERO_PICK_SLUGS = [
 /**
  * The picks that can actually be shown, in order.
  *
- * Named in code, so each one has to survive being unpublished or losing its
- * frame: a pick the client has hidden would link to a 404, and one with no
- * photograph would put a drawing in the middle of a row of renders. Either
- * way it drops out rather than breaking the row, and the hero shows fewer.
+ * Named in code, so each one has to survive what the owner does in the admin.
+ * A pick he unpublishes would link to a 404. One that loses its photograph
+ * would put a drawing in a row of renders. And one whose price he clears would
+ * go back to a derived figure - a price the owner never set, under the word
+ * "препоръчваме", which is the one thing this row must not show. Any of the
+ * three and it drops out, rather than breaking the row; the hero shows fewer.
  */
 export function heroPicks(catalogue: Catalogue): Model[] {
   return HERO_PICK_SLUGS.map((slug) => modelBySlug(slug)).filter(
     (model): model is Model =>
       model !== undefined &&
       leadPhoto(model) !== null &&
-      catalogue.isPublished(model.id),
+      catalogue.isPublished(model.id) &&
+      !catalogue.fromRate(model.id).isPlaceholder,
   );
+}
+
+/**
+ * The cheapest-four strip further down the home page.
+ *
+ * It used to lead on whatever was rentable today. With one availability state
+ * (D50) there is nothing to sort on, so it leads on the cheapest four - the
+ * figure the page is already selling on. Machines the hero already recommends
+ * are left out, so the same card is not shown twice a screen apart.
+ */
+export function featuredStrip(
+  catalogue: Catalogue,
+  picks: Model[],
+  size = 4,
+): Model[] {
+  const picked = new Set(picks.map((m) => m.id));
+  return [...catalogue.models]
+    .filter((m) => !picked.has(m.id))
+    .sort((a, b) => fromMonthly(catalogue, a.id) - fromMonthly(catalogue, b.id))
+    .slice(0, size);
 }
 
 /**

@@ -13,7 +13,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { ModelCard } from "@/components/catalogue/model-card";
 import { HeroPicks } from "@/components/catalogue/hero-picks";
 import { toCardData } from "@/lib/card-data";
-import { heroPicks } from "@/lib/hero-picks";
+import { featuredStrip, heroPicks } from "@/lib/hero-picks";
 import { catalogueStats } from "@/content/models";
 import { loadCatalogue } from "@/server/catalogue";
 import { fromMonthly, INCLUDED_IN_RENT } from "@/engine/quote";
@@ -114,18 +114,11 @@ export default async function HomePage() {
   );
 
   const picks = heroPicks(catalogue);
-  const picked = new Set(picks.map((m) => m.id));
 
-  // The strip used to lead on whatever was rentable today. With one
-  // availability state (D50) there is nothing to sort on, so it leads on the
-  // cheapest four - the figure the page is already selling on. Machines the
-  // hero already recommends are left out, so the same card is not shown twice
-  // a screen apart.
-  const featured = [...catalogue.models]
-    .filter((m) => !picked.has(m.id))
-    .sort((a, b) => fromMonthly(catalogue, a.id) - fromMonthly(catalogue, b.id))
-    .slice(0, 4)
-    .map((m) => toCardData(m, catalogue));
+  // The cheapest four, less the hero's machines - see `featuredStrip`.
+  const featured = featuredStrip(catalogue, picks).map((m) =>
+    toCardData(m, catalogue),
+  );
 
   return (
     <>

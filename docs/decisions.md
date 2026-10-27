@@ -135,14 +135,23 @@ performance figure nobody can check, and PRODUCT.md rules those out.
 
 The first is unchanged — the Brio Up + Mini Snakky — because its frame is the
 page's largest paint, and swapping it would move the number the page is
-measured on. Each of the other four is what the site's own recommender answers
-for one kind of site, as its pick or its first runner-up, checked against the
-live catalogue on 27 October 2026: a small office or car service wanting coffee
-(Korinto), snacks (Melodia), cold drinks (G-Drink Design 6), and a plant or
-warehouse on two or three shifts (Astro). Where the recommender's own pick lost
-the slot, it lost on the photograph: the Colibri, Snakky and Canto renders
-show the machine under 380px tall and go soft on a phone. The snack slot may
+measured on. The second is the Brio Up: the cheapest coffee machine the owner
+has priced (55 €/month on 60 months), sized for 15–50 people. For a small office
+the recommender itself answers Colibri, Korinto, Brio 3 or Solista, and on 27
+October 2026 none of the four had an owner price — their figures were derived.
+The other three are the recommender's own answers, checked against the live
+catalogue that day: the Melodia is its runner-up for snacks, the G-Drink
+Design 6 its pick for cold drinks, and the Astro its pick for a plant or
+warehouse on two or three shifts. The snack pick, the Snakky, lost the slot on
+its render: the machine sits in a wide white canvas, which on a phone is scaled
+to the narrow bed and leaves the machine small inside a white box. The slot may
 yet go to the Snakky; that is a one-word change.
+
+**Every pick carries a price the owner set.** A pick whose figure would be
+derived — because the owner never priced it, or cleared the price — drops out
+of the row, as an unpublished one does. "Препоръчваме" above a price nobody
+set is the placeholder D19 forbids shipping silently, in the most prominent
+place on the site.
 
 The row moves only when the visitor moves it. No autoplay: the site's one
 authored motion is spent elsewhere, and a hero that turns itself is a second.
