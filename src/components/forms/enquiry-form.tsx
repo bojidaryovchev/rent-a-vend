@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import toast from "react-hot-toast";
@@ -55,13 +55,28 @@ export interface CarriedContext {
   recommenderSummary?: string;
 }
 
+/**
+ * One labelled field.
+ *
+ * The label is a real `<label for>`, pointed at the control by id. It was a
+ * styled `<span>` above the input, which looked right and named nothing: a
+ * screen reader announced six unlabelled edit fields on the one form this site
+ * exists to have filled in, and tapping the word did not focus the box. The
+ * classes are unchanged, so it looks the same.
+ *
+ * The hint and the error carry ids of their own, which the control lists in
+ * `aria-describedby` (see `describedBy`), so they are read with the field and
+ * not only at the moment they appear.
+ */
 function Field({
+  id,
   label,
   error,
   hint,
   optional,
   children,
 }: {
+  id: string;
   label: string;
   error?: string;
   hint?: string;
@@ -70,22 +85,42 @@ function Field({
 }) {
   return (
     <div>
-      <span className="plate block text-[11px] text-ink-muted">
-        {label}
+      <label htmlFor={id} className="plate block text-[11px] text-ink-muted">
+        {/* The label is now the field's name, and a margin alone made it
+            "ДДС номерпо избор". The space has to sit inside the label's own
+            text: Chrome drops a space that stands alone between two nodes. */}
+        {optional ? `${label} ` : label}
         {optional && (
-          <span className="ml-2 font-normal text-ink-subtle">по избор</span>
+          <span className="ml-1 font-normal text-ink-subtle">по избор</span>
         )}
-      </span>
-      {hint && <p className="mt-1 text-sm text-ink-subtle">{hint}</p>}
+      </label>
+      {hint && (
+        <p id={`${id}-hint`} className="mt-1 text-sm text-ink-subtle">
+          {hint}
+        </p>
+      )}
       {children}
       {error && (
-        <p className="mt-1.5 text-sm font-medium text-danger" role="alert">
+        <p
+          id={`${id}-error`}
+          className="mt-1.5 text-sm font-medium text-danger"
+          role="alert"
+        >
           {error}
         </p>
       )}
     </div>
   );
 }
+
+/** The ids a field's control is described by: its hint, and its error while
+ *  there is one. */
+const describedBy = (
+  id: string,
+  { hint = false, error = false }: { hint?: boolean; error?: boolean },
+) =>
+  [hint && `${id}-hint`, error && `${id}-error`].filter(Boolean).join(" ") ||
+  undefined;
 
 /**
  * Form controls sit on the `body-lg` step (1.0625rem / 17px), not on the
@@ -110,6 +145,9 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
      The server refuses a blank token only when a site key is configured, so
      this stays harmless on a deployment with no bot protection. */
   const [turnstileToken, setTurnstileToken] = useState("");
+  /* One prefix per form, so the ids stay unique if a page ever holds two. */
+  const uid = useId();
+  const id = (field: string) => `${uid}-${field}`;
 
   const {
     register,
@@ -235,38 +273,46 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
       )}
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Име" error={errors.name?.message}>
+        <Field id={id("name")} label="Име" error={errors.name?.message}>
           <input
+            id={id("name")}
             type="text"
             autoComplete="name"
             aria-invalid={!!errors.name}
+            aria-describedby={describedBy(id("name"), { error: !!errors.name })}
             className={inputClass(!!errors.name)}
             {...register("name")}
           />
         </Field>
-        <Field label="Фирма" error={errors.company?.message}>
+        <Field id={id("company")} label="Фирма" error={errors.company?.message}>
           <input
+            id={id("company")}
             type="text"
             autoComplete="organization"
             aria-invalid={!!errors.company}
+            aria-describedby={describedBy(id("company"), { error: !!errors.company })}
             className={inputClass(!!errors.company)}
             {...register("company")}
           />
         </Field>
-        <Field label="Телефон" error={errors.phone?.message}>
+        <Field id={id("phone")} label="Телефон" error={errors.phone?.message}>
           <input
+            id={id("phone")}
             type="tel"
             autoComplete="tel"
             aria-invalid={!!errors.phone}
+            aria-describedby={describedBy(id("phone"), { error: !!errors.phone })}
             className={inputClass(!!errors.phone)}
             {...register("phone")}
           />
         </Field>
-        <Field label="Имейл" error={errors.email?.message}>
+        <Field id={id("email")} label="Имейл" error={errors.email?.message}>
           <input
+            id={id("email")}
             type="email"
             autoComplete="email"
             aria-invalid={!!errors.email}
+            aria-describedby={describedBy(id("email"), { error: !!errors.email })}
             className={inputClass(!!errors.email)}
             {...register("email")}
           />
@@ -274,21 +320,34 @@ export function EnquiryForm({ context = {} }: { context?: CarriedContext }) {
       </div>
 
       <Field
+        id={id("vatNumber")}
         label="ДДС номер"
         optional
         hint="Ако фирмата е регистрирана по ДДС. Ускорява изготвянето на офертата."
         error={errors.vatNumber?.message}
       >
         <input
+          id={id("vatNumber")}
           type="text"
           aria-invalid={!!errors.vatNumber}
+          aria-describedby={describedBy(id("vatNumber"), {
+            hint: true,
+            error: !!errors.vatNumber,
+          })}
           className={inputClass(!!errors.vatNumber)}
           {...register("vatNumber")}
         />
       </Field>
 
-      <Field label="Съобщение" optional error={errors.message?.message}>
+      <Field
+        id={id("message")}
+        label="Съобщение"
+        optional
+        error={errors.message?.message}
+      >
         <textarea
+          id={id("message")}
+          aria-describedby={describedBy(id("message"), { error: !!errors.message })}
           rows={4}
           className="mt-2 w-full rounded-sm border border-line-strong bg-paper-raised px-3.5 py-3 text-body-lg transition-colors duration-[--duration-fast] ease-[--ease-out] focus:border-ink"
           {...register("message")}
