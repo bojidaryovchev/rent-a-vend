@@ -115,19 +115,19 @@ export function HeroPicksControls({
         <path d="M9.5 3 L4.5 8 L9.5 13" />
       </StepButton>
 
-      {/* Fixed width and tabular, so "1 / 5" becoming "2 / 5" moves nothing.
-          The slash is for the eye; a screen reader hears "2 от 5". */}
+      {/* Nothing here moves when "1 / 5" becomes "2 / 5", or when the mono
+          face lands after first paint and the glyphs change width: the box is
+          fixed in pixels rather than `ch`, which follows the font, and the
+          text is one node anchored at its left edge, padded to sit centred in
+          the face itself. The slash is for the eye; a screen reader hears
+          "2 от 5". */}
       <p
         aria-live="polite"
         aria-atomic="true"
-        className="serial tabular min-w-[6ch] text-center text-paper/80"
+        className="serial tabular w-12 pl-1.5 text-paper/80"
       >
-        <span aria-hidden>
-          {lead + 1} / {count}
-        </span>
-        <span className="sr-only">
-          {lead + 1} от {count}
-        </span>
+        <span aria-hidden>{`${lead + 1} / ${count}`}</span>
+        <span className="sr-only">{`${lead + 1} от ${count}`}</span>
       </p>
 
       <StepButton

@@ -31,6 +31,21 @@ const commissioner = Commissioner({
   weight: ["400", "500", "600", "700"],
 });
 
+/**
+ * ALL SIX FILES STAY PRELOADED - both subsets of all three faces, 136 KB at
+ * high priority beside the hero photograph. That was measured, not assumed.
+ *
+ * In the first screen, at 412px and at 1350px, every face and both subsets of
+ * each set at least one glyph, so none is idle above the fold. This face looked
+ * like the one to let go - it sets only 11px labels there - and letting it go
+ * was tried. With it arriving after first paint, the hero headline, which
+ * rises into view, was recorded as the page's largest paint instead of the
+ * photograph in most loads of a local production build (6 of 10 at 412px, 5
+ * of 6 at 1350px), 40-100ms later. And the default fallback's glyphs are not
+ * this face's width - its digits are wider, its spaces narrower - so on a
+ * throttled load the late swap also shifted the phone number and the desktop
+ * nav. Neither trade is worth 40 KB.
+ */
 const jetbrains = JetBrains_Mono({
   variable: "--font-jetbrains",
   subsets: ["latin", "cyrillic"],
