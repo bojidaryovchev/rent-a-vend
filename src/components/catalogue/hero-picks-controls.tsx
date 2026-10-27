@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/cn";
 
 /**
@@ -17,8 +17,20 @@ import { cn } from "@/lib/cn";
  * visibility, so a swipe costs a handful of callbacks instead of one per frame.
  *
  * The server renders this at its final size with the first slide leading, so
- * hydrating it changes text and colour and never geometry.
+ * hydrating it changes text and colour and never geometry. It renders it
+ * hidden, too - in place, so the space is kept - and shows it once the script
+ * is running. Without the script the buttons would do nothing, and a visitor
+ * with none should see a row that scrolls, not two dead controls.
  */
+
+/** False on the server and through hydration, true once mounted - without a
+ *  state update inside an effect. */
+const useMounted = () =>
+  useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
 /** A slide this visible is the one the counter names. */
 const LEADING = 0.5;
@@ -56,6 +68,7 @@ export function HeroPicksControls({
   const [atStart, setAtStart] = useState(true);
   const [atEnd, setAtEnd] = useState(false);
   const aim = useRef<{ left: number; at: number } | null>(null);
+  const mounted = useMounted();
 
   useEffect(() => {
     const rail = document.getElementById(railId);
@@ -137,7 +150,7 @@ export function HeroPicksControls({
   }
 
   return (
-    <div className="flex items-center gap-1">
+    <div className={cn("flex items-center gap-1", !mounted && "invisible")}>
       <StepButton
         label="Предишна машина"
         disabled={atStart}
@@ -159,7 +172,9 @@ export function HeroPicksControls({
         className="serial tabular w-12 pl-1.5 text-paper/80"
       >
         <span aria-hidden>{`${lead + 1} / ${count}`}</span>
-        <span className="sr-only">{`${lead + 1} от ${count}`}</span>
+        {/* Not upper case like the digits beside it: "ОТ" in capitals is
+            read out letter by letter. */}
+        <span className="sr-only normal-case">{`${lead + 1} от ${count}`}</span>
       </p>
 
       <StepButton
@@ -182,8 +197,9 @@ export function HeroPicksControls({
  *
  * At an end the button stays in place and in the tab order, marked
  * `aria-disabled` rather than `disabled` so a keyboard user's focus is not
- * dropped from under them. That state swaps to a sunken fill rather than
- * fading, because opacity alone is how this system once produced 1.3:1.
+ * dropped from under them. That state swaps tokens rather than fading - a
+ * sunken fill and the hairline tone for the arrow, 4.8:1 on that fill - because
+ * opacity is how this system once produced 1.3:1 (DESIGN.md).
  *
  * The focus ring is paper and drawn inside the edge (`focus-light`,
  * `focus-inset` in globals.css): ink is invisible on steel, and the shutter
@@ -211,7 +227,7 @@ function StepButton({
       className={cn(
         "focus-light focus-inset inline-flex min-h-11 min-w-11 items-center justify-center border transition-colors duration-200",
         disabled
-          ? "cursor-not-allowed border-graphite-edge bg-graphite-deep text-paper/45"
+          ? "cursor-not-allowed border-graphite-edge bg-graphite-deep text-line-strong"
           : "border-paper/35 text-paper hover-fine:border-paper",
       )}
     >

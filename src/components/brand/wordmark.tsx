@@ -30,8 +30,12 @@ export function Wordmark({
    *
    * `loading="eager"` alone does not prevent that: React's server renderer
    * writes a `<link rel="preload">` for every image that is neither lazy nor
-   * `fetchPriority="low"`. So the eager mark is also marked low, which costs
-   * nothing - it is a couple of kilobytes and the first thing in the body.
+   * `fetchPriority="low"`. So the eager mark is also marked low.
+   *
+   * That has a cost, and it is the mark's: on a throttled phone load it now
+   * arrives after the hero photograph, at about 2.0s against the photograph's
+   * 1.4s, where the preload had it in at about 1.0s. The name beside it is
+   * text and paints with the page, so what arrives late is the pictogram.
    */
   eager?: boolean;
 }) {
