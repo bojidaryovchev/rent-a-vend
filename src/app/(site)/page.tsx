@@ -146,7 +146,10 @@ export default async function HomePage() {
             </Eyebrow>
 
             <h1 className="mt-5 text-[36px] leading-[1.05] text-paper sm:text-[52px] lg:text-[62px]">
-              Вендинг машина под наем от{" "}
+              {/* The space inside the string, not beside it: a lone `{" "}`
+                  next to the price was dropped from the heading's accessible
+                  name, which read "от40 €". */}
+              {"Вендинг машина под наем от "}
               <span className="tabular border-b-4 border-accent whitespace-nowrap text-accent">
                 {from} €
               </span>
