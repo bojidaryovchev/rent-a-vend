@@ -19,12 +19,21 @@ import { company } from "@/lib/company";
 export function Wordmark({
   className,
   tone = "dark",
-  priority = false,
+  eager = false,
 }: {
   className?: string;
   tone?: "dark" | "light";
-  /** The header lockup is in the first viewport, so it should not lazy-load. */
-  priority?: boolean;
+  /**
+   * The header lockup is in the first viewport, so it should not lazy-load -
+   * but it must not be preloaded either. A preload puts a 36px mark in the
+   * queue ahead of the hero photograph, which is the page's largest paint.
+   *
+   * `loading="eager"` alone does not prevent that: React's server renderer
+   * writes a `<link rel="preload">` for every image that is neither lazy nor
+   * `fetchPriority="low"`. So the eager mark is also marked low, which costs
+   * nothing - it is a couple of kilobytes and the first thing in the body.
+   */
+  eager?: boolean;
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5 select-none", className)}>
@@ -39,7 +48,8 @@ export function Wordmark({
            assumes the mark could be full-bleed and offers the browser a 1920w
            candidate - 37KB of webp to fill 36 square pixels, twice per page. */
         sizes="36px"
-        priority={priority}
+        loading={eager ? "eager" : "lazy"}
+        fetchPriority={eager ? "low" : undefined}
         className="h-9 w-auto"
       />
 

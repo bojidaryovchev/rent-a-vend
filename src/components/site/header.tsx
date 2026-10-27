@@ -122,7 +122,7 @@ export function SiteHeader() {
               visible "Rent-a-Vend" in the accessible name, so a voice-control
               user saying what they could see would not reach the link. */}
           <Link href={routes.home}>
-            <Wordmark priority />
+            <Wordmark eager />
           </Link>
 
           <nav
