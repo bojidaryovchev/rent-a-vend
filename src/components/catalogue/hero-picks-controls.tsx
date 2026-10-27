@@ -201,9 +201,10 @@ export function HeroPicksControls({
  * sunken fill and the hairline tone for the arrow, 4.8:1 on that fill - because
  * opacity is how this system once produced 1.3:1 (DESIGN.md).
  *
- * The focus ring is paper and drawn inside the edge (`focus-light`,
- * `focus-inset` in globals.css): ink is invisible on steel, and the shutter
- * reveal on the row clips anything drawn outside its box.
+ * The focus ring is drawn inside the edge (`focus-inset` in globals.css),
+ * because the shutter reveal on the row clips anything drawn outside its box.
+ * Its colour comes from the steel it sits on, like every ring on a dark
+ * surface.
  */
 function StepButton({
   label,
@@ -225,7 +226,7 @@ function StepButton({
       aria-controls={railId}
       aria-disabled={disabled}
       className={cn(
-        "focus-light focus-inset inline-flex min-h-11 min-w-11 items-center justify-center border transition-colors duration-200",
+        "focus-inset inline-flex min-h-11 min-w-11 items-center justify-center border transition-colors duration-200",
         disabled
           ? "cursor-not-allowed border-graphite-edge bg-graphite-deep text-line-strong"
           : "border-paper/35 text-paper hover-fine:border-paper",

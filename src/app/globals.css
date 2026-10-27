@@ -205,21 +205,44 @@ h4 {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
   border-radius: var(--radius-xs);
 }
 
-/* Two exceptions, for frames that would otherwise hide the ring. On steel the
-   ring is drawn in paper, because ink vanishes on graphite. Inside a scroll
-   rail or a clipped reveal it is drawn inside the edge, because an outline
-   offset outward is cut off by the frame. Plain CSS rather than Tailwind
-   utilities on purpose: utilities sit in a cascade layer, and this file's
-   unlayered rule above beats any layered one whatever its specificity. */
-.focus-light:focus-visible {
-  outline-color: var(--color-paper);
+/* The ring takes its colour from the surface it is drawn on, set once per
+   surface rather than per control. Ink on paper. On the dark surfaces -
+   steel bands, dark panels, the demo banner - ink measured close to 1:1 and
+   the ring all but vanished, so there it is the accent, 11:1 on graphite.
+
+   The accent is spent here without breaking The One Action Rule: that rule is
+   about controls asking to be pressed, and a focus ring is not a control - it
+   marks where the keyboard is, and it shows one element at a time.
+
+   A light panel inside a dark band - the hero's machine cards - sets ink back,
+   and inheritance does the rest: the nearest surface wins. */
+:root {
+  --focus-ring: var(--color-ink);
 }
 
+.steel,
+.bay-panel-dark,
+.caution-tape {
+  --focus-ring: var(--color-accent);
+}
+
+.bg-paper,
+.bg-paper-raised,
+.bg-paper-sunken,
+.paper-grain,
+.bay-panel {
+  --focus-ring: var(--color-ink);
+}
+
+/* Inside a scroll rail or a clipped reveal the ring is drawn inside the edge,
+   because an outline offset outward is cut off by the frame. Plain CSS rather
+   than a Tailwind utility on purpose: utilities sit in a cascade layer, and
+   the unlayered rule above beats any layered one whatever its specificity. */
 .focus-inset:focus-visible {
   outline-offset: -4px;
 }
